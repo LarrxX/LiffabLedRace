@@ -12,8 +12,8 @@ extern "C"{
 #include <stdbool.h>
 
 
-#define PIN_P1         A2  // switch player 1 to PIN and GND
-#define PIN_P2         A3  // switch player 2 to PIN and GND
+#define PIN_P1         A0  // switch player 1 to PIN and GND
+#define PIN_P2         A2  // switch player 2 to PIN and GND
 #define PIN_VCC_ADC1   6   // switch player 1 to PIN and GND
 #define PIN_VCC_ADC2   7   // switch player 2 to PIN and GND
 

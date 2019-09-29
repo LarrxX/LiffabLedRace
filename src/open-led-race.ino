@@ -27,7 +27,7 @@
 #include "olr-lib.h"
 #include "olr-param.h"
 
-#define PIN_LED        A0  // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
+#define PIN_LED        2  // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_AUDIO      3   // through CAP 2uf to speaker 8 ohms
 #define EOL           '\n'
 
@@ -155,8 +155,8 @@ void setup() {
   init_track( &tck );
   init_car( &cars[0], &switchs[0], COLOR1 );
   init_car( &cars[1], &switchs[1], COLOR2 );
-  init_controller( &switchs[0], DEBUG_MODE, PIN_P1 );
-  init_controller( &switchs[1], DEBUG_MODE, PIN_P2 );
+  init_controller( &switchs[0], DIGITAL_MODE, PIN_P1 );
+  init_controller( &switchs[1], DIGITAL_MODE, PIN_P2 );
 
   track.begin();
 
@@ -222,6 +222,7 @@ void loop() {
         if( cars[i].st == CAR_FINISH ) {
           race.phase = COMPLETE;
           send_phase( race.phase );
+          break;
         }
       }
 
@@ -286,8 +287,9 @@ void run_racecycle( car_t *car, int i ) {
 
     if ( car->st == CAR_FINISH ){
         car->trackID = NOT_TRACK;
+        draw_win( &tck, car );
         sprintf( txbuff, "w%d%c", i + 1, EOL );
-        Serial.print( txbuff );init_ramp( &tck );
+        Serial.print( txbuff );
     }
 }
 
@@ -394,6 +396,11 @@ void draw_coin( track_t* tck ) {
     track.setPixelColor( 1 + cfg->nled_main + tck->led_speed, track.Color(0,0,250) );
 }
 
+void draw_win( track_t* tck, car_t* car) {
+  int const maxled = tck->cfg.track.nled_total;
+  for(int i=0; i<maxled; ++i )
+    track.setPixelColor(i, car->color );
+}
 
 void draw_car( track_t* tck, car_t* car ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
