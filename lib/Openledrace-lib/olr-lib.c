@@ -25,7 +25,7 @@ void update_track( track_t* tck, car_t* car ) {
 
   if ( car->trackID == TRACK_MAIN 
       &&  (int)car->dist % cfg->nled_main == cfg->init_aux 
-      &&  get_controllerStatus( ct ) != 0 ) {
+      &&  get_controllerStatus( ct ) == 0 ) {
         
         car->trackID = TRACK_AUX;
         car->dist_aux = 0;
@@ -42,7 +42,7 @@ void update_track( track_t* tck, car_t* car ) {
   else if ( car->trackID == TRACK_MAIN )  process_main_track( tck, car );
 
   /* Update car lap */          
-  if ( car->dist > cfg->nled_main*car->nlap )  car->nlap++;
+  if ( car->dist > ( cfg->nled_main*car->nlap -1) )  car->nlap++;
 }
 
 void process_aux_track( track_t* tck, car_t* car ){
@@ -52,7 +52,7 @@ void process_aux_track( track_t* tck, car_t* car ){
           && car->speed <= get_accel() ) {
           
         car->speed = get_accel ()*10;
-        tck->ledcoin = -1;
+        tck->ledcoin = COIN_RESET;
     };
 
     car->speed -= car->speed * cfg->kf;

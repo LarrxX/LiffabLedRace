@@ -13,6 +13,11 @@ extern "C"{
 #include "olr-controller.h"
 #include "olr-param.h"
 
+enum stcoin{ 
+  COIN_RESET = -2,
+  COIN_WAIT  = -1,
+};
+
 enum{
   NOT_TRACK = 0,
   TRACK_MAIN,
@@ -22,7 +27,6 @@ enum{
   NUM_TRACKS,
 };
 
-  
 
 enum status{
     CAR_WAITING = 0,

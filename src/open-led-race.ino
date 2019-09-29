@@ -42,6 +42,8 @@ enum{
   MAX_CARS = 4,
 };
 
+
+
 enum loglevel{
     ECHO = 0,
     DISABLE = 0,
@@ -143,7 +145,6 @@ void init_track( track_t* tck ){
   param_load( &tck->cfg );
   tck->gmap = gravity_map;
   init_ramp( tck );
-  tck->ledcoin  = -1;
 }
 
 void setup() {
@@ -205,6 +206,7 @@ void loop() {
         reset_carPosition( &cars[i] );  
         cars[i].repeats = 0;
       }
+      tck.ledcoin  = COIN_RESET;
       race.phase = COUNTDOWN;
       send_phase( race.phase );
     }
@@ -222,10 +224,9 @@ void loop() {
     }
     else if( race.phase == RACING ) {
       
-      strip_clear( &tck );
-      
-      if( tck.ledcoin == -1 ) {
-        tck.ledcoin = 0;
+      strip_clear( &tck ); 
+      if( tck.ledcoin == COIN_RESET ) {
+        tck.ledcoin = COIN_WAIT;
         tck.ledtime = millis() + random(2000,7000);
       }
       
@@ -526,7 +527,6 @@ ack_t parseCommands(AsyncSerial &serial) {
 
     pch = strtok (NULL, ",");
     if( !pch ) return ack;
-    int none = atoi( pch );
 
     int err = track_configure( &tck, init_aux );
     if( err ) return ack;
