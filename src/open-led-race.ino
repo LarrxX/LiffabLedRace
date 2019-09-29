@@ -34,13 +34,14 @@
 
 #define COLOR1    track.Color(255,0,0)
 #define COLOR2    track.Color(0,255,0)
-
+#define COLOR3    track.Color(0,0,255)
+#define COLOR4    track.Color(120,120,0)
 
 
 //int LED_SPEED_COIN  =-1;
 
 enum{
-  NUM_CARS = 2,
+  MAX_CARS = 4,
 };
 
 enum loglevel{
@@ -92,15 +93,16 @@ struct race{
     struct cfgcircuit circ;
     bool              newcfg;
     enum phases       phase;
+    byte              numcars;
 };
 
 
 /*------------------------------------------------------*/
-enum loglevel verbose = DEBUG;
+enum loglevel verbose = DISABLE;
 
 static struct race race;
-static car_t cars[ NUM_CARS ];
-static controller_t switchs[ NUM_CARS ];
+static car_t cars[ MAX_CARS ];
+static controller_t switchs[ MAX_CARS ];
 static byte  gravity_map[ MAXLED ];
 static track_t tck;
 
@@ -151,16 +153,29 @@ void setup() {
 
   Serial.begin(115200);
   setup_controller( );
-  
   init_track( &tck );
+  
   init_car( &cars[0], &switchs[0], COLOR1 );
+  init_controller( &switchs[0], DIGITAL_MODE, DIG_CONTROL_1 );
   init_car( &cars[1], &switchs[1], COLOR2 );
-  init_controller( &switchs[0], DIGITAL_MODE, PIN_P1 );
-  init_controller( &switchs[1], DIGITAL_MODE, PIN_P2 );
+  init_controller( &switchs[1], DIGITAL_MODE, DIG_CONTROL_2 );
+  race.numcars = 2;
+
+  if( control_isActive( DIG_CONTROL_3 )) {
+    init_car( &cars[2], &switchs[2], COLOR3 );
+    init_controller( &switchs[2], DIGITAL_MODE, DIG_CONTROL_3 );
+    ++race.numcars;
+  }
+
+  if( control_isActive( DIG_CONTROL_4 )) {
+    init_car( &cars[3], &switchs[3], COLOR4 );
+    init_controller( &switchs[3], DIGITAL_MODE, DIG_CONTROL_4 );
+    ++race.numcars;
+  }
 
   track.begin();
 
-  if ( digitalRead(PIN_P1) == 0 ) { //push switch 1 on reset for activate physic
+  if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physic
     set_ramp( &tck );    
     draw_ramp( &tck );
     track.show();
@@ -188,7 +203,7 @@ void loop() {
     }
     else if ( race.phase == READY ) {
 
-      for( int i = 0; i < NUM_CARS; ++i) {
+      for( int i = 0; i < race.numcars; ++i) {
         reset_carPosition( &cars[i] );  
         cars[i].repeats = 0;
       }
@@ -200,7 +215,7 @@ void loop() {
       if( race.cfg.startline ){
         start_race( &tck );
         T_SPEED_COIN = millis() + random(5000,30000);
-        for( int i = 0; i < NUM_CARS; ++i ) {
+        for( int i = 0; i < race.numcars; ++i ) {
           cars[i].st = CAR_ENTER;
         }
         race.phase = RACING;
@@ -217,7 +232,7 @@ void loop() {
         tck.led_speed = random( 20, tck.cfg.track.nled_aux - 20 );
       
 
-      for( int i = 0; i < NUM_CARS; ++i ) {
+      for( int i = 0; i < race.numcars; ++i ) {
         run_racecycle( &cars[i], i );
         if( cars[i].st == CAR_FINISH ) {
           race.phase = COMPLETE;
@@ -320,12 +335,12 @@ int get_relative_position( car_t* car ) {
 void print_cars_positions( car_t* cars ) {
     
     bool outallcar = true;
-    for( int i = 0; i < NUM_CARS; ++i)
+    for( int i = 0; i < race.numcars; ++i)
       outallcar &= cars[i].st == CAR_WAITING;
     
     if ( outallcar ) return;
     
-    for( int i = 0; i < NUM_CARS; ++i ) {
+    for( int i = 0; i < race.numcars; ++i ) {
       int const rpos = get_relative_position( &cars[i] );
       sprintf( txbuff, "p%d%s%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos, EOL );
       Serial.print( txbuff );

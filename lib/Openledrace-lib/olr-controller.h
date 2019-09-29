@@ -12,10 +12,16 @@ extern "C"{
 #include <stdbool.h>
 
 
-#define PIN_P1         A0  // switch player 1 to PIN and GND
-#define PIN_P2         A2  // switch player 2 to PIN and GND
-#define PIN_VCC_ADC1   6   // switch player 1 to PIN and GND
-#define PIN_VCC_ADC2   7   // switch player 2 to PIN and GND
+
+#define DIG_CONTROL_1  A0 // switch player 1 to PIN and GND
+#define DIG_CONTROL_2  A2 // switch player 2 to PIN and GND
+#define DIG_CONTROL_3  A1 // switch player 3 to PIN and GND
+#define DIG_CONTROL_4  A3 // switch player 4 to PIN and GND
+
+#define PIN_VCC_ADC1   6  
+#define PIN_VCC_ADC2   7  
+
+
 
 enum ctr_type{
     NOT_DEFINED = 0,
@@ -42,6 +48,8 @@ byte get_controllerStatus( controller_t* ct );
 float get_controller( controller_t* ct );
 
 float get_accel ( void );
+
+bool control_isActive( int pin );
 
 
 #ifdef __cplusplus

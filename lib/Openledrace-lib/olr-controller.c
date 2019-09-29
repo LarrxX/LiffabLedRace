@@ -14,13 +14,11 @@ void setup_controller( void ) {
     digitalWrite(PIN_VCC_ADC1, HIGH);
     digitalWrite(PIN_VCC_ADC2, HIGH);
   }
-  else{
-    pinMode(PIN_P1, INPUT_PULLUP);
-    pinMode(PIN_P2, INPUT_PULLUP);
-  }
 
-  pinMode(PIN_P1, INPUT_PULLUP); //pull up in adc
-  pinMode(PIN_P2, INPUT_PULLUP);
+  pinMode( DIG_CONTROL_1, INPUT_PULLUP); //pull up in adc
+  pinMode( DIG_CONTROL_2, INPUT_PULLUP);
+  pinMode( DIG_CONTROL_3, INPUT_PULLUP);
+  pinMode( DIG_CONTROL_4, INPUT_PULLUP);
 }
 
 void init_controller( controller_t* ct, enum ctr_type mode, int pin ) {
@@ -70,5 +68,9 @@ float get_controller( controller_t* ct) {
 
 float get_accel ( void ) {
     return ACEL;
+}
+
+bool control_isActive( int pin ) {
+    return !digitalRead( pin );
 }
 
