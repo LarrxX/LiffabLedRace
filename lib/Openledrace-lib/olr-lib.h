@@ -51,8 +51,9 @@ typedef struct{
 
 typedef struct {
   struct cfgparam cfg;
-  int led_speed; //LED_SPEED_COIN
-  byte* gmap; //pointer to gravity map
+  int ledcoin;      //LED_SPEED_COIN
+  uint32_t ledtime;
+  byte* gmap;       //pointer to gravity map
 }track_t;
 
 

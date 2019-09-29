@@ -38,8 +38,6 @@
 #define COLOR4    track.Color(120,120,0)
 
 
-//int LED_SPEED_COIN  =-1;
-
 enum{
   MAX_CARS = 4,
 };
@@ -113,7 +111,6 @@ char txbuff[64];
 const int dataLength = 32;
 byte data[dataLength];
 
-unsigned long int T_SPEED_COIN;
 static unsigned long lastmillis = 0;
 
 int win_music[] = {
@@ -146,12 +143,13 @@ void init_track( track_t* tck ){
   param_load( &tck->cfg );
   tck->gmap = gravity_map;
   init_ramp( tck );
-  tck->led_speed  = -1;
+  tck->ledcoin  = -1;
 }
 
 void setup() {
 
   Serial.begin(115200);
+  randomSeed( analogRead(A0) + analogRead(A1) );
   setup_controller( );
   init_track( &tck );
   
@@ -214,7 +212,7 @@ void loop() {
 
       if( race.cfg.startline ){
         start_race( &tck );
-        T_SPEED_COIN = millis() + random(5000,30000);
+        
         for( int i = 0; i < race.numcars; ++i ) {
           cars[i].st = CAR_ENTER;
         }
@@ -226,11 +224,15 @@ void loop() {
       
       strip_clear( &tck );
       
-      if( tck.led_speed > 0 )
-        draw_coin( &tck );
-      else if( millis() > T_SPEED_COIN )
-        tck.led_speed = random( 20, tck.cfg.track.nled_aux - 20 );
+      if( tck.ledcoin == -1 ) {
+        tck.ledcoin = 0;
+        tck.ledtime = millis() + random(2000,7000);
+      }
       
+      if( tck.ledcoin > 0 )
+        draw_coin( &tck );
+      else if( millis() > tck.ledtime )
+        tck.ledcoin = random( 20, tck.cfg.track.nled_aux - 20 );
 
       for( int i = 0; i < race.numcars; ++i ) {
         run_racecycle( &cars[i], i );
@@ -252,8 +254,11 @@ void loop() {
     /* ---------------- */
     }
     else if( race.phase == COMPLETE ) {
-      if ( race.cfg.finishline )
+      if ( race.cfg.finishline ){
         winner_fx( );
+        strip_clear( &tck );
+      }
+      track.show();
       race.phase = READY;
     }
 
@@ -356,8 +361,8 @@ void start_race( track_t* tck ) {
     track.show();
     delay(2000);
     
-    track.setPixelColor(12, track.Color(0,255,0));
-    track.setPixelColor(11, track.Color(0,255,0));
+    track.setPixelColor(12, track.Color(255,0,0));
+    track.setPixelColor(11, track.Color(255,0,0));
     track.show();
     
     tone(PIN_AUDIO,400);
@@ -376,8 +381,8 @@ void start_race( track_t* tck ) {
     
     track.setPixelColor(9,  track.Color(0,0,0));
     track.setPixelColor(10, track.Color(0,0,0));
-    track.setPixelColor(8,  track.Color(255,0,0));
-    track.setPixelColor(7,  track.Color(255,0,0));
+    track.setPixelColor(8,  track.Color(0,255,0));
+    track.setPixelColor(7,  track.Color(0,255,0));
     track.show();
     
     tone(PIN_AUDIO,1200);
@@ -408,7 +413,7 @@ void strip_clear( track_t* tck ) {
 
 void draw_coin( track_t* tck ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
-    track.setPixelColor( 1 + cfg->nled_main + tck->led_speed, track.Color(0,0,250) );
+    track.setPixelColor( 1 + cfg->nled_main + tck->ledcoin, track.Color(0,0,250) );
 }
 
 void draw_win( track_t* tck, car_t* car) {
