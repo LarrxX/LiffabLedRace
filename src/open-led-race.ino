@@ -34,8 +34,8 @@
 
 #define COLOR1    track.Color(255,0,0)
 #define COLOR2    track.Color(0,255,0)
-#define COLOR3    track.Color(0,0,255)
-#define COLOR4    track.Color(120,120,0)
+#define COLOR3    track.Color(255,255,255)
+#define COLOR4    track.Color(0,0,255)
 
 
 enum{
@@ -94,6 +94,7 @@ struct race{
     bool              newcfg;
     enum phases       phase;
     byte              numcars;
+    int               winner;
 };
 
 
@@ -133,6 +134,7 @@ ack_t parseCommands(AsyncSerial &serial);
 void printdebug( const char * msg, int errlevel );
 void print_cars_positions( car_t* cars);
 void run_racecycle( void );
+void draw_winner( track_t* tck, uint32_t color);
 
 
 AsyncSerial asyncSerial(data, dataLength,
@@ -239,6 +241,7 @@ void loop() {
         run_racecycle( &cars[i], i );
         if( cars[i].st == CAR_FINISH ) {
           race.phase = COMPLETE;
+          race.winner = i;
           send_phase( race.phase );
           break;
         }
@@ -256,7 +259,8 @@ void loop() {
     }
     else if( race.phase == COMPLETE ) {
       if ( race.cfg.finishline ){
-        winner_fx( );
+        draw_winner( &tck, cars[race.winner].color );
+        sound_winner( &tck, race.winner );
         strip_clear( &tck );
       }
       track.show();
@@ -308,7 +312,6 @@ void run_racecycle( car_t *car, int i ) {
 
     if ( car->st == CAR_FINISH ){
         car->trackID = NOT_TRACK;
-        draw_win( &tck, car );
         sprintf( txbuff, "w%d%c", i + 1, EOL );
         Serial.print( txbuff );
     }
@@ -392,7 +395,7 @@ void start_race( track_t* tck ) {
 }
 
 
-void winner_fx() {
+void sound_winner( track_t* tck, int winner ) {
   int const msize = sizeof(win_music) / sizeof(int);
   for (int note = 0; note < msize; note++) {
     tone(PIN_AUDIO, win_music[note],200);
@@ -417,10 +420,13 @@ void draw_coin( track_t* tck ) {
     track.setPixelColor( 1 + cfg->nled_main + tck->ledcoin, track.Color(0,0,250) );
 }
 
-void draw_win( track_t* tck, car_t* car) {
-  int const maxled = tck->cfg.track.nled_total;
-  for(int i=0; i<maxled; ++i )
-    track.setPixelColor(i, car->color );
+void draw_winner( track_t* tck, uint32_t color) {
+  struct cfgtrack const* cfg = &tck->cfg.track;
+  for(int i=16; i < cfg->nled_main; i=i+2){
+      track.setPixelColor( i , color );
+      track.setPixelColor( i-16 ,0 );
+      track.show();
+  }
 }
 
 void draw_car( track_t* tck, car_t* car ) {
