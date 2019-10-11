@@ -111,7 +111,7 @@ static int const eeadrInfo = 0;
 
 char cmd[32];
 char txbuff[64];
-const int dataLength = 32;
+int const dataLength = 32;
 byte data[dataLength];
 
 static unsigned long lastmillis = 0;
@@ -176,18 +176,11 @@ void setup() {
 
   track.begin();
 
-  if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physic
-    set_ramp( &tck );    
-    draw_ramp( &tck );
-    track.show();
-  }
-
-  race.phase = READY;
-
   race.cfg.startline = true;
   race.cfg.nlap = 5;
   race.cfg.nrepeat = 1;
   race.cfg.finishline = true;
+  race.phase = READY;
 }
 
 
@@ -314,6 +307,7 @@ void run_racecycle( car_t *car, int i ) {
         car->trackID = NOT_TRACK;
         sprintf( txbuff, "w%d%c", i + 1, EOL );
         Serial.print( txbuff );
+        reset_carPosition( car );
     }
 }
 
@@ -476,7 +470,7 @@ ack_t parseCommands(AsyncSerial &serial) {
   }
   else if( cmd[0] == 'R' ) {
     ack.type = cmd[0];
-    const int phase = atoi( cmd + 1);
+    int const phase = atoi( cmd + 1);
     if( 0 > phase || RACE_PHASES <= phase) return ack;
     race.phase = (enum phases) phase;
     ack.rp = OK;
