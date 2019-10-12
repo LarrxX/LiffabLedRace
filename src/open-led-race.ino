@@ -32,8 +32,8 @@
 #define EOL           '\n'
 
 
-#define COLOR1    track.Color(255,0,0)
-#define COLOR2    track.Color(0,255,0)
+#define COLOR1    track.Color(0,255,0)
+#define COLOR2    track.Color(255,0,0)
 #define COLOR3    track.Color(255,255,255)
 #define COLOR4    track.Color(0,0,255)
 
