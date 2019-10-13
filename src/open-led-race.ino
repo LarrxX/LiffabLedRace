@@ -216,9 +216,15 @@ void loop() {
       send_phase( race.phase );
     }
     else if( race.phase == COUNTDOWN ) {
-
+      strip_clear( &tck );
+      if( ramp_isactive( &tck ) ){
+        draw_ramp( &tck );
+      }
+      track.show();
+      delay( 2000 );
+      
       if( race.cfg.startline ){
-        start_race( &tck );
+        start_race( );
         
         for( int i = 0; i < race.numcars; ++i ) {
           cars[i].st = CAR_ENTER;
@@ -264,6 +270,8 @@ void loop() {
     /* ---------------- */
     }
     else if( race.phase == COMPLETE ) {
+      strip_clear( &tck );
+      track.show();
       if ( race.cfg.finishline ){
         draw_winner( &tck, cars[race.winner].color );
         sound_winner( &tck, race.winner );
@@ -364,14 +372,8 @@ void print_cars_positions( car_t* cars ) {
 }
 
 
-void start_race( track_t* tck ) {
-    struct cfgtrack const* cfg = &tck->cfg.track;
-    for(int i=0; i < cfg->nled_main; i++)
-      track.setPixelColor(i,0);
+void start_race( ) {
 
-    track.show();
-    delay(2000);
-    
     track.setPixelColor(12, track.Color(255,0,0));
     track.setPixelColor(11, track.Color(255,0,0));
     track.show();
