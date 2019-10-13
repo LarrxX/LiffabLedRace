@@ -433,16 +433,18 @@ void draw_winner( track_t* tck, uint32_t color) {
   }
 }
 
+
 void draw_car( track_t* tck, car_t* car ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
+    
     switch ( car->trackID ){
       case TRACK_MAIN:
-        track.setPixelColor( ((word)car->dist % cfg->nled_main),car->color );
-        track.setPixelColor( ((word)car->dist % cfg->nled_main)+1, car->color);
+        for(int i=0; i<= car->nlap; ++i )
+          track.setPixelColor( ((word)car->dist % cfg->nled_main) + i, car->color );
       break;
       case TRACK_AUX:
-        track.setPixelColor( (word)(cfg->nled_main + car->dist_aux), car->color);
-        track.setPixelColor( (word)(cfg->nled_main + car->dist_aux)+1, car->color);
+        for(int i=0; i<= car->nlap; ++i )
+          track.setPixelColor( (word)(cfg->nled_main + car->dist_aux) + i, car->color);
       break;
     }
 }
