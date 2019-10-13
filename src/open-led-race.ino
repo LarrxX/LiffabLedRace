@@ -32,11 +32,12 @@
 #define EOL           '\n'
 
 
-#define COLOR1    track.Color(255,0,0)
-#define COLOR2    track.Color(0,255,0)
-#define COLOR3    track.Color(255,255,255)
-#define COLOR4    track.Color(0,0,255)
+#define COLOR1         track.Color(255,0,0)
+#define COLOR2         track.Color(0,255,0)
+#define COLOR3         track.Color(255,255,255)
+#define COLOR4         track.Color(0,0,255)
 
+#define COLOR_COIN     track.Color(0,255,255)
 
 enum{
   MAX_CARS = 4,
@@ -421,7 +422,7 @@ void strip_clear( track_t* tck ) {
 
 void draw_coin( track_t* tck ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
-    track.setPixelColor( 1 + cfg->nled_main + tck->ledcoin, track.Color(0,0,250) );
+    track.setPixelColor( 1 + cfg->nled_main + tck->ledcoin, COLOR_COIN );
 }
 
 void draw_winner( track_t* tck, uint32_t color) {
@@ -455,13 +456,13 @@ void draw_ramp( track_t* tck ) {
     byte intensity = 0;
     for( int i = r->init; i <= r->center; ++i ) {
       dist = r->center - r->init;
-      intensity = ( 255 * (i - r->init) ) / ( 2* dist );
-      track.setPixelColor( i, track.Color( intensity,intensity, 0 ) );
+      intensity = ( 64 * (i - r->init) ) / ( 2* dist );
+      track.setPixelColor( i, track.Color( intensity,0,intensity ) );
     }
     for( int i = r->center; i <= r->end; ++i ) {
       dist = r->end - r->center;
-      intensity = ( 255 * ( r->end - i ) ) / ( 2* dist );
-      track.setPixelColor( i, track.Color( intensity,intensity, 0 ) );
+      intensity = ( 64 * ( r->end - i ) ) / ( 2* dist );
+      track.setPixelColor( i, track.Color( intensity,0,intensity ) );
     }
 }
 
