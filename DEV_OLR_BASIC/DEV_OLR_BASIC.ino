@@ -22,7 +22,8 @@
 */
 
 
-//version Basic for PCB Rome Edition
+//version Basic for PCB Rome Edition 
+// 2 Player , without Boxes Track
                                                             
 #include <Adafruit_NeoPixel.h>
 #define MAXLED         300 // MAX LEDs actives on strip
@@ -95,7 +96,7 @@ void setup() {
   pinMode(PIN_P1,INPUT_PULLUP); 
   pinMode(PIN_P2,INPUT_PULLUP);  
 
-  if ((digitalRead(PIN_P1)==0)) //push switch 1 on reset for activate physic
+  if ((digitalRead(PIN_P1)==0)) //push switch 1 on reset for activate physics
   {
     set_ramp(12,90,100,110);    // ramp centred in LED 100 with 10 led fordward and 10 backguard 
     for(int i=0;i<NPIXELS;i++){track.setPixelColor(i, track.Color(0,0,(127-gravity_map[i])/8) );};
@@ -277,8 +278,8 @@ void loop() {
 
     
       
-    if (dist1>NPIXELS*loop1) {loop1++;/*tone(PIN_AUDIO,600);*/TBEEP=10;FBEEP=440;};
-    if (dist2>NPIXELS*loop2) {loop2++;/*tone(PIN_AUDIO,700);*/TBEEP=10;FBEEP=440*2;};
+    if (dist1>NPIXELS*loop1) {loop1++;TBEEP=10;FBEEP=440;};
+    if (dist2>NPIXELS*loop2) {loop2++;TBEEP=10;FBEEP=440*2;};
 
     if (loop1>loop_max) {Serial.println("w1");
                          for(int i=0;i<NPIXELS/10;i++){track.setPixelColor(i,track.COLOR1);}; track.show();
