@@ -32,14 +32,14 @@
 #define EOL           '\n'
 
 
-#define COLOR1    track.Color(0,255,0)
-#define COLOR2    track.Color(255,0,0)
+#define COLOR1    track.Color(255,0,0)
+#define COLOR2    track.Color(0,255,0)
 #define COLOR3    track.Color(255,255,255)
 #define COLOR4    track.Color(0,0,255)
 
 
 enum{
-  MAX_CARS = 4,
+  MAX_CARS = 2,
 };
 
 
@@ -176,6 +176,16 @@ void setup() {
 
   track.begin();
 
+  if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physic
+    set_ramp( &tck );    
+    draw_ramp( &tck );
+    track.show();
+  }
+
+  if ( digitalRead( DIG_CONTROL_2 ) == 0 ) { //push switch 2 on reset for activate box
+    track_configure( &tck, 240 );
+  }
+
   race.cfg.startline = true;
   race.cfg.nlap = 5;
   race.cfg.nrepeat = 1;
@@ -225,6 +235,9 @@ void loop() {
         tck.ledtime = millis() + random(2000,7000);
       }
       
+      if( ramp_isactive( &tck ) )
+        draw_ramp( &tck );
+
       if( tck.ledcoin > 0 )
         draw_coin( &tck );
       else if( millis() > tck.ledtime )

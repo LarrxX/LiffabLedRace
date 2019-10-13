@@ -82,7 +82,7 @@ void init_ramp( track_t* tck ) {
 }
 
 void set_ramp( track_t* tck ) {
-  struct cfgramp const* r = &tck->cfg.ramp;
+  struct cfgramp* r = &tck->cfg.ramp;
   for( int i=0; i<(r->center - r->init); i++ )
       tck->gmap[r->init+i] = 127-i*((float)r->high/(r->center - r->init));
   
@@ -90,6 +90,12 @@ void set_ramp( track_t* tck ) {
   
   for( int i=0; i<(r->end - r->center); i++ )
       tck->gmap[r->center+i+1] = 127+r->high-i*((float)r->high/(r->end-r->center));
+
+  r->enabled = true;
+}
+
+bool ramp_isactive( track_t* tck ) {
+  return tck->cfg.ramp.enabled;
 }
 
 

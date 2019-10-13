@@ -65,6 +65,8 @@ void init_ramp( track_t* tck );
 
 void set_ramp( track_t* tck );
 
+bool ramp_isactive( track_t* tck );
+
 void init_car( car_t* car, controller_t* ct, uint32_t color );
 
 void update_track( track_t* tck, car_t* car );

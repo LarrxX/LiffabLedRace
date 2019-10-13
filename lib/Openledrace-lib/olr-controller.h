@@ -13,8 +13,8 @@ extern "C"{
 
 
 
-#define DIG_CONTROL_1  A0 // switch player 1 to PIN and GND
-#define DIG_CONTROL_2  A2 // switch player 2 to PIN and GND
+#define DIG_CONTROL_1  A2 // switch player 1 to PIN and GND
+#define DIG_CONTROL_2  A0 // switch player 2 to PIN and GND
 #define DIG_CONTROL_3  A1 // switch player 3 to PIN and GND
 #define DIG_CONTROL_4  A3 // switch player 4 to PIN and GND
 

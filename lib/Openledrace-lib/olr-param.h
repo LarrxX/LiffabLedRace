@@ -35,6 +35,7 @@ struct cfgramp  {
   int center;
   int end;
   int high;
+  bool enabled;
 };
 
 struct brdinfo {
