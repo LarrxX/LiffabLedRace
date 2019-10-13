@@ -456,12 +456,12 @@ void draw_ramp( track_t* tck ) {
     byte intensity = 0;
     for( int i = r->init; i <= r->center; ++i ) {
       dist = r->center - r->init;
-      intensity = ( 64 * (i - r->init) ) / ( 2* dist );
+      intensity = ( 32 * (i - r->init) ) / dist;
       track.setPixelColor( i, track.Color( intensity,0,intensity ) );
     }
     for( int i = r->center; i <= r->end; ++i ) {
       dist = r->end - r->center;
-      intensity = ( 64 * ( r->end - i ) ) / ( 2* dist );
+      intensity = ( 32 * ( r->end - i ) ) / dist;
       track.setPixelColor( i, track.Color( intensity,0,intensity ) );
     }
 }
