@@ -39,7 +39,7 @@
 
 
 enum{
-  MAX_CARS = 2,
+  MAX_CARS = 4,
 };
 
 
@@ -104,7 +104,6 @@ enum loglevel verbose = DISABLE;
 static struct race race;
 static car_t cars[ MAX_CARS ];
 static controller_t switchs[ MAX_CARS ];
-static byte  gravity_map[ MAXLED ];
 static track_t tck;
 
 static int const eeadrInfo = 0; 
@@ -143,18 +142,14 @@ AsyncSerial asyncSerial(data, dataLength,
 
 Adafruit_NeoPixel track = Adafruit_NeoPixel( MAXLED, PIN_LED, NEO_GRB + NEO_KHZ800 );
 
-void init_track( track_t* tck ){
-  param_load( &tck->cfg );
-  tck->gmap = gravity_map;
-  init_ramp( tck );
-}
+
 
 void setup() {
 
   Serial.begin(115200);
   randomSeed( analogRead(A0) + analogRead(A1) );
   setup_controller( );
-  init_track( &tck );
+  param_load( &tck.cfg );
   
   init_car( &cars[0], &switchs[0], COLOR1 );
   init_controller( &switchs[0], DIGITAL_MODE, DIG_CONTROL_1 );
@@ -177,7 +172,7 @@ void setup() {
   track.begin();
 
   if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physic
-    set_ramp( &tck );    
+    init_ramp( &tck );    
     draw_ramp( &tck );
     track.show();
   }
@@ -453,9 +448,19 @@ void draw_car( track_t* tck, car_t* car ) {
 }
 
 void draw_ramp( track_t* tck ) {
-    struct cfgtrack const* cfg = &tck->cfg.track;
-  for(int i=0; i< cfg->nled_main; i++)
-    track.setPixelColor(i, track.Color(0,0,(127-tck->gmap[i])/8) );
+    struct cfgramp const* r = &tck->cfg.ramp;
+    byte dist = 0;
+    byte intensity = 0;
+    for( int i = r->init; i <= r->center; ++i ) {
+      dist = r->center - r->init;
+      intensity = ( 255 * (i - r->init) ) / ( 2* dist );
+      track.setPixelColor( i, track.Color( intensity,intensity, 0 ) );
+    }
+    for( int i = r->center; i <= r->end; ++i ) {
+      dist = r->end - r->center;
+      intensity = ( 255 * ( r->end - i ) ) / ( 2* dist );
+      track.setPixelColor( i, track.Color( intensity,intensity, 0 ) );
+    }
 }
 
 
@@ -576,7 +581,7 @@ ack_t parseCommands(AsyncSerial &serial) {
     if( err ) return ack;
     EEPROM.put( eeadrInfo, tck.cfg );
     
-    set_ramp( &tck );
+    init_ramp( &tck );
     ack.rp = OK;
     if ( verbose >= DEBUG ) { //VERBOSE
       struct cfgramp const* cfg = &tck.cfg.ramp;

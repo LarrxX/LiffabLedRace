@@ -62,40 +62,28 @@ void process_aux_track( track_t* tck, car_t* car ){
 
 void process_main_track( track_t* tck, car_t* car ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
-    const int nled = cfg->nled_main;
-    const byte* gmap = tck->gmap;
-    if ( gmap[(word)car->dist % nled] < 127 )
-        car->speed -= cfg->kg*(127-( gmap[(word)car->dist % nled]) );
-    if ( gmap[(word)car->dist % nled] > 127 )
-        car->speed += cfg->kg*(( gmap[(word)car->dist % nled])-127 ); 
+    
+    if ( tck->rampactive ) { 
+        struct cfgramp const* r = &tck->cfg.ramp;
+        int const pos = (int)car->dist % cfg->nled_main;
+        if ( pos >= r->init && pos < r->center )
+            car->speed -= cfg->kg * r->high * ( pos - r->init );
+        
+        if ( pos <= r->end && pos > r->center )
+            car->speed += cfg->kg * r->high * ( pos - r->center ); 
+    }
 
     car->speed -= car->speed * cfg->kf;
     car->dist += car->speed;
 }
 
 void init_ramp( track_t* tck ) {
-    struct cfgtrack const* cfg = &tck->cfg.track;
-    byte* gmap = tck->gmap;
-    for( int i=0; i<cfg->nled_main; i++ ) { 
-        gmap[i] = 127; 
-    }
+  tck->rampactive = true;
 }
 
-void set_ramp( track_t* tck ) {
-  struct cfgramp* r = &tck->cfg.ramp;
-  for( int i=0; i<(r->center - r->init); i++ )
-      tck->gmap[r->init+i] = 127-i*((float)r->high/(r->center - r->init));
-  
-  tck->gmap[r->center] = 127;
-  
-  for( int i=0; i<(r->end - r->center); i++ )
-      tck->gmap[r->center+i+1] = 127+r->high-i*((float)r->high/(r->end-r->center));
-
-  r->enabled = true;
-}
 
 bool ramp_isactive( track_t* tck ) {
-  return tck->cfg.ramp.enabled;
+  return tck->rampactive;
 }
 
 

@@ -15,7 +15,7 @@ extern "C"{
 
 enum{
   LEN_UID = 16,
-  CFG_VER = 2,
+  CFG_VER = 3,
 };
 
 
@@ -35,7 +35,6 @@ struct cfgramp  {
   int center;
   int end;
   int high;
-  bool enabled;
 };
 
 struct brdinfo {
