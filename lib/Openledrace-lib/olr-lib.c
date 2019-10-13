@@ -25,7 +25,8 @@ void update_track( track_t* tck, car_t* car ) {
 
   if ( car->trackID == TRACK_MAIN 
       &&  (int)car->dist % cfg->nled_main == cfg->init_aux 
-      &&  get_controllerStatus( ct ) == 0 ) {
+     // &&  get_controllerStatus( ct ) == 0 ) {          //change track by switch push   
+      &&  (car->speed <= SPD_MIN_TRACK_AUX )) {          //change track by low speed          
         
         car->trackID = TRACK_AUX;
         car->dist_aux = 0;
