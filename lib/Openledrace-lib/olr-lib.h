@@ -1,4 +1,3 @@
-
 #ifndef _OLR_LIB_h
 #define _OLR_LIB_h                   
 
@@ -12,6 +11,8 @@ extern "C"{
 #include <stdbool.h>
 #include "olr-controller.h"
 #include "olr-param.h"
+
+#define SPD_MIN_TRACK_AUX       0.8
 
 enum stcoin{ 
   COIN_RESET = -2,
