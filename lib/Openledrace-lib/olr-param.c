@@ -3,9 +3,9 @@
 void param_setdefault( struct cfgparam* cfg ) {
     cfg->setted      = true;
 
-    cfg->ramp.init   = 90;
-    cfg->ramp.center = 100;
-    cfg->ramp.end    = 110;
+    cfg->ramp.init   = 80;
+    cfg->ramp.center = 90;
+    cfg->ramp.end    = 100;
     cfg->ramp.high   = 2;
 
     cfg->track.nled_total = MAXLED;
