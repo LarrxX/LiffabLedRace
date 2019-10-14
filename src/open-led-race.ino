@@ -377,13 +377,13 @@ void start_race( ) {
     delay(2000);
     noTone(PIN_AUDIO);    
     track.setPixelColor(LED_SEMAPHORE, track.Color(0,0,0));  
-    track.setPixelColor(LED_SEMAPHORE+1, track.Color(255,255,0));   
+    track.setPixelColor(LED_SEMAPHORE-1, track.Color(255,255,0));   
     track.show();    
     tone(PIN_AUDIO,600);
     delay(2000);
     noTone(PIN_AUDIO);    
-    track.setPixelColor(LED_SEMAPHORE+1, track.Color(0,0,0)); 
-    track.setPixelColor(LED_SEMAPHORE+2,  track.Color(0,255,0));
+    track.setPixelColor(LED_SEMAPHORE-1, track.Color(0,0,0)); 
+    track.setPixelColor(LED_SEMAPHORE-2,  track.Color(0,255,0));
     track.show();    
     tone(PIN_AUDIO,1200);
     delay(2000);
