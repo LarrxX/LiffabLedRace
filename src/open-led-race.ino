@@ -435,7 +435,7 @@ void draw_car( track_t* tck, car_t* car ) {
       break;
       case TRACK_AUX:
         for(int i=0; i<= car->nlap; ++i )     
-          track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) - i, car->color);         
+          track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color);         
       break;
     }
 }
