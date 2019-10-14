@@ -23,10 +23,10 @@ void update_track( track_t* tck, car_t* car ) {
   controller_t* ct = car->ct;
   struct cfgtrack const* cfg = &tck->cfg.track;
 
-  if ( car->trackID == TRACK_MAIN 
-      &&  (int)car->dist % cfg->nled_main == cfg->init_aux 
-     // &&  get_controllerStatus( ct ) == 0 ) {          //change track by switch push   
-      &&  (car->speed <= SPD_MIN_TRACK_AUX )) {          //change track by low speed          
+  if ( car->trackID == TRACK_MAIN    
+       &&  (int)car->dist % cfg->nled_main == (cfg->init_aux-(cfg->nled_aux)) 
+    //  &&  get_controllerStatus( ct ) == 0 ) {              //change track by switch
+      &&  (car->speed <= SPD_MIN_TRACK_AUX )) {              //change track by low speed
         
         car->trackID = TRACK_AUX;
         car->dist_aux = 0;
@@ -35,7 +35,7 @@ void update_track( track_t* tck, car_t* car ) {
       && car->dist_aux > cfg->nled_aux ) {
 
         car->trackID = TRACK_MAIN;
-        car->dist += cfg->nled_aux;
+        car->dist += cfg->nled_aux;         
   }
 
   /* Update car position in the current track */
@@ -49,9 +49,8 @@ void update_track( track_t* tck, car_t* car ) {
 void process_aux_track( track_t* tck, car_t* car ){
     struct cfgtrack const* cfg = &tck->cfg.track;
 
-    if (  (int)car->dist_aux == tck->ledcoin
-          && car->speed <= get_accel() ) {
-          
+    if (  (int)car->dist_aux == tck->ledcoin 
+          && car->speed <= get_accel() ) {                      
         car->speed = get_accel ()*10;
         tck->ledcoin = COIN_RESET;
     };

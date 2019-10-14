@@ -29,7 +29,7 @@
 
 #define PIN_LED        2  // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_AUDIO      3   // through CAP 2uf to speaker 8 ohms
-#define EOL           '\n'
+#define EOL            '\n'
 
 
 #define COLOR1         track.Color(255,0,0)
@@ -37,7 +37,10 @@
 #define COLOR3         track.Color(255,255,255)
 #define COLOR4         track.Color(0,0,255)
 
+#define COLOR_RAMP     track.Color(64,0,64)
 #define COLOR_COIN     track.Color(0,255,255)
+#define LED_SEMAPHORE  12 
+
 
 enum{
   MAX_CARS = 4,
@@ -148,7 +151,7 @@ Adafruit_NeoPixel track = Adafruit_NeoPixel( MAXLED, PIN_LED, NEO_GRB + NEO_KHZ8
 void setup() {
 
   Serial.begin(115200);
-  randomSeed( analogRead(A0) + analogRead(A1) );
+  randomSeed( analogRead(A6) + analogRead(A7) );
   setup_controller( );
   param_load( &tck.cfg );
   
@@ -172,13 +175,13 @@ void setup() {
 
   track.begin();
 
-  if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physic
+  if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physics
     init_ramp( &tck );    
     draw_ramp( &tck );
     track.show();
   }
 
-  if ( digitalRead( DIG_CONTROL_2 ) == 0 ) { //push switch 2 on reset for activate box
+  if ( digitalRead( DIG_CONTROL_2 ) == 0 ) { //push switch 2 on reset for activate boxes
     track_configure( &tck, 240 );
   }
 
@@ -367,33 +370,21 @@ void print_cars_positions( car_t* cars ) {
     }
 }
 
-
 void start_race( ) {
-
-    track.setPixelColor(12, track.Color(255,0,0));
-    track.setPixelColor(11, track.Color(255,0,0));
-    track.show();
-    
+    track.setPixelColor(LED_SEMAPHORE, track.Color(255,0,0));   
+    track.show();    
     tone(PIN_AUDIO,400);
     delay(2000);
-    noTone(PIN_AUDIO);
-    
-    track.setPixelColor(12, track.Color(0,0,0));
-    track.setPixelColor(11, track.Color(0,0,0));
-    track.setPixelColor(10, track.Color(255,255,0));
-    track.setPixelColor(9,  track.Color(255,255,0));
-    track.show();
-    
+    noTone(PIN_AUDIO);    
+    track.setPixelColor(LED_SEMAPHORE, track.Color(0,0,0));  
+    track.setPixelColor(LED_SEMAPHORE+1, track.Color(255,255,0));   
+    track.show();    
     tone(PIN_AUDIO,600);
     delay(2000);
-    noTone(PIN_AUDIO);
-    
-    track.setPixelColor(9,  track.Color(0,0,0));
-    track.setPixelColor(10, track.Color(0,0,0));
-    track.setPixelColor(8,  track.Color(0,255,0));
-    track.setPixelColor(7,  track.Color(0,255,0));
-    track.show();
-    
+    noTone(PIN_AUDIO);    
+    track.setPixelColor(LED_SEMAPHORE+1, track.Color(0,0,0)); 
+    track.setPixelColor(LED_SEMAPHORE+2,  track.Color(0,255,0));
+    track.show();    
     tone(PIN_AUDIO,1200);
     delay(2000);
     noTone(PIN_AUDIO); 
@@ -422,7 +413,7 @@ void strip_clear( track_t* tck ) {
 
 void draw_coin( track_t* tck ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
-    track.setPixelColor( 1 + cfg->nled_main + tck->ledcoin, COLOR_COIN );
+    track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,COLOR_COIN );
 }
 
 void draw_winner( track_t* tck, uint32_t color) {
@@ -434,7 +425,6 @@ void draw_winner( track_t* tck, uint32_t color) {
   }
 }
 
-
 void draw_car( track_t* tck, car_t* car ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
     
@@ -444,8 +434,8 @@ void draw_car( track_t* tck, car_t* car ) {
           track.setPixelColor( ((word)car->dist % cfg->nled_main) + i, car->color );
       break;
       case TRACK_AUX:
-        for(int i=0; i<= car->nlap; ++i )
-          track.setPixelColor( (word)(cfg->nled_main + car->dist_aux) + i, car->color);
+        for(int i=0; i<= car->nlap; ++i )     
+          track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) - i, car->color);         
       break;
     }
 }

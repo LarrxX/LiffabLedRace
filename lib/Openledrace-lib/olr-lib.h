@@ -1,3 +1,4 @@
+
 #ifndef _OLR_LIB_h
 #define _OLR_LIB_h                   
 
@@ -85,4 +86,3 @@ int track_cfgramp( track_t* tck, int center, int high );
 #endif
 
 #endif
-
