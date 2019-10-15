@@ -39,17 +39,17 @@ typedef struct{
     byte flag_sw;
 }controller_t;    
 
-void setup_controller( void );
+void controller_setup( void );
 
-void init_controller( controller_t* ct, enum ctr_type mode, int pin );
+void controller_init( controller_t* ct, enum ctr_type mode, int pin );
 
-byte get_controllerStatus( controller_t* ct );
+byte controller_getStatus( controller_t* ct );
 
-float get_controller( controller_t* ct );
+float controller_getSpeed( controller_t* ct );
 
-float get_accel ( void );
+float controller_getAccel ( void );
 
-bool control_isActive( int pin );
+bool controller_isActive( int pin );
 
 
 #ifdef __cplusplus

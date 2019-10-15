@@ -152,37 +152,38 @@ void setup() {
 
   Serial.begin(115200);
   randomSeed( analogRead(A6) + analogRead(A7) );
-  setup_controller( );
+  controller_setup( );
   param_load( &tck.cfg );
   
-  init_car( &cars[0], &switchs[0], COLOR1 );
-  init_controller( &switchs[0], DIGITAL_MODE, DIG_CONTROL_1 );
-  init_car( &cars[1], &switchs[1], COLOR2 );
-  init_controller( &switchs[1], DIGITAL_MODE, DIG_CONTROL_2 );
+  car_init( &cars[0], &switchs[0], COLOR1 );
+  controller_init( &switchs[0], DIGITAL_MODE, DIG_CONTROL_1 );
+  car_init( &cars[1], &switchs[1], COLOR2 );
+  controller_init( &switchs[1], DIGITAL_MODE, DIG_CONTROL_2 );
   race.numcars = 2;
 
-  if( control_isActive( DIG_CONTROL_3 )) {
-    init_car( &cars[2], &switchs[2], COLOR3 );
-    init_controller( &switchs[2], DIGITAL_MODE, DIG_CONTROL_3 );
+  if( controller_isActive( DIG_CONTROL_3 )) {
+    car_init( &cars[2], &switchs[2], COLOR3 );
+    controller_init( &switchs[2], DIGITAL_MODE, DIG_CONTROL_3 );
     ++race.numcars;
   }
 
-  if( control_isActive( DIG_CONTROL_4 )) {
-    init_car( &cars[3], &switchs[3], COLOR4 );
-    init_controller( &switchs[3], DIGITAL_MODE, DIG_CONTROL_4 );
+  if( controller_isActive( DIG_CONTROL_4 )) {
+    car_init( &cars[3], &switchs[3], COLOR4 );
+    controller_init( &switchs[3], DIGITAL_MODE, DIG_CONTROL_4 );
     ++race.numcars;
   }
 
   track.begin();
 
   if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physics
-    init_ramp( &tck );    
+    ramp_init( &tck );    
     draw_ramp( &tck );
     track.show();
   }
 
   if ( digitalRead( DIG_CONTROL_2 ) == 0 ) { //push switch 2 on reset for activate boxes
-    track_configure( &tck, 240 );
+    box_init( &tck );
+    box_configure( &tck, 240 );
   }
 
   race.cfg.startline = true;
@@ -207,7 +208,7 @@ void loop() {
     else if ( race.phase == READY ) {
 
       for( int i = 0; i < race.numcars; ++i) {
-        reset_carPosition( &cars[i] );  
+        car_resetPosition( &cars[i] );  
         cars[i].repeats = 0;
       }
       tck.ledcoin  = COIN_RESET;
@@ -235,18 +236,20 @@ void loop() {
     else if( race.phase == RACING ) {
       
       strip_clear( &tck ); 
-      if( tck.ledcoin == COIN_RESET ) {
-        tck.ledcoin = COIN_WAIT;
-        tck.ledtime = millis() + random(2000,7000);
+
+      if( box_isactive( &tck ) ) {
+        if( tck.ledcoin == COIN_RESET ) {
+          tck.ledcoin = COIN_WAIT;
+          tck.ledtime = millis() + random(2000,7000);
+        }
+        if( tck.ledcoin > 0 )
+          draw_coin( &tck );
+        else if( millis() > tck.ledtime )
+          tck.ledcoin = random( 20, tck.cfg.track.nled_aux - 20 );
       }
-      
+
       if( ramp_isactive( &tck ) )
         draw_ramp( &tck );
-
-      if( tck.ledcoin > 0 )
-        draw_coin( &tck );
-      else if( millis() > tck.ledtime )
-        tck.ledcoin = random( 20, tck.cfg.track.nled_aux - 20 );
 
       for( int i = 0; i < race.numcars; ++i ) {
         run_racecycle( &cars[i], i );
@@ -293,7 +296,7 @@ void run_racecycle( car_t *car, int i ) {
     struct cfgtrack const* cfg = &tck.cfg.track;
     
     if( car->st == CAR_ENTER ) {
-        reset_carPosition( car );
+        car_resetPosition( car );
         if( car->repeats < race.cfg.nrepeat )
           car->st = CAR_RACING;
         else
@@ -302,7 +305,7 @@ void run_racecycle( car_t *car, int i ) {
     
     if( car->st == CAR_RACING ) {
         update_track( &tck, car );
-        update_controller( car );
+        car_updateController( car );
         draw_car( &tck, car );
 
         if( car->nlap == race.cfg.nlap 
@@ -327,7 +330,7 @@ void run_racecycle( car_t *car, int i ) {
         car->trackID = NOT_TRACK;
         sprintf( txbuff, "w%d%c", i + 1, EOL );
         Serial.print( txbuff );
-        reset_carPosition( car );
+        car_resetPosition( car );
     }
 }
 
@@ -541,7 +544,7 @@ ack_t parseCommands(AsyncSerial &serial) {
     pch = strtok (NULL, ",");
     if( !pch ) return ack;
 
-    int err = track_configure( &tck, init_aux );
+    int err = box_configure( &tck, init_aux );
     if( err ) return ack;
     EEPROM.put( eeadrInfo, tck.cfg );
 
@@ -570,11 +573,11 @@ ack_t parseCommands(AsyncSerial &serial) {
     if( !pch ) return ack;
     int high = atoi( pch );
 
-    int err = track_cfgramp( &tck, center, high );
+    int err = ramp_configure( &tck, center, high );
     if( err ) return ack;
     EEPROM.put( eeadrInfo, tck.cfg );
     
-    init_ramp( &tck );
+    ramp_init( &tck );
     ack.rp = OK;
     if ( verbose >= DEBUG ) { //VERBOSE
       struct cfgramp const* cfg = &tck.cfg.ramp;

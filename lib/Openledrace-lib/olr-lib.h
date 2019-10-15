@@ -60,26 +60,30 @@ typedef struct {
   int ledcoin;      //LED_SPEED_COIN
   uint32_t ledtime;
   bool rampactive;
+  bool boxactive;
 }track_t;
 
 
-void init_ramp( track_t* tck );
+void car_init( car_t* car, controller_t* ct, uint32_t color );
 
-void set_ramp( track_t* tck );
+void car_updateController( car_t* car );
 
-bool ramp_isactive( track_t* tck );
-
-void init_car( car_t* car, controller_t* ct, uint32_t color );
+void car_resetPosition( car_t* car);
 
 void update_track( track_t* tck, car_t* car );
 
-void update_controller( car_t* car );
+void box_init( track_t* tck );
 
-void reset_carPosition( car_t* car);
+bool box_isactive( track_t* tck );
 
-int track_configure( track_t* tck, int init_box );
+int  box_configure( track_t* tck, int init_box );
 
-int track_cfgramp( track_t* tck, int center, int high );
+void ramp_init( track_t* tck );
+
+bool ramp_isactive( track_t* tck );
+
+int  ramp_configure( track_t* tck, int center, int high );
+
 
 #ifdef __cplusplus
 } // extern "C"

@@ -6,7 +6,7 @@
 void process_main_track( track_t* tck, car_t* car );
 void process_aux_track( track_t* tck, car_t* car );
 
-void init_car( car_t* car, controller_t* ct, uint32_t color ) {
+void car_init( car_t* car, controller_t* ct, uint32_t color ) {
   car->ct = ct;
   car->color = color;
   car->trackID = TRACK_MAIN;
@@ -15,8 +15,8 @@ void init_car( car_t* car, controller_t* ct, uint32_t color ) {
   car->dist_aux=0;
 }
 
-void update_controller( car_t* car ) {
-    car->speed += get_controller( car->ct ); 
+void car_updateController( car_t* car ) {
+    car->speed += controller_getSpeed( car->ct ); 
 }
 
 void update_track( track_t* tck, car_t* car ) {
@@ -25,7 +25,7 @@ void update_track( track_t* tck, car_t* car ) {
 
   if ( car->trackID == TRACK_MAIN    
        &&  (int)car->dist % cfg->nled_main == (cfg->init_aux-(cfg->nled_aux)) 
-    //  &&  get_controllerStatus( ct ) == 0 ) {              //change track by switch
+    //  &&  controller_getStatus( ct ) == 0 ) {              //change track by switch
       &&  (car->speed <= SPD_MIN_TRACK_AUX )) {              //change track by low speed
         
         car->trackID = TRACK_AUX;
@@ -50,8 +50,8 @@ void process_aux_track( track_t* tck, car_t* car ){
     struct cfgtrack const* cfg = &tck->cfg.track;
 
     if (  (int)car->dist_aux == tck->ledcoin 
-          && car->speed <= get_accel() ) {                      
-        car->speed = get_accel ()*10;
+          && car->speed <= controller_getAccel() ) {                      
+        car->speed = controller_getAccel ()*10;
         tck->ledcoin = COIN_RESET;
     };
 
@@ -77,7 +77,7 @@ void process_main_track( track_t* tck, car_t* car ) {
     car->dist += car->speed;
 }
 
-void init_ramp( track_t* tck ) {
+void ramp_init( track_t* tck ) {
   tck->rampactive = true;
 }
 
@@ -87,7 +87,7 @@ bool ramp_isactive( track_t* tck ) {
 }
 
 
-void reset_carPosition( car_t* car) {
+void car_resetPosition( car_t* car) {
 
   car->trackID = TRACK_MAIN;
   car->speed = 0;
@@ -97,7 +97,15 @@ void reset_carPosition( car_t* car) {
   car->leaving = false;
 }
 
-int track_configure( track_t* tck, int init_box ) {
+void box_init( track_t* tck ) {
+  tck->rampactive = true;
+}
+
+bool box_isactive( track_t* tck ) {
+  return tck->rampactive;
+}
+
+int box_configure( track_t* tck, int init_box ) {
   struct cfgtrack* cfg = &tck->cfg.track;
   if( init_box >= cfg->nled_main ) return -1;
   cfg->nled_main = ( init_box == 0 ) ? cfg->nled_total : init_box;
@@ -106,7 +114,7 @@ int track_configure( track_t* tck, int init_box ) {
   return 0;
 }
 
-int track_cfgramp( track_t* tck, int center, int high ) {
+int ramp_configure( track_t* tck, int center, int high ) {
   struct cfgramp* ramp = &tck->cfg.ramp;
 
   if ( center >= tck->cfg.track.nled_main || center <= 0 ) return -1;
@@ -114,3 +122,4 @@ int track_cfgramp( track_t* tck, int center, int high ) {
   ramp->high = high;
   return 0;
 }
+
