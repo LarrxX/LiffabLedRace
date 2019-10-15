@@ -547,7 +547,8 @@ ack_t parseCommands(AsyncSerial &serial) {
     int err = box_configure( &tck, init_aux );
     if( err ) return ack;
     EEPROM.put( eeadrInfo, tck.cfg );
-
+    
+    box_init( &tck );
     ack.rp = OK;
     if ( verbose >= DEBUG ) { //VERBOSE
       struct cfgtrack const* cfg = &tck.cfg.track;
