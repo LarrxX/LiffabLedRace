@@ -98,9 +98,12 @@ struct race{
     bool              newcfg;
     enum phases       phase;
     byte              numcars;
-    int               winner;
+    int               winner; 
 };
 
+byte SMOTOR=0;
+int TBEEP=0;
+int FBEEP=0;
 
 /*------------------------------------------------------*/
 enum loglevel verbose = DISABLE;
@@ -125,7 +128,7 @@ int win_music[] = {
   3136
 };
 
-int TBEEP=3;
+//int TBEEP=3;
 
 char const version[] = "0.9";
 char tracksID[ NUM_TRACKS ][2] ={"U","M","B","I","O"};
@@ -179,6 +182,10 @@ void setup() {
     ramp_init( &tck );    
     draw_ramp( &tck );
     track.show();
+    delay(1000);
+    if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //retain push switch  on reset for activate FX sound
+                                              SMOTOR=1;
+                                              tone(PIN_AUDIO,100);}
   }
 
   if ( digitalRead( DIG_CONTROL_2 ) == 0 ) { //push switch 2 on reset for activate boxes
@@ -262,6 +269,8 @@ void loop() {
       }
 
       track.show();
+      if (SMOTOR==1) tone(PIN_AUDIO,FBEEP+int(cars[0].speed*440*1)+int(cars[1].speed*440*2)+int(cars[2].speed*440*3)+int(cars[3].speed*440*4));
+      if (TBEEP>0) {TBEEP--;} else {FBEEP=0;};
 
     /* Print p command!!! */
       unsigned long nowmillis = millis();
