@@ -1,0 +1,19 @@
+Revisions history
+-----------------
+
+    * 2020-07-16: Ver 0.9.c - Luca
+       - Changes in [I/O Pin]<>[Car Color] association to match
+         the desired Phisical Buttons Layout (Quick Start Guide)
+       - Box/Pitlane
+         - Entry/exit point marked to help put in place led strip (circuit shape)
+         - Coin "Boost" scaled up to make "catch it" worth (almost always win the race)
+       - Minor bugfix:
+         - box_init(), box_isactive() use wrong var "rampactive"
+ 
+    * 2020-07-16: Ver 0.9.b - Gerardo
+       - Sound FX added  
+
+    * 2019-10-10 - Ver 0.9.a
+       -First public Version by Angel Maldonado (Maker Faire Roma 2019)
+
+ 

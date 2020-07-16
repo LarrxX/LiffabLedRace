@@ -51,7 +51,7 @@ void process_aux_track( track_t* tck, car_t* car ){
 
     if (  (int)car->dist_aux == tck->ledcoin 
           && car->speed <= controller_getAccel() ) {                      
-        car->speed = controller_getAccel ()*10;
+        car->speed = controller_getAccel ()*50;
         tck->ledcoin = COIN_RESET;
     };
 
@@ -98,11 +98,11 @@ void car_resetPosition( car_t* car) {
 }
 
 void box_init( track_t* tck ) {
-  tck->rampactive = true;
+  tck->boxactive = true;
 }
 
 bool box_isactive( track_t* tck ) {
-  return tck->rampactive;
+  return tck->boxactive;
 }
 
 int box_configure( track_t* tck, int init_box ) {
@@ -122,4 +122,3 @@ int ramp_configure( track_t* tck, int center, int high ) {
   ramp->high = high;
   return 0;
 }
-

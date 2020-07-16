@@ -15,11 +15,29 @@
  the Free Software Foundation; either version 3 of the License, or
  (at your option) any later version.
 
- by gbarbarov@singulardevices.com  for Arduino day Seville 2019
 
- Code made dirty and fast, next improvements in:
- https://github.com/gbarbarov/led-race
+ First public version by:
+    Angel Maldonado (https://gitlab.com/angeljmc) 
+
+  Basen on original idea and 2 players code by: 
+    gbarbarov@singulardevices.com  for Arduino day Seville 2019
+    https://github.com/gbarbarov/led-race
+
+    
+ Public Repository for this code:
+   https://gitlab.com/open-led-race/olr-arduino
+
+
+  2020/07/16 - Ver 0.9.c
+   --see changelog.txt
+
+ 
+ 
 */
+
+char const version[] = "0.9.c";
+
+
 
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
@@ -34,11 +52,12 @@
 
 #define COLOR1         track.Color(255,0,0)
 #define COLOR2         track.Color(0,255,0)
-#define COLOR3         track.Color(255,255,255)
-#define COLOR4         track.Color(0,0,255)
+#define COLOR3         track.Color(0,0,255)
+#define COLOR4         track.Color(255,255,255)
 
 #define COLOR_RAMP     track.Color(64,0,64)
 #define COLOR_COIN     track.Color(0,255,255)
+#define COLOR_BOXMARKS track.Color(64,64,0)
 #define LED_SEMAPHORE  12 
 
 
@@ -130,7 +149,6 @@ int win_music[] = {
 
 //int TBEEP=3;
 
-char const version[] = "0.9";
 char tracksID[ NUM_TRACKS ][2] ={"U","M","B","I","O"};
 
 /*  ----------- Function prototypes ------------------- */
@@ -150,6 +168,7 @@ AsyncSerial asyncSerial(data, dataLength,
 Adafruit_NeoPixel track = Adafruit_NeoPixel( MAXLED, PIN_LED, NEO_GRB + NEO_KHZ800 );
 
 
+char tmpmsg [20];
 
 void setup() {
 
@@ -157,41 +176,45 @@ void setup() {
   randomSeed( analogRead(A6) + analogRead(A7) );
   controller_setup( );
   param_load( &tck.cfg );
-  
-  car_init( &cars[0], &switchs[0], COLOR1 );
+
   controller_init( &switchs[0], DIGITAL_MODE, DIG_CONTROL_1 );
-  car_init( &cars[1], &switchs[1], COLOR2 );
+  car_init( &cars[0], &switchs[0], COLOR1 );
   controller_init( &switchs[1], DIGITAL_MODE, DIG_CONTROL_2 );
+  car_init( &cars[1], &switchs[1], COLOR2 );
+
   race.numcars = 2;
 
   if( controller_isActive( DIG_CONTROL_3 )) {
-    car_init( &cars[2], &switchs[2], COLOR3 );
     controller_init( &switchs[2], DIGITAL_MODE, DIG_CONTROL_3 );
+    car_init( &cars[2], &switchs[2], COLOR3 );
     ++race.numcars;
   }
 
   if( controller_isActive( DIG_CONTROL_4 )) {
-    car_init( &cars[3], &switchs[3], COLOR4 );
     controller_init( &switchs[3], DIGITAL_MODE, DIG_CONTROL_4 );
+    car_init( &cars[3], &switchs[3], COLOR4 );
     ++race.numcars;
   }
 
   track.begin();
 
+  // Check Box before Physic/Sound to allow user to have Box and Physics with no sound
+  if ( digitalRead( DIG_CONTROL_2 ) == 0 ) { //push switch 2 on reset for activate boxes (pit lane)
+    box_init( &tck );
+    box_configure( &tck, 240 );
+  }
+
   if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physics
     ramp_init( &tck );    
     draw_ramp( &tck );
     track.show();
-    delay(1000);
+    delay(2000);
     if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //retain push switch  on reset for activate FX sound
                                               SMOTOR=1;
                                               tone(PIN_AUDIO,100);}
   }
 
-  if ( digitalRead( DIG_CONTROL_2 ) == 0 ) { //push switch 2 on reset for activate boxes
-    box_init( &tck );
-    box_configure( &tck, 240 );
-  }
+
 
   race.cfg.startline = true;
   race.cfg.nlap = 5;
@@ -227,6 +250,9 @@ void loop() {
       if( ramp_isactive( &tck ) ){
         draw_ramp( &tck );
       }
+      if( box_isactive( &tck ) ) {
+        draw_box_entrypoint( &tck );
+      }
       track.show();
       delay( 2000 );
       
@@ -257,7 +283,7 @@ void loop() {
 
       if( ramp_isactive( &tck ) )
         draw_ramp( &tck );
-
+        
       for( int i = 0; i < race.numcars; ++i ) {
         run_racecycle( &cars[i], i );
         if( cars[i].st == CAR_FINISH ) {
@@ -467,6 +493,15 @@ void draw_ramp( track_t* tck ) {
       track.setPixelColor( i, track.Color( intensity,0,intensity ) );
     }
 }
+
+
+void draw_box_entrypoint( track_t* tck ) {
+    struct cfgtrack const* cfg = &tck->cfg.track;
+    track.setPixelColor(cfg->init_aux ,COLOR_BOXMARKS ); // Pit lane exit (race start)
+    track.setPixelColor(cfg->init_aux - cfg->nled_aux + 1  ,COLOR_BOXMARKS ); // Pit lane Entrance
+}
+
+
 
 
 void printdebug( const char * msg, int errlevel ) {
