@@ -18,24 +18,22 @@
 
  First public version by:
     Angel Maldonado (https://gitlab.com/angeljmc) 
+    Gerardo Barbarov (gbarbarov AT singulardevices DOT com)  
 
   Basen on original idea and 2 players code by: 
-    gbarbarov@singulardevices.com  for Arduino day Seville 2019
+    Gerardo Barbarov  for Arduino day Seville 2019
     https://github.com/gbarbarov/led-race
 
     
  Public Repository for this code:
    https://gitlab.com/open-led-race/olr-arduino
 
-
-  2020/07/16 - Ver 0.9.c
-   --see changelog.txt
-
- 
- 
 */
 
-char const version[] = "0.9.c";
+ 
+// 2020/07/29 - Ver 0.9.d
+//   --see changelog.txt
+char const version[] = "0.9.d";
 
 
 
@@ -87,12 +85,6 @@ typedef struct ack{
 }ack_t;
 
 
-struct cfgrace{
-    bool startline;
-    int  nlap;
-    int  nrepeat;
-    bool finishline;
-};
 
 struct cfgcircuit{
     int outtunnel;
@@ -165,7 +157,8 @@ AsyncSerial asyncSerial(data, dataLength,
 	[](AsyncSerial& sender) { ack_t ack = parseCommands( sender ); sendresponse( &ack ); }
 );
 
-Adafruit_NeoPixel track = Adafruit_NeoPixel( MAXLED, PIN_LED, NEO_GRB + NEO_KHZ800 );
+//Adafruit_NeoPixel track = Adafruit_NeoPixel( MAXLED, PIN_LED, NEO_GRB + NEO_KHZ800 );
+Adafruit_NeoPixel track;
 
 
 char tmpmsg [20];
@@ -176,6 +169,8 @@ void setup() {
   randomSeed( analogRead(A6) + analogRead(A7) );
   controller_setup( );
   param_load( &tck.cfg );
+
+  track = Adafruit_NeoPixel( tck.cfg.track.nled_total, PIN_LED, NEO_GRB + NEO_KHZ800 );
 
   controller_init( &switchs[0], DIGITAL_MODE, DIG_CONTROL_1 );
   car_init( &cars[0], &switchs[0], COLOR1 );
@@ -201,7 +196,11 @@ void setup() {
   // Check Box before Physic/Sound to allow user to have Box and Physics with no sound
   if ( digitalRead( DIG_CONTROL_2 ) == 0 ) { //push switch 2 on reset for activate boxes (pit lane)
     box_init( &tck );
-    box_configure( &tck, 240 );
+    //box_configure( &tck, 240 );
+    //box_configure( &tck, MAXLED - BOXLEN );
+    track_configure( &tck, tck.cfg.track.nled_total - tck.cfg.track.box_len );
+  } else{
+    track_configure( &tck, 0 );
   }
 
   if ( digitalRead( DIG_CONTROL_1 ) == 0 ) { //push switch 1 on reset for activate physics
@@ -215,11 +214,11 @@ void setup() {
   }
 
 
+  race.cfg.startline  = tck.cfg.race.startline;// true;
+  race.cfg.nlap       = tck.cfg.race.nlap;// NUMLAP; 
+  race.cfg.nrepeat    = tck.cfg.race.nrepeat;// 1;
+  race.cfg.finishline = tck.cfg.race.finishline;// true;
 
-  race.cfg.startline = true;
-  race.cfg.nlap = 5;
-  race.cfg.nrepeat = 1;
-  race.cfg.finishline = true;
   race.phase = READY;
 }
 
@@ -456,7 +455,7 @@ void draw_coin( track_t* tck ) {
 
 void draw_winner( track_t* tck, uint32_t color) {
   struct cfgtrack const* cfg = &tck->cfg.track;
-  for(int i=16; i < cfg->nled_main; i=i+2){
+  for(int i=16; i < cfg->nled_main; i=i+(8 * cfg->nled_main / 300 )){
       track.setPixelColor( i , color );
       track.setPixelColor( i-16 ,0 );
       track.show();
@@ -541,7 +540,6 @@ ack_t parseCommands(AsyncSerial &serial) {
     }
   }
   else if( cmd[0] == 'C' ) { //Parse race configuration -> C1.2.3.0
-    struct cfgrace cfg;
     ack.type = cmd[0];
 
     char * pch = strtok (cmd,"C");
@@ -549,21 +547,33 @@ ack_t parseCommands(AsyncSerial &serial) {
 
     pch = strtok (pch, "," );
     if( !pch ) return ack;
-    cfg.startline = atoi( pch );
+    //cfg.startline = atoi( pch );
+    int startline = atoi( pch );
 
     pch = strtok (NULL, ",");
     if( !pch ) return ack;
-    cfg.nlap = atoi( pch );
+    //cfg.nlap = atoi( pch );
+    int nlap = atoi( pch );
 
     pch = strtok (NULL, ",");
     if( !pch ) return ack;
-    cfg.nrepeat = atoi( pch );
+    //cfg.nrepeat = atoi( pch );
+    int nrepeat = atoi( pch );
 
     pch = strtok (NULL, ",");
     if( !pch ) return ack;
-    cfg.finishline = atoi( pch );
+    //cfg.finishline = atoi( pch );
+    int finishline = atoi( pch );
 
-    race.cfg = cfg;
+    int err = race_configure( &tck, startline, nlap, nrepeat, finishline);
+    if( err ) return ack;
+    EEPROM.put( eeadrInfo, tck.cfg );
+
+    race.cfg.startline  = tck.cfg.race.startline;
+    race.cfg.nlap       = tck.cfg.race.nlap;
+    race.cfg.nrepeat    = tck.cfg.race.nrepeat;
+    race.cfg.finishline = tck.cfg.race.finishline;
+    
     race.newcfg = true;
     ack.rp = OK;
     if ( verbose >= DEBUG ) { //VERBOSE
@@ -575,50 +585,81 @@ ack_t parseCommands(AsyncSerial &serial) {
       printdebug( txbuff, DEBUG );
     }
   }
-  else if( cmd[0] == 'T' ) { //Parse track configuration -> T1,2
+  else if( cmd[0] == 'T' ) { //Parse Track configuration -> Track length
     ack.type = cmd[0];
 
     char * pch = strtok (cmd,"T");
     if( !pch ) return ack;
 
-    pch = strtok (pch, "," );
-    if( !pch ) return ack;
-    int init_aux = atoi( pch );
-
-    pch = strtok (NULL, ",");
-    if( !pch ) return ack;
-
-    int err = box_configure( &tck, init_aux );
+    int nled = atoi( cmd + 1 );
+    int err = tracklen_configure( &tck, nled);
     if( err ) return ack;
-    EEPROM.put( eeadrInfo, tck.cfg );
+    track_configure( &tck, 0);
+    if( err ) return ack;
     
-    box_init( &tck );
+    EEPROM.put( eeadrInfo, tck.cfg );
+
     ack.rp = OK;
     if ( verbose >= DEBUG ) { //VERBOSE
       struct cfgtrack const* cfg = &tck.cfg.track;
-      sprintf( txbuff, "%s %d, %d, %d, %d", "TRACK CONFIG: ",
+      sprintf( txbuff, "%s %d, %d, %d, %d, %d", "TRACK CONFIG: ",
                                     cfg->nled_total,
                                     cfg->nled_main,
                                     cfg->nled_aux,
-                                    cfg->init_aux );
+                                    cfg->init_aux,
+                                    cfg->box_len);
       printdebug( txbuff, DEBUG );
     }
+
   }
-  else if( cmd[0] == 'P' ) { //Parse ramp configuration -> T1,2
+  else if( cmd[0] == 'B' ) { //Parse BoxLenght Configuration 
     ack.type = cmd[0];
 
-    char * pch = strtok (cmd,"R");
+    char * pch = strtok (cmd,"B");
+    if( !pch ) return ack;
+
+    int boxlen = atoi( cmd + 1 );
+    int err = boxlen_configure( &tck, boxlen);
+    if( err ) return ack;
+    
+    EEPROM.put( eeadrInfo, tck.cfg );
+
+    ack.rp = OK;
+    if ( verbose >= DEBUG ) { //VERBOSE
+      struct cfgtrack const* cfg = &tck.cfg.track;
+      sprintf( txbuff, "%s %d, %d, %d, %d, %d", "TRACK CONFIG: ",
+                                    cfg->nled_total,
+                                    cfg->nled_main,
+                                    cfg->nled_aux,
+                                    cfg->init_aux,
+                                    cfg->box_len);
+      printdebug( txbuff, DEBUG );
+    }
+
+  }
+  else if( cmd[0] == 'A' ) { // Parse Ramp configuration -> A<center>.<high> 
+    ack.type = cmd[0];
+
+    char * pch = strtok (cmd,"A");
     if( !pch ) return ack;
 
     pch = strtok (pch, "," );
     if( !pch ) return ack;
+    int init = atoi( pch );
+
+    pch = strtok (NULL, "," );
+    if( !pch ) return ack;
     int center = atoi( pch );
+
+    pch = strtok (NULL, "," );
+    if( !pch ) return ack;
+    int end = atoi( pch );
 
     pch = strtok (NULL, ",");
     if( !pch ) return ack;
     int high = atoi( pch );
 
-    int err = ramp_configure( &tck, center, high );
+    int err = ramp_configure( &tck, init, center, end, high );
     if( err ) return ack;
     EEPROM.put( eeadrInfo, tck.cfg );
     
@@ -634,6 +675,7 @@ ack_t parseCommands(AsyncSerial &serial) {
       printdebug( txbuff, DEBUG );
     }
   }
+  
   else if( cmd[0] == 'D') {
     ack.type = cmd[0]; 
     param_setdefault( &tck.cfg );
@@ -666,20 +708,29 @@ ack_t parseCommands(AsyncSerial &serial) {
   }
   else if( cmd[0] == 'Q' ) { // Get configuration Info
     struct cfgparam const* cfg = &tck.cfg;
-    sprintf( txbuff, "%s:%d,%d,%d,%d%c", "TCFG ",
+    sprintf( txbuff, "%s:%d,%d,%d,%d,%d%c", "TRACK",
                                     cfg->track.nled_total,
                                     cfg->track.nled_main,
                                     cfg->track.nled_aux,
                                     cfg->track.init_aux,
+                                    cfg->track.box_len,
                                     EOL );
     Serial.print( txbuff );
-    sprintf( txbuff, "%s:%d,%d,%d,%d%c", "RCFG: ",
+    sprintf( txbuff, "%s:%d,%d,%d,%d%c", "RAMP",
                                     cfg->ramp.init,
                                     cfg->ramp.center,
                                     cfg->ramp.end,
                                     cfg->ramp.high,
                                     EOL );
     Serial.print( txbuff );
+    sprintf( txbuff, "%s:%d,%d,%d,%d%c", "RACE",
+                                    cfg->race.startline,
+                                    cfg->race.nlap,
+                                    cfg->race.nrepeat,
+                                    cfg->race.finishline,
+                                    EOL );
+    Serial.print( txbuff );
+
     ack.rp = NOTHING;
   }
 
@@ -701,19 +752,25 @@ void sendresponse( ack_t *ack) {
   memset( &cmd, '\0' , sizeof(cmd) );
 }
 
+
+ 
 void param_load( struct cfgparam* cfg ) {
     int cfgversion;
     int eeAdress = eeadrInfo;
     EEPROM.get( eeAdress, tck.cfg );
     eeAdress += sizeof( cfgparam );
     EEPROM.get( eeAdress, cfgversion );
+
+    sprintf( txbuff, "%s:%d%c", "Parameters Loaded from EEPROM Ver:", cfgversion, EOL );
+    Serial.print( txbuff );
     
+
     if ( cfgversion != CFG_VER ) {
       param_setdefault( &tck.cfg );
       eeAdress = 0;
       EEPROM.put( eeAdress, tck.cfg );
       eeAdress += sizeof( cfgparam );
       EEPROM.put( eeAdress, CFG_VER );
-      Serial.print("LOAD DEFAULT\n");
+      Serial.print("DEFAULT PAREMETRS LOADED (and Stored in EEPROM)\n");
     }
 }

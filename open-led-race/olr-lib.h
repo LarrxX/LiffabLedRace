@@ -76,14 +76,19 @@ void box_init( track_t* tck );
 
 bool box_isactive( track_t* tck );
 
-int  box_configure( track_t* tck, int init_box );
+int tracklen_configure( track_t* tck, int nled );
+
+int boxlen_configure( track_t* tck, int box_len );
+
+int  track_configure( track_t* tck, int init_box );
 
 void ramp_init( track_t* tck );
 
 bool ramp_isactive( track_t* tck );
 
-int  ramp_configure( track_t* tck, int center, int high );
+int  ramp_configure( track_t* tck, int init, int center, int end, int high );
 
+int  race_configure( track_t* tck, int startline, int nlap, int nrepeat, int finishline );
 
 #ifdef __cplusplus
 } // extern "C"

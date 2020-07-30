@@ -73,4 +73,3 @@ float controller_getAccel ( void ) {
 bool controller_isActive( int pin ) {
     return !digitalRead( pin );
 }
-
