@@ -2,6 +2,14 @@
 #include "olr-lib.h"
 
 
+//void process_main_track( track_t* tck, car_t* car );
+//void process_aux_track( track_t* tck, car_t* car );
+
+
+
+
+
+
 
 void car_init( car_t* car, controller_t* ct, uint32_t color ) {
   car->ct = ct;

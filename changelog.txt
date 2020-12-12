@@ -1,6 +1,26 @@
 Revisions history
 -----------------
 
+
+    * 2020-12-09: Ver 0.9.6 - Luca 
+   ...............................
+       - Removed dependency from "AsyncSerialLib"
+         - new class SerialCommand()
+       - Remove delay() (blocking) in Countdown phase 
+         - new class SoftTimer()
+       - adapted to Serial Protocol 1.0
+         - added serial command "@" - Enter Configuration Mode 
+           (still respond to deprecated R0,R1 to enter cfg mode)
+         - added serial command "K" - Set Physics parameters (weight, friction)
+         - added serial command "W" - Write parameter set to EEPROM
+         - updated command "B" (Pitlane cfg) to manage PERM parameter
+         - updated command "A" (Slope cfg) to manage PERM parameter
+
+    * 2020-08-26: Ver 0.9.5 - Luca 
+       - Version number format changed (3 dot-separated integers) !!! 
+       - added serial command Get Software ID
+       - added serial command Get Software Version
+
     * 2020-07-28: Ver 0.9.d - Luca 
        - Tested OK on Arduino Every
        - Configuration Values NOW SAVED in EEPROM to enable 

@@ -43,8 +43,6 @@ char const version[] = "0.9.6";
 #include <EEPROM.h>
 #include "olr-lib.h"
 #include "olr-param.h"
-#include "SoftTimer.h"
-#include "SerialCommand.h"
 
 #define PIN_LED        2    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_AUDIO      3    // through CAP 2uf to speaker 8 ohms
@@ -70,6 +68,7 @@ char const version[] = "0.9.6";
 enum{
   MAX_CARS = 4,
 };
+
 
 
 enum loglevel {  // used in Serial Protocol "!" command (send log/error messageS)
@@ -142,7 +141,7 @@ char txbuff[64];
 
 static unsigned long lastmillis = 0;
 
-SoftTimer customDelay = SoftTimer(); // non blocking delay()
+//SoftTimer customDelay = SoftTimer(); // non blocking delay()
 
 // Used to manage countdown phases
 int     countdown_phase=1;
@@ -170,9 +169,8 @@ void print_cars_positions( car_t* cars);
 void run_racecycle( void );
 void draw_winner( track_t* tck, uint32_t color);
 
+char cmdbuf[REC_COMMAND_BUFLEN]; // Stores command received by ReadSerialComand()
 
-char cmd[REC_COMMAND_BUFLEN]; // Stores command received by ReadSerialComand()
-SerialCommand serialCommand = SerialCommand(cmd, REC_COMMAND_BUFLEN, EOL, &Serial); // get complete command from serial
 
 Adafruit_NeoPixel track;
 
@@ -236,7 +234,7 @@ void setup() {
   race.cfg.nrepeat    = tck.cfg.race.nrepeat;// 1;
   race.cfg.finishline = tck.cfg.race.finishline;// true;
 
-  customDelay.start(0); // first race starts with no delay
+  customDelayStart(0); // first race starts with no delay
   race.phase = READY;
 }
 
@@ -265,7 +263,7 @@ void loop() {
         if( race.newcfg ) {
           race.newcfg = false;
           countdownReset();
-          customDelay.start(0); 
+          customDelayStart(0); 
           race.phase = READY;
           send_phase( race.phase );
         }
@@ -274,7 +272,7 @@ void loop() {
 
     case READY:      
       {
-        if(customDelay.elapsed()) {
+        if(customDelayElapsed()) {
           for( int i = 0; i < race.numcars; ++i) {
             car_resetPosition( &cars[i] );  
             cars[i].repeats = 0;
@@ -356,7 +354,7 @@ void loop() {
           strip_clear( &tck );
         }
         track.show();
-        customDelay.start(NEWRACE_DELAY);
+        customDelayStart(NEWRACE_DELAY);
         race.phase = READY;
     }  
       break;
@@ -374,7 +372,7 @@ void loop() {
 
 void send_phase( int phase ) {
   sprintf(txbuff, "R%d%c",phase,EOL);
-  serialCommand.sendCommand(txbuff);
+  sendCommand(txbuff);
 }
 
 
@@ -415,8 +413,8 @@ void run_racecycle( car_t *car, int i ) {
     if ( car->st == CAR_FINISH ){
         car->trackID = NOT_TRACK;
         sprintf( txbuff, "w%d%c", i + 1, EOL );
-        serialCommand.sendCommand(txbuff);
-        //sendCommand(txbuff);
+        //serialCommand.sendCommand(txbuff);
+        sendCommand(txbuff);
 
         car_resetPosition( car );
     }
@@ -457,8 +455,8 @@ void print_cars_positions( car_t* cars ) {
     for( int i = 0; i < race.numcars; ++i ) {
       int const rpos = get_relative_position( &cars[i] );
       sprintf( txbuff, "p%d%s%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos, EOL );
-      serialCommand.sendCommand(txbuff);
-      //sendCommand(txbuff);
+      //serialCommand.sendCommand(txbuff);
+      sendCommand(txbuff);
     }
 }
 
@@ -472,7 +470,7 @@ boolean start_race_done( ) {
   if(countdown_new_phase){
     countdown_new_phase=false;
     //customDelay.start(CONTDOWN_PHASE_DURATION);
-    customDelay.start(CONTDOWN_PHASE_DURATION);
+    customDelayStart(CONTDOWN_PHASE_DURATION);
     strip_clear( &tck );
     if(ramp_isactive( &tck ))  draw_ramp( &tck );
     if(box_isactive( &tck ))   draw_box_entrypoint( &tck );
@@ -493,7 +491,7 @@ boolean start_race_done( ) {
         break;
       case 4:
         //customDelay.start(CONTDOWN_STARTSOUND_DURATION);
-        customDelay.start(CONTDOWN_STARTSOUND_DURATION);
+        customDelayStart(CONTDOWN_STARTSOUND_DURATION);
         tone(PIN_AUDIO,880);      
         track.setPixelColor(LED_SEMAPHORE-2, track.Color(0,0,0)); 
         track.setPixelColor(0,  track.Color(255,255,255));   
@@ -505,7 +503,7 @@ boolean start_race_done( ) {
     }
     track.show();    
   }
-  if(customDelay.elapsed()) {
+  if(customDelayElapsed()) {
     noTone(PIN_AUDIO);    
     countdown_new_phase=true;
     countdown_phase++;
@@ -627,14 +625,14 @@ ack_t manageSerialCommand() {
 
   ack_t ack = { .rp = NOTHING, .type = '\0' };
   
-  int clen = serialCommand.checkSerial();
+  int clen = checkForCommand();
   if(clen == 0) return ack;       // No commands received
   if(clen  < 0) {                 // Error receiving command  
     sprintf( txbuff, "Error reading serial command:[%d]",clen);
     printdebug( txbuff, WARNING );
   }
   
-  // clen > 0 ---> Command with length=clen ready in  cmd[]
+  char * cmd = getCommand();      // clen > 0 ---> Command with length=clen ready
   ack.rp=NOK;
 
   switch (cmd[0]) {
@@ -642,7 +640,7 @@ ack_t manageSerialCommand() {
       {
         ack.type = cmd[0];
         sprintf( txbuff, "#%c", EOL );
-        serialCommand.sendCommand(txbuff);    
+        sendCommand(txbuff);    
         ack.rp = NOTHING;
       }
       break;
@@ -855,7 +853,7 @@ ack_t manageSerialCommand() {
   case '$':                           // Get Board UID
     {
       sprintf( txbuff, "%s%s%c", "$", tck.cfg.info.uid, EOL );
-      serialCommand.sendCommand(txbuff);
+      sendCommand(txbuff);
       ack.rp = NOTHING;
     }
     break;
@@ -863,7 +861,7 @@ ack_t manageSerialCommand() {
   case '?' :                          // Get Software Id
     {
       sprintf( txbuff, "%s%s%c", "?", softwareId, EOL );
-      serialCommand.sendCommand(txbuff);
+      sendCommand(txbuff);
       ack.rp = NOTHING;
     }
     break;
@@ -871,7 +869,7 @@ ack_t manageSerialCommand() {
   case '%' :                          // Get Software Version
     {
       sprintf( txbuff, "%s%s%c", "%", version, EOL );
-      serialCommand.sendCommand(txbuff);    
+      sendCommand(txbuff);    
       ack.rp = NOTHING;
     }
     break;
@@ -889,7 +887,7 @@ ack_t manageSerialCommand() {
                                       (int)cfg->track.kg, (int)(cfg->track.kg*1000)%1000, // std arduino sprintf() missing %f
                                       (int)cfg->track.kf, (int)(cfg->track.kf*1000)%1000, // std arduino sprintf() missing %f
                                       EOL );
-      serialCommand.sendCommand(txbuff);
+      sendCommand(txbuff);
   
       sprintf( txbuff, "%s:%d,%d,%d,%d,%d%c", "QRAMP",
                                       cfg->ramp.init,
@@ -898,7 +896,7 @@ ack_t manageSerialCommand() {
                                       cfg->ramp.high,
                                       cfg->ramp.alwaysOn,
                                       EOL );
-      serialCommand.sendCommand(txbuff);
+      sendCommand(txbuff);
   
       sprintf( txbuff, "%s:%d,%d,%d,%d%c", "QRACE",
                                       cfg->race.startline,
@@ -906,7 +904,7 @@ ack_t manageSerialCommand() {
                                       cfg->race.nrepeat,
                                       cfg->race.finishline,
                                       EOL );
-      serialCommand.sendCommand(txbuff);
+      sendCommand(txbuff);
   
       ack.rp = NOTHING;
     }
@@ -935,7 +933,7 @@ void sendResponse( ack_t *ack) {
   } else {
     sprintf(txbuff, "%c%s%c", ack->type, ack->rp==OK? "OK":"NOK" , EOL );
   }
-  serialCommand.sendCommand(txbuff);
+  sendCommand(txbuff);
 }
 
 /*
@@ -970,7 +968,7 @@ void param_load( struct cfgparam* cfg ) {
     EEPROM.get( eeAdress, cfgversion );
 
     sprintf( txbuff, "%s:%d%c", "Parameters Loaded from EEPROM - Cfg ver", cfgversion, EOL );
-    serialCommand.sendCommand(txbuff);
+    sendCommand(txbuff);
 
     if ( cfgversion != CFG_VER ) {
       param_setdefault( &tck.cfg );
@@ -979,7 +977,8 @@ void param_load( struct cfgparam* cfg ) {
       eeAdress += sizeof( cfgparam );
       EEPROM.put( eeAdress, CFG_VER );
       sprintf( txbuff, "%s%c", "DEFAULT PAREMETRS LOADED (and Stored in EEPROM)", EOL );
-      serialCommand.sendCommand(txbuff);
+      //serialCommand.
+      sendCommand(txbuff);
      
     }
    
@@ -988,21 +987,79 @@ void param_load( struct cfgparam* cfg ) {
 
 
 /*
+ *  Serial Read/Write functions
+ *  ---------------------------
+ *    checkForCommand() 
+ *    getCommand()
+ *    sendCommand(char* str)
+ *    
+ */
+Stream*  _stream = &Serial;
+int      bufIdx;
+int checkForCommand() {
+  while (_stream->available()) {
+    if(bufIdx < REC_COMMAND_BUFLEN - 2) {
+      char data = _stream->read();
+      if(data == EOL) {
+        int cmsSize=bufIdx;
+        cmdbuf[bufIdx++] = '\0';
+        bufIdx=0;
+        return(cmsSize);
+      } else {
+        cmdbuf[bufIdx++] = data;
+      }
+    } else {
+      // buffer full 
+      // re4set and retunn error
+      cmdbuf[bufIdx++] = '\0';
+      bufIdx=0;
+      return(-2); 
+    }
+  }
+  return(0);
+}
+
+/*
+ * 
+ */
+char * getCommand(){
+  return(cmdbuf);
+}
+
+/*
+ * 
+ */
+void sendCommand(char* str) {
+  // get command length
+  int dlen=0;
+  for(; dlen<80; dlen++ ) { 
+    if(*(str+dlen) == EOL ){
+      dlen++; // send EOC 
+      break;
+    }
+  }
+  _stream->write(str, dlen);
+  return;
+}
+
+
+/*
  *  Custon Non-Blocking Delay() functions
  *    customDelayStart(unsigned long timeout)
  *    customDelayElapsed
  */
-/**
 unsigned long   customDelay_startTime=0;
 unsigned long   customDelay_timeout=0;
 void customDelayStart(unsigned long tout) {
   customDelay_timeout=tout;
   customDelay_startTime=millis();
 }
+/*
+ * 
+ */
 boolean customDelayElapsed(){
   if((millis() - customDelay_startTime) > customDelay_timeout) {
     return(true);
   }
   return(false);
 }
-**/

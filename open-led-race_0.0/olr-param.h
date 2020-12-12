@@ -1,5 +1,5 @@
-#ifndef _OLR_PARAM_LIB_h
-#define _OLR_PARAM_LIB_h                   
+#ifndef _OLR_SERIAL_LIB_h
+#define _OLR_SERIAL_LIB_h                   
 
 #ifdef __cplusplus
 
