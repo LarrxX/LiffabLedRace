@@ -35,7 +35,7 @@
 //   --see changelog.txt
 
 char const softwareId[] = "A4P0";  // A4P -> A = Open LED Race, 4P0 = Game ID (4P = 4 Players, 0=Type 0)
-char const version[] = "0.9.6";
+char const version[] = "0.9.7";
 
 
 
@@ -456,7 +456,7 @@ void print_cars_positions( car_t* cars ) {
     
     for( int i = 0; i < race.numcars; ++i ) {
       int const rpos = get_relative_position( &cars[i] );
-      sprintf( txbuff, "p%d%s%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos, EOL );
+      sprintf( txbuff, "p%d%s%d,%d,%d,%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos,cars[i].battery, EOL );
       serialCommand.sendCommand(txbuff);
       //sendCommand(txbuff);
     }
