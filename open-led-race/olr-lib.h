@@ -14,6 +14,8 @@ extern "C"{
 #include "olr-param.h"
 
 #define SPD_MIN_TRACK_AUX       0.8
+#define BATTERY_DELTA           0.03
+#define BATTERY_MIN             0.5
 
 enum stcoin{ 
   COIN_RESET = -2,
@@ -51,6 +53,7 @@ typedef struct{
     int trackID;
     enum status st;
     bool leaving;
+    float battery;
 }car_t;
 
 
