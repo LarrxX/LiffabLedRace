@@ -10,10 +10,11 @@ void car_init( car_t* car, controller_t* ct, uint32_t color ) {
   car->speed=0;
   car->dist=0;
   car->dist_aux=0;
+  car->battery=100;
 }
 
 void car_updateController( car_t* car ) {
-    car->speed += controller_getSpeed( car->ct ); 
+    car->speed += controller_getSpeed( car->ct )*car->battery/100; 
 }
 
 void update_track( track_t* tck, car_t* car ) {
@@ -51,6 +52,7 @@ void process_aux_track( track_t* tck, car_t* car ){
           && car->speed <= controller_getAccel() ) {                      
         car->speed = controller_getAccel ()*50;
         tck->ledcoin = COIN_RESET;
+        car->battery=100;
     };
 
     car->speed -= car->speed * cfg->kf;
@@ -74,8 +76,9 @@ void process_main_track( track_t* tck, car_t* car ) {
     } 
     
     car->speed -= car->speed * cfg->kf;
-    car->dist += car->speed;
-
+    car->dist += car->speed;    
+    if ((car->battery)>=BATTERY_MIN ) {car->battery-=BATTERY_DELTA;} // esto deberia procesarse en el controller al detectar una pulsacion, el consumo de bateria debe ser  independiente de la velocidad   
+   
 }
 
 void ramp_init( track_t* tck ) {
