@@ -456,7 +456,7 @@ void print_cars_positions( car_t* cars ) {
     
     for( int i = 0; i < race.numcars; ++i ) {
       int const rpos = get_relative_position( &cars[i] );
-      sprintf( txbuff, "p%d%s%d,%d,%d,%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos,cars[i].battery, EOL );
+      sprintf( txbuff, "p%d%s%d,%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos,(int)cars[i].battery, EOL );
       serialCommand.sendCommand(txbuff);
       //sendCommand(txbuff);
     }
@@ -556,7 +556,7 @@ void draw_winner( track_t* tck, uint32_t color) {
   }
 }
 
-void draw_car( track_t* tck, car_t* car ) {
+void draw_car_tail( track_t* tck, car_t* car ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
     
     switch ( car->trackID ){
@@ -567,6 +567,23 @@ void draw_car( track_t* tck, car_t* car ) {
       case TRACK_AUX:
         for(int i=0; i<= car->nlap; ++i )     
           track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color);         
+      break;
+    }
+}
+
+void draw_car( track_t* tck, car_t* car ) {
+    struct cfgtrack const* cfg = &tck->cfg.track;
+    
+    switch ( car->trackID ){
+      case TRACK_MAIN:
+        for(int i=0; i<=1; ++i )
+          track.setPixelColor( ((word)car->dist % cfg->nled_main) - i, car->color );
+      if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, 0x493905 );
+      break;
+      case TRACK_AUX:
+        for(int i=0; i<=1; ++i )     
+          track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color); 
+      if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)  ) track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x493905);          
       break;
     }
 }
