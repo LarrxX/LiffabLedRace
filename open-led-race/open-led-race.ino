@@ -31,7 +31,7 @@
 */
 
  
-// 2020/12/10 - Ver 0.9.6
+// 2020/12/10 - Ver 0.9.7
 //   --see changelog.txt
 
 char const softwareId[] = "A4P0";  // A4P -> A = Open LED Race, 4P0 = Game ID (4P = 4 Players, 0=Type 0)
@@ -58,7 +58,7 @@ char const version[] = "0.9.7";
 #define COLOR4         track.Color(255,255,255)
 
 #define COLOR_RAMP     track.Color(64,0,64)
-#define COLOR_COIN     track.Color(0,255,255)
+#define COLOR_COIN     track.Color(40,40,0)
 #define COLOR_BOXMARKS track.Color(64,64,0)
 #define LED_SEMAPHORE  12 
 
@@ -124,6 +124,7 @@ struct race{
 byte SMOTOR=0;
 int TBEEP=0;
 int FBEEP=0;
+
 
 /*------------------------------------------------------*/
 enum loglevel verbose = DISABLE;
@@ -304,8 +305,8 @@ void loop() {
       
     case RACING:
        {
-        strip_clear( &tck ); 
-  
+        strip_clear( &tck );
+          
         if( box_isactive( &tck ) ) {
           if( tck.ledcoin == COIN_RESET ) {
             tck.ledcoin = COIN_WAIT;
@@ -316,7 +317,17 @@ void loop() {
           else if( millis() > tck.ledtime )
             tck.ledcoin = random( 20, tck.cfg.track.nled_aux - 20 );
         }
-  
+        else  if (BATTERY_MODE==1){
+                 if( tck.ledcoin == COIN_RESET ) {
+                     tck.ledcoin = COIN_WAIT;
+                     tck.ledtime = millis() + random(3000,8000);
+                     }
+                 if( tck.ledcoin > 0 )
+                   draw_coin( &tck );
+              else if( millis() > tck.ledtime )
+                   tck.ledcoin = random( LED_SEMAPHORE+4, tck.cfg.track.nled_main - 60);  //valid zone from random charge (semaphore to 1 meter before to start-finish position 
+        }  
+
         if( ramp_isactive( &tck ) )
           draw_ramp( &tck );
         if( box_isactive( &tck ) )
@@ -345,7 +356,7 @@ void loop() {
       // ---------------- 
        }
       break;
-
+ 
     case COMPLETE :    
     {
         strip_clear( &tck );
@@ -456,7 +467,8 @@ void print_cars_positions( car_t* cars ) {
     
     for( int i = 0; i < race.numcars; ++i ) {
       int const rpos = get_relative_position( &cars[i] );
-      sprintf( txbuff, "p%d%s%d,%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos,(int)cars[i].battery, EOL );
+       if (BATTERY_MODE==1) {sprintf( txbuff, "p%d%s%d,%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos,(int)cars[i].battery, EOL );}
+       else {sprintf( txbuff, "p%d%s%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos, EOL );};   
       serialCommand.sendCommand(txbuff);
       //sendCommand(txbuff);
     }
@@ -578,12 +590,12 @@ void draw_car( track_t* tck, car_t* car ) {
       case TRACK_MAIN:
         for(int i=0; i<=1; ++i )
           track.setPixelColor( ((word)car->dist % cfg->nled_main) - i, car->color );
-      if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, 0x493905 );
+      if (BATTERY_MODE==1) if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, 0x493905 );
       break;
       case TRACK_AUX:
         for(int i=0; i<=1; ++i )     
           track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color); 
-      if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)  ) track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x493905);          
+      if (BATTERY_MODE==1) if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)  ) track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x493905);          
       break;
     }
 }
