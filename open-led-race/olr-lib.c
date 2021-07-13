@@ -24,8 +24,8 @@ void update_track( track_t* tck, car_t* car ) {
 
   if ( car->trackID == TRACK_MAIN    
        &&  (int)car->dist % cfg->nled_main == (cfg->init_aux-(cfg->nled_aux)) 
-    //  &&  controller_getStatus( ct ) == 0 ) {              //change track by switch
-      &&  (car->speed <= SPD_MIN_TRACK_AUX )) {              //change track by low speed
+      &&  controller_getStatus( ct ) == 0 ) {   //change track by switch
+    //  &&  (car->speed <= SPD_MIN_TRACK_AUX )) {   //change track by low speed
         
         car->trackID = TRACK_AUX;
         car->dist_aux = 0;
@@ -50,7 +50,7 @@ void process_aux_track( track_t* tck, car_t* car ){
 
     if (  (int)car->dist_aux == tck->ledcoin 
           && car->speed <= controller_getAccel() ) {                      
-        car->speed = controller_getAccel ()*50;
+        car->speed = controller_getAccel ()*SPEED_BOOST_SCALER;
         tck->ledcoin = COIN_RESET;
         car->battery=100;
     };
@@ -76,9 +76,10 @@ void process_main_track( track_t* tck, car_t* car ) {
     } 
     
     car->speed -= car->speed * cfg->kf;
-    car->dist += car->speed;    
-    if ((car->battery)>=BATTERY_MIN ) {car->battery-=BATTERY_DELTA;} // esto deberia procesarse en el controller al detectar una pulsacion, el consumo de bateria debe ser  independiente de la velocidad   
-   
+    car->dist += car->speed; 
+    if (car->ct->flag_sw==0) {   
+            if ((car->battery)>=BATTERY_MIN ) {car->battery-=BATTERY_DELTA;}    
+            }
 }
 
 void ramp_init( track_t* tck ) {
@@ -99,6 +100,7 @@ void car_resetPosition( car_t* car) {
   car->dist_aux = 0;
   car->nlap = 1;
   car->leaving = false;
+  car->battery = 100;
 }
 
 void box_init( track_t* tck ) {
