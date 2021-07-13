@@ -74,11 +74,24 @@ void process_main_track( track_t* tck, car_t* car ) {
             //car->speed += cfg->kg * r->high * ( pos - r->center ); 
             car->speed += cfg->kg * r->high ; 
     } 
+
+    if (BATTERY_MODE==1) {        
+       if ( cfg->nled_main-(int)(car->dist) %  cfg->nled_main  == tck->ledcoin 
+              &&  controller_getStatus( car->ct ) == 0  //charge battery by push switch over coin
+             //&& car->speed <= controller_getAccel()
+             ) 
+             {                      
+           car->speed = controller_getAccel ()*SPEED_BOOST_SCALER;
+           tck->ledcoin = COIN_RESET;
+           car->battery=100;
+          };
+    };      
     
     car->speed -= car->speed * cfg->kf;
     car->dist += car->speed; 
-    if (car->ct->flag_sw==0) {   
-            if ((car->battery)>=BATTERY_MIN ) {car->battery-=BATTERY_DELTA;}    
+    if (BATTERY_MODE==1)
+       if (car->ct->flag_sw==0) {   
+            if ((car->battery)>=BATTERY_MIN ) {car->battery-=BATTERY_DELTA;};    
             }
 }
 
