@@ -1,9 +1,8 @@
 Revisions history
 -----------------
 
-
-    * 2020-12-09: Ver 0.9.6 - Luca 
-   ...............................
+    * 2020-12-17: Ver 0.9.6- Luca // Gitlab Commit = 0.9.6a
+    .......................................................
        - Removed dependency from "AsyncSerialLib"
          - new class SerialCommand()
        - Remove delay() (blocking) in Countdown phase 

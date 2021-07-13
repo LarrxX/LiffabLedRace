@@ -15,7 +15,6 @@
  the Free Software Foundation; either version 3 of the License, or
  (at your option) any later version.
 
-
  First public version by:
     Angel Maldonado (https://gitlab.com/angeljmc) 
     Gerardo Barbarov (gbarbarov AT singulardevices DOT com)  
@@ -23,7 +22,6 @@
   Basen on original idea and 2 players code by: 
     Gerardo Barbarov  for Arduino day Seville 2019
     https://github.com/gbarbarov/led-race
-
     
  Public Repository for this code:
    https://gitlab.com/open-led-race/olr-arduino
@@ -49,7 +47,8 @@ char const version[] = "0.9.6";
 #define PIN_LED        2    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_AUDIO      3    // through CAP 2uf to speaker 8 ohms
 
-#define REC_COMMAND_BUFLEN 32
+#define REC_COMMAND_BUFLEN  32  // received command buffer size
+#define TX_COMMAND_BUFLEN   80  // send command buffer size
 #define EOL            '\n' // End of Command char used in Protocol
 
 #define COLOR1         track.Color(255,0,0)
@@ -135,7 +134,7 @@ static track_t tck;
 
 static int const eeadrInfo = 0; 
 
-char txbuff[64];
+
 
 
 
@@ -173,6 +172,8 @@ void draw_winner( track_t* tck, uint32_t color);
 
 char cmd[REC_COMMAND_BUFLEN]; // Stores command received by ReadSerialComand()
 SerialCommand serialCommand = SerialCommand(cmd, REC_COMMAND_BUFLEN, EOL, &Serial); // get complete command from serial
+
+char txbuff[TX_COMMAND_BUFLEN];
 
 Adafruit_NeoPixel track;
 
