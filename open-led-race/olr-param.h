@@ -14,7 +14,7 @@ extern "C"{
 #define BOXLEN        60 
 #define NUMLAP         5 
 
-
+#define BATTERY_MODE   1
 
 enum{
   LEN_UID = 16,
