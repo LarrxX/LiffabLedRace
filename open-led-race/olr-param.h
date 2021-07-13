@@ -43,6 +43,7 @@ struct cfgtrack  {
   
   float kf;
   float kg;
+  
 };
 
 // ramp centred in LED 100 with 10 led fordward and 10 backguard
