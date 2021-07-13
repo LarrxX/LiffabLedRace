@@ -23,4 +23,5 @@ void param_setdefault( struct cfgparam* cfg ) {
     
     cfg->track.kf         = 0.015; // friction constant
     cfg->track.kg         = 0.006; // gravity constant  - Used in Slope
+    
 }
