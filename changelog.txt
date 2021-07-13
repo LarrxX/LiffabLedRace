@@ -1,8 +1,14 @@
 Revisions history
 -----------------
+    * 2021-12-13: Ver 0.9.6 LAB - Gerardo 
+   ...............................
+   - Charge  battery function and telemetry test code (add BATTERY ( ",<0-100 value>  to end of "p" serial status ))
+   - Add BATTERY_DELTA variable for decremet battery on push buton flag change
+   - Add BATTERY_MIN  for user warning on low battery status
+   - Add blink efect on min battery condition 
+   - Quit tail lap efect
 
-
-    * 2020-12-09: Ver 0.9.6 - Luca 
+    * 2020-07-09: Ver 0.9.6 - Luca 
    ...............................
        - Removed dependency from "AsyncSerialLib"
          - new class SerialCommand()
