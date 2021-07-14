@@ -55,6 +55,7 @@ typedef struct{
     enum status st;
     bool leaving;
     float battery;
+    int charging;
 }car_t;
 
 
