@@ -11,6 +11,7 @@ void car_init( car_t* car, controller_t* ct, uint32_t color ) {
   car->dist=0;
   car->dist_aux=0;
   car->battery=100;
+  car->charging=0;
 }
 
 void car_updateController( car_t* car ) {
@@ -77,22 +78,35 @@ void process_main_track( track_t* tck, car_t* car ) {
 
     if (BATTERY_MODE==1) {        
        if ( cfg->nled_main-(int)(car->dist) %  cfg->nled_main  == tck->ledcoin 
-              &&  controller_getStatus( car->ct ) == 0  //charge battery by push switch over coin
+              &&  controller_getStatus( car->ct ) == 0  //charge battery by push switch over coin             
              //&& car->speed <= controller_getAccel()
              ) 
-             {                      
-           car->speed = controller_getAccel ()*SPEED_BOOST_SCALER;
-           tck->ledcoin = COIN_RESET;
-           car->battery=100;
+          {car->charging=1;};                                  
+
+       if (car->charging==1){   
+           car->battery+=BATTERY_DELTA*2;
+           car->speed =0;
+           if (car->battery >100){tck->ledcoin = COIN_RESET;
+                                  car->battery=100;
+                                  car->charging=0; 
+                                  //car->speed = controller_getAccel()*SPEED_BOOST_SCALER;
+                                  car->speed = 0.1*SPEED_BOOST_SCALER;
+                                 }; 
           };
-    };      
+          
+       if (car->ct->flag_sw==0) {   
+            if ((car->battery)>=BATTERY_MIN ) {car->battery-=BATTERY_DELTA;};    
+            };
+       if (car->ct->flag_sw==1) {   
+            if (car->charging==1) {car->charging=0;
+                                   car->speed = 0.1*SPEED_BOOST_SCALER/2;
+                                  };    
+            };
+     };      
     
     car->speed -= car->speed * cfg->kf;
     car->dist += car->speed; 
-    if (BATTERY_MODE==1)
-       if (car->ct->flag_sw==0) {   
-            if ((car->battery)>=BATTERY_MIN ) {car->battery-=BATTERY_DELTA;};    
-            }
+      
 }
 
 void ramp_init( track_t* tck ) {
