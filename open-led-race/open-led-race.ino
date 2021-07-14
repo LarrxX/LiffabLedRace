@@ -31,11 +31,11 @@
 */
 
  
-// 2020/12/10 - Ver 0.9.7
+// 2021/07/14 - Ver 0.9.6b
 //   --see changelog.txt
 
 char const softwareId[] = "A4P0";  // A4P -> A = Open LED Race, 4P0 = Game ID (4P = 4 Players, 0=Type 0)
-char const version[] = "0.9.7";
+char const version[] = "0.9.6b";
 
 
 
@@ -58,9 +58,11 @@ char const version[] = "0.9.7";
 #define COLOR4         track.Color(255,255,255)
 
 #define COLOR_RAMP     track.Color(64,0,64)
-#define COLOR_COIN     track.Color(40,40,0)
+#define COLOR_COIN     track.Color(40,34,0)
 #define COLOR_BOXMARKS track.Color(64,64,0)
 #define LED_SEMAPHORE  12 
+#define WARNING_BLINK_COLOR  track.Color(32,20,0)
+
 
 #define CONTDOWN_PHASE_DURATION  2000 
 #define CONTDOWN_STARTSOUND_DURATION  40 
@@ -306,6 +308,11 @@ void loop() {
     case RACING:
        {
         strip_clear( &tck );
+        
+        if( ramp_isactive( &tck ) )
+          draw_ramp( &tck );
+        if( box_isactive( &tck ) )
+              draw_box_entrypoint( &tck ); 
           
         if( box_isactive( &tck ) ) {
           if( tck.ledcoin == COIN_RESET ) {
@@ -328,10 +335,7 @@ void loop() {
                    tck.ledcoin = random( LED_SEMAPHORE+4, tck.cfg.track.nled_main - 60);  //valid zone from random charge (semaphore to 1 meter before to start-finish position 
         }  
 
-        if( ramp_isactive( &tck ) )
-          draw_ramp( &tck );
-        if( box_isactive( &tck ) )
-              draw_box_entrypoint( &tck );
+      
   
         for( int i = 0; i < race.numcars; ++i ) {
           run_racecycle( &cars[i], i );
@@ -590,12 +594,12 @@ void draw_car( track_t* tck, car_t* car ) {
       case TRACK_MAIN:
         for(int i=0; i<=1; ++i )
           track.setPixelColor( ((word)car->dist % cfg->nled_main) - i, car->color );
-      if (BATTERY_MODE==1) if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, 0x493905 );
+      if (BATTERY_MODE==1) if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, WARNING_BLINK_COLOR );
       break;
       case TRACK_AUX:
         for(int i=0; i<=1; ++i )     
           track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color); 
-      if (BATTERY_MODE==1) if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)  ) track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x493905);          
+      if (BATTERY_MODE==1) if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)  ) track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, WARNING_BLINK_COLOR);          
       break;
     }
 }
