@@ -69,6 +69,8 @@ char const version[] = "0.9.6b";
 
 #define NEWRACE_DELAY  5000 
 
+#define AUTO_START  0
+
 enum{
   MAX_CARS = 4,
 };
@@ -276,7 +278,7 @@ void loop() {
       break;
 
     case READY:      
-      {
+      {if (AUTO_START==1){
         if(customDelay.elapsed()) {
           for( int i = 0; i < race.numcars; ++i) {
             car_resetPosition( &cars[i] );  
@@ -286,6 +288,29 @@ void loop() {
           race.phase = COUNTDOWN;
           send_phase( race.phase );
         }
+       }
+      else {int pstart=0;            
+            strip_clear( &tck );        
+            if( ramp_isactive( &tck ) )
+               draw_ramp( &tck );
+            if( box_isactive( &tck ) )
+               draw_box_entrypoint( &tck ); 
+            for( int i = 0; i < race.numcars; ++i) {
+              if (controller_getStatus(cars[i].ct)==false){
+                    car_resetPosition( &cars[i] );  
+                    Serial.println(i);
+                    track.setPixelColor(i,cars[i].color); 
+                    cars[i].repeats = 0;                   
+                    pstart++;}
+              }      
+
+            track.setPixelColor(LED_SEMAPHORE , ((millis()/5)%64)*0x010100 );   
+            track.show();
+            if (pstart==race.numcars){tck.ledcoin  = COIN_RESET;
+                                         race.phase = COUNTDOWN;
+                                         send_phase( race.phase );}
+                                         
+           }; 
       }
       break;
 
@@ -560,7 +585,8 @@ void strip_clear( track_t* tck ) {
 
 void draw_coin( track_t* tck ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
-    track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,COLOR_COIN );
+    track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,COLOR_COIN * ((millis()/4)%64));
+    //track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,0x010100 * ((millis()/4)%64));  // FX if charging ??? 
 }
 
 void draw_winner( track_t* tck, uint32_t color) {
