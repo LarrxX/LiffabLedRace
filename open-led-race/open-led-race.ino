@@ -585,8 +585,7 @@ void strip_clear( track_t* tck ) {
 
 void draw_coin( track_t* tck ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
-    track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,COLOR_COIN );
-    //track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,0x010100 * ((millis()/4)%64));  // FX if charging ??? 
+    track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,COLOR_COIN );   
 }
 
 void draw_winner( track_t* tck, uint32_t color) {
@@ -620,12 +619,19 @@ void draw_car( track_t* tck, car_t* car ) {
       case TRACK_MAIN:
         for(int i=0; i<=1; ++i )
           track.setPixelColor( ((word)car->dist % cfg->nled_main) - i, car->color );
-      if (BATTERY_MODE==1) if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, WARNING_BLINK_COLOR );
+      if (BATTERY_MODE==1) {if ( car->charging==1 ) {track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, 0x010100 * 50*(millis()/(201-2*(byte)car->battery)%2));}
+                            else if (car->battery<=BATTERY_MIN)
+                                    if ((millis()%100)>50) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, WARNING_BLINK_COLOR );                           
+                           }  
       break;
       case TRACK_AUX:
         for(int i=0; i<=1; ++i )     
           track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color); 
-      if (BATTERY_MODE==1) if ( (car->battery<=BATTERY_MIN) && ((millis()%100)>50)  ) track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, WARNING_BLINK_COLOR);          
+      if (BATTERY_MODE==1) {if ( car->charging==1 )  {track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x010100 * 50*(millis()/(201-2*(byte)car->battery)%2));}
+                            else if (car->battery<=BATTERY_MIN)
+                                    if ((millis()%100)>50)  track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, WARNING_BLINK_COLOR); 
+                            
+                           }          
       break;
     }
 }
