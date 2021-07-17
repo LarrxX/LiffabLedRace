@@ -585,7 +585,7 @@ void strip_clear( track_t* tck ) {
 
 void draw_coin( track_t* tck ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
-    track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,COLOR_COIN * ((millis()/4)%64));
+    track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,COLOR_COIN );
     //track.setPixelColor( 1 + cfg->nled_main + cfg->nled_aux - tck->ledcoin,0x010100 * ((millis()/4)%64));  // FX if charging ??? 
 }
 
