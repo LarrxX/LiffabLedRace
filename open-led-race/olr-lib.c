@@ -48,10 +48,12 @@ void update_track( track_t* tck, car_t* car ) {
 
 void process_aux_track( track_t* tck, car_t* car ){
     struct cfgtrack const* cfg = &tck->cfg.track;
+    struct cfgbattery const* battery = &tck->cfg.battery;
 
     if (  (int)car->dist_aux == tck->ledcoin 
           && car->speed <= controller_getAccel() ) {                      
-        car->speed = controller_getAccel ()*SPEED_BOOST_SCALER;
+        car->speed = controller_getAccel() * (1.0 * battery->speed_boost_scaler);
+
         tck->ledcoin = COIN_RESET;
         car->battery=100;
     };
@@ -76,7 +78,8 @@ void process_main_track( track_t* tck, car_t* car ) {
             car->speed += cfg->kg * r->high ; 
     } 
 
-    if (BATTERY_MODE==1) {        
+    if(param_option_is_active(&tck->cfg, BATTERY_MODE_OPTION)){ // Battery Mode ON
+       struct cfgbattery const* battery = &tck->cfg.battery;              
        if ( cfg->nled_main-(int)(car->dist) %  cfg->nled_main  == tck->ledcoin 
               &&  controller_getStatus( car->ct ) == 0  //charge battery by push switch over coin             
              //&& car->speed <= controller_getAccel()
@@ -84,22 +87,24 @@ void process_main_track( track_t* tck, car_t* car ) {
           {car->charging=1;};                                  
 
        if (car->charging==1){   
-           car->battery+=BATTERY_DELTA*2;
-           car->speed =0;
+           car->battery+= battery->delta / 100.0 * 2;
+
+            car->speed =0;
            if (car->battery >100){tck->ledcoin = COIN_RESET;
                                   car->battery=100;
                                   car->charging=0; 
                                   //car->speed = controller_getAccel()*SPEED_BOOST_SCALER;
-                                  car->speed = 0.1*SPEED_BOOST_SCALER;
+                                  car->speed = 0.1 * battery->speed_boost_scaler;
                                  }; 
           };
           
        if (car->ct->flag_sw==0) {   
-            if ((car->battery)>=BATTERY_MIN ) {car->battery-=BATTERY_DELTA;};    
-            };
+            if ((car->battery)>=battery->min ) {car->battery-= battery->delta/100.0;};    
+
+       };
        if (car->ct->flag_sw==1) {   
             if (car->charging==1) {car->charging=0;
-                                   car->speed = 0.1*SPEED_BOOST_SCALER/2;
+                                   car->speed = (0.1*battery->speed_boost_scaler)/2;
                                   };    
             };
      };      
@@ -147,16 +152,22 @@ int tracklen_configure( track_t* tck, int nled ) {
   return 0;
 }
 
+int autostart_configure( track_t* tck, int autostart ) {
+  param_option_set(&tck->cfg, AUTOSTART_MODE_OPTION, (boolean) autostart);
+  return 0;
+}
+
 int boxlen_configure( track_t* tck, int box_len, int boxalwaysOn ) {
   struct cfgtrack* cfg = &tck->cfg.track;
   
   if ( boxalwaysOn != 0 && boxalwaysOn != 1 ) return -1;
   if(  box_len <= 0 || box_len >= cfg->nled_total ) return -1;
   cfg->box_len = box_len;
-  cfg->box_alwaysOn = boxalwaysOn;
-
+  //cfg->box_alwaysOn = boxalwaysOn;
+  param_option_set(&tck->cfg, BOX_MODE_OPTION, (boolean) boxalwaysOn);
   // Update  track->boxactive 
   tck->boxactive = boxalwaysOn; 
+  
   return 0;
 }
 
@@ -183,7 +194,7 @@ int track_configure( track_t* tck, int init_box ) {
 }
 
 
-int ramp_configure( track_t* tck, int init, int center, int end, int high, int alwaysOn  ) {
+int ramp_configure( track_t* tck, int init, int center, int end, uint8_t high, int alwaysOn  ) {
   struct cfgramp* ramp = &tck->cfg.ramp;
 
   if ( init >= tck->cfg.track.nled_main || init <= 0 ) return -1;
@@ -196,17 +207,26 @@ int ramp_configure( track_t* tck, int init, int center, int end, int high, int a
   ramp->center = center;
   ramp->end = end;
   ramp->high = high;
-  ramp->alwaysOn = alwaysOn;
 
+  param_option_set(&tck->cfg, SLOPE_MODE_OPTION, (boolean) alwaysOn);
   // Update  track->rampactive 
-  /**
-  boolean rampactive = &tck->rampactive;
-  rampactive = alwaysOn;
-  **/
   tck->rampactive = alwaysOn; 
   
   return 0;
 }
+
+int battery_configure( track_t* tck, int delta, int min, int boost, int active ){
+  struct cfgbattery* battery = &tck->cfg.battery;
+  
+  battery->delta = delta;
+  battery->min   = min;
+  battery->speed_boost_scaler = boost;
+  param_option_set(&tck->cfg, BATTERY_MODE_OPTION, (boolean) active);
+  
+  return 0;
+}
+
+
 
 int race_configure( track_t* tck, int startline, int nlap, int nrepeat, int finishline ) {
   struct cfgrace* race = &tck->cfg.race;

@@ -19,8 +19,6 @@ extern "C"{
 #define PIN_VCC_ADC1   6  
 #define PIN_VCC_ADC2   7  
 
-
-
 enum ctr_type{
     NOT_DEFINED = 0,
     DIGITAL_MODE,

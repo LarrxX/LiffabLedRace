@@ -31,11 +31,11 @@
 */
 
  
-// 2021/07/14 - Ver 0.9.6b
+// 2021/07/14 - Ver 0.9.6 - lab branch
 //   --see changelog.txt
 
 char const softwareId[] = "A4P0";  // A4P -> A = Open LED Race, 4P0 = Game ID (4P = 4 Players, 0=Type 0)
-char const version[] = "0.9.6b";
+char const version[] = "0.9.6";
 
 
 
@@ -49,7 +49,15 @@ char const version[] = "0.9.6b";
 #define PIN_LED        2    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_AUDIO      3    // through CAP 2uf to speaker 8 ohms
 
-#define REC_COMMAND_BUFLEN 32
+#define REC_COMMAND_BUFLEN  32  // received command buffer size
+                                // At the moment, the largest received command is RAMP CONFIGURATION (A)
+                                //    ex: A1400,1430,1460,12,0[EOC] (for a 1500 LED strip)
+                                // 21 CHAR  
+#define TX_COMMAND_BUFLEN   48  // send command buffer size
+                                // At the moment, the largest send command is Q
+                                //    ex: QTK:1500,1500,0,-1,60,0,0.006,0.015,1[EOC] (for a 1500 LED strip)
+                                // 37 CHAR 
+
 #define EOL            '\n' // End of Command char used in Protocol
 
 #define COLOR1         track.Color(255,0,0)
@@ -68,8 +76,6 @@ char const version[] = "0.9.6b";
 #define CONTDOWN_STARTSOUND_DURATION  40 
 
 #define NEWRACE_DELAY  5000 
-
-#define AUTO_START  0
 
 enum{
   MAX_CARS = 4,
@@ -140,11 +146,6 @@ static track_t tck;
 
 static int const eeadrInfo = 0; 
 
-char txbuff[64];
-
-
-
-
 static unsigned long lastmillis = 0;
 
 SoftTimer customDelay = SoftTimer(); // non blocking delay()
@@ -160,8 +161,6 @@ int win_music[] = {
   3136
 };
 
-//int TBEEP=3;
-
 char tracksID[ NUM_TRACKS ][2] ={"U","M","B","I","O"};
 
 /*  ----------- Function prototypes ------------------- */
@@ -175,9 +174,10 @@ void print_cars_positions( car_t* cars);
 void run_racecycle( void );
 void draw_winner( track_t* tck, uint32_t color);
 
-
 char cmd[REC_COMMAND_BUFLEN]; // Stores command received by ReadSerialComand()
 SerialCommand serialCommand = SerialCommand(cmd, REC_COMMAND_BUFLEN, EOL, &Serial); // get complete command from serial
+
+char txbuff[TX_COMMAND_BUFLEN];
 
 Adafruit_NeoPixel track;
 
@@ -218,7 +218,7 @@ void setup() {
 
 
   // Check Box before Physic/Sound to allow user to have Box and Physics with no sound
-  if(digitalRead(DIG_CONTROL_2)==0 || tck.cfg.track.box_alwaysOn ) { //push switch 2 on reset for activate boxes (pit lane)
+  if(digitalRead(DIG_CONTROL_2)==0 || param_option_is_active(&tck.cfg, BOX_MODE_OPTION) ) { //push switch 2 on reset for activate boxes (pit lane)
     box_init( &tck );
     track_configure( &tck, tck.cfg.track.nled_total - tck.cfg.track.box_len );
     draw_box_entrypoint( &tck );
@@ -226,7 +226,7 @@ void setup() {
     track_configure( &tck, 0 );
   }
 
-  if( digitalRead(DIG_CONTROL_1)==0  || tck.cfg.ramp.alwaysOn  ) { //push switch 1 on reset for activate physics
+  if( digitalRead(DIG_CONTROL_1)==0  || param_option_is_active(&tck.cfg, SLOPE_MODE_OPTION) ) { // push switch 1 on reset for activate physics
     ramp_init( &tck );    
     draw_ramp( &tck );
     track.show();
@@ -278,7 +278,8 @@ void loop() {
       break;
 
     case READY:      
-      {if (AUTO_START==1){
+      { if(param_option_is_active(&tck.cfg, AUTOSTART_MODE_OPTION)){ // Auto-Start Mode ON
+
         if(customDelay.elapsed()) {
           for( int i = 0; i < race.numcars; ++i) {
             car_resetPosition( &cars[i] );  
@@ -348,20 +349,20 @@ void loop() {
             draw_coin( &tck );
           else if( millis() > tck.ledtime )
             tck.ledcoin = random( 20, tck.cfg.track.nled_aux - 20 );
-        }
-        else  if (BATTERY_MODE==1){
-                 if( tck.ledcoin == COIN_RESET ) {
-                     tck.ledcoin = COIN_WAIT;
-                     tck.ledtime = millis() + random(3000,8000);
-                     }
-                 if( tck.ledcoin > 0 )
-                   draw_coin( &tck );
-              else if( millis() > tck.ledtime )
-                   tck.ledcoin = random( LED_SEMAPHORE+4, tck.cfg.track.nled_main - 60);  //valid zone from random charge (semaphore to 1 meter before to start-finish position 
-        }  
 
-      
-  
+        } else {  
+          if ( param_option_is_active(&tck.cfg, BATTERY_MODE_OPTION) ) { // Battery Mode ON
+            if( tck.ledcoin == COIN_RESET ) {
+              tck.ledcoin = COIN_WAIT;
+              tck.ledtime = millis() + random(3000,8000);
+            }
+            if( tck.ledcoin > 0 )
+               draw_coin( &tck );
+            else if( millis() > tck.ledtime )
+              tck.ledcoin = random( LED_SEMAPHORE+4, tck.cfg.track.nled_main - 60);  //valid zone from random charge (semaphore to 1 meter before to start-finish position 
+          }  
+        }
+
         for( int i = 0; i < race.numcars; ++i ) {
           run_racecycle( &cars[i], i );
           if( cars[i].st == CAR_FINISH ) {
@@ -378,7 +379,7 @@ void loop() {
   
       // Print p command!!! 
         unsigned long nowmillis = millis();
-        if( abs( nowmillis - lastmillis ) > 100 ){
+        if( abs( nowmillis - lastmillis ) > 500 ){
           lastmillis = nowmillis;
           print_cars_positions( cars );
         }
@@ -403,12 +404,12 @@ void loop() {
       
     default:
     {
-      sprintf( txbuff, "Software Error in main loop switch()");
+      sprintf( txbuff, "SwErr-01");
       printdebug( txbuff, WARNING );
       break;
     }
       
-  } // switch
+  } // switch race.phase
   
 }
 
@@ -496,13 +497,10 @@ void print_cars_positions( car_t* cars ) {
     
     for( int i = 0; i < race.numcars; ++i ) {
       int const rpos = get_relative_position( &cars[i] );
-       if (BATTERY_MODE==1) {sprintf( txbuff, "p%d%s%d,%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos,(int)cars[i].battery, EOL );}
-       else {sprintf( txbuff, "p%d%s%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos, EOL );};   
+      sprintf( txbuff, "p%d%s%d,%d,%d%c", i + 1, tracksID[cars[i].trackID], cars[i].nlap, rpos,(int)cars[i].battery, EOL );
       serialCommand.sendCommand(txbuff);
-      //sendCommand(txbuff);
     }
 }
-
 
 
 
@@ -512,7 +510,6 @@ void print_cars_positions( car_t* cars ) {
 boolean start_race_done( ) { 
   if(countdown_new_phase){
     countdown_new_phase=false;
-    //customDelay.start(CONTDOWN_PHASE_DURATION);
     customDelay.start(CONTDOWN_PHASE_DURATION);
     strip_clear( &tck );
     if(ramp_isactive( &tck ))  draw_ramp( &tck );
@@ -533,7 +530,6 @@ boolean start_race_done( ) {
         track.setPixelColor(LED_SEMAPHORE-2,  track.Color(0,255,0));   
         break;
       case 4:
-        //customDelay.start(CONTDOWN_STARTSOUND_DURATION);
         customDelay.start(CONTDOWN_STARTSOUND_DURATION);
         tone(PIN_AUDIO,880);      
         track.setPixelColor(LED_SEMAPHORE-2, track.Color(0,0,0)); 
@@ -614,24 +610,30 @@ void draw_car_tail( track_t* tck, car_t* car ) {
 
 void draw_car( track_t* tck, car_t* car ) {
     struct cfgtrack const* cfg = &tck->cfg.track;
+    struct cfgbattery const* battery = &tck->cfg.battery;
     
     switch ( car->trackID ){
       case TRACK_MAIN:
         for(int i=0; i<=1; ++i )
           track.setPixelColor( ((word)car->dist % cfg->nled_main) - i, car->color );
-      if (BATTERY_MODE==1) {if ( car->charging==1 ) {track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, 0x010100 * 50*(millis()/(201-2*(byte)car->battery)%2));}
-                            else if (car->battery<=BATTERY_MIN)
-                                    if ((millis()%100)>50) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, WARNING_BLINK_COLOR );                           
-                           }  
+        if(param_option_is_active(&tck->cfg, BATTERY_MODE_OPTION)){ // Battery Mode ON
+          if ( car->charging==1 ) {
+            track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, 0x010100 * 50*(millis()/(201-2*(byte)car->battery)%2));
+          } else  if (car->battery <= battery->min)
+                    if ((millis()%100)>50) track.setPixelColor( ((word)car->dist % cfg->nled_main) - 2, WARNING_BLINK_COLOR );                           
+        }  
       break;
       case TRACK_AUX:
         for(int i=0; i<=1; ++i )     
           track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + i, car->color); 
-      if (BATTERY_MODE==1) {if ( car->charging==1 )  {track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x010100 * 50*(millis()/(201-2*(byte)car->battery)%2));}
-                            else if (car->battery<=BATTERY_MIN)
-                                    if ((millis()%100)>50)  track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, WARNING_BLINK_COLOR); 
-                            
-                           }          
+        if(param_option_is_active(&tck->cfg, BATTERY_MODE_OPTION)){ // Battery Mode ON
+          
+          if ( car->charging==1 )  {
+            track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, 0x010100 * 50*(millis()/(201-2*(byte)car->battery)%2));
+          } else  if (car->battery <= battery->min)
+                  if ((millis()%100)>50)  
+                    track.setPixelColor( (word)(cfg->nled_main + cfg->nled_aux - car->dist_aux) + 2, WARNING_BLINK_COLOR); 
+        }          
       break;
     }
 }
@@ -864,7 +866,53 @@ ack_t manageSerialCommand() {
       show_cfgpars_onstrip();
       }
     break;
-    
+
+   case 'E' :                          // Parse Battery configuration -> Edelta,min,boost,active
+    {
+      ack.type = cmd[0];
+  
+      char * pch = strtok (cmd,"E");
+      if( !pch ) return ack;
+  
+      pch = strtok (pch, "," );
+      if( !pch ) return ack;
+      int delta = atoi( pch );
+  
+      pch = strtok (NULL, "," );
+      if( !pch ) return ack;
+      int min = atoi( pch );
+  
+      pch = strtok (NULL, "," );
+      if( !pch ) return ack;
+      int boost = atoi( pch );
+  
+      pch = strtok (NULL, ",");
+      if( !pch ) return ack;
+      int active = atoi( pch );
+      
+      int err = battery_configure( &tck, delta, min, boost, active );
+      if( err ) return ack;
+      ack.rp = OK;
+  
+      }
+    break;
+
+  case 'G' :                          //Parse Autostart configuration -> Gautostart
+    {
+      ack.type = cmd[0];
+  
+      char * pch = strtok (cmd,"G");
+      if( !pch ) return ack;
+  
+      int autostart = atoi( cmd + 1 );
+      int err = autostart_configure( &tck, autostart);
+      if( err ) return ack;
+      
+      ack.rp = OK;
+      }
+    break;  
+
+       
   case 'K':                           // Parse Physic simulation parameters
     {
       ack.type = cmd[0];
@@ -899,8 +947,8 @@ ack_t manageSerialCommand() {
       // Update box/slope active in current Track Struct with values 
       // just loaded (for show_cfgpars_onstrip())
       struct cfgparam const* cfg = &tck.cfg;
-      tck.boxactive  = cfg->track.box_alwaysOn;
-      tck.rampactive = cfg->ramp.alwaysOn;
+      tck.boxactive  = param_option_is_active(&tck.cfg, BOX_MODE_OPTION);
+      tck.rampactive  = param_option_is_active(&tck.cfg, SLOPE_MODE_OPTION);
   
       show_cfgpars_onstrip();
     }
@@ -944,28 +992,39 @@ ack_t manageSerialCommand() {
   case  'Q':                          // Get current configuration Info
     {
       struct cfgparam const* cfg = &tck.cfg;
-      sprintf( txbuff, "%s:%d,%d,%d,%d,%d,%d,%d.%03d,%d.%03d%c", "QTRACK",
+      sprintf( txbuff, "%s:%d,%d,%d,%d,%d,%d,%d.%03d,%d.%03d,%d%c", "QTK",
                                       cfg->track.nled_total,
                                       cfg->track.nled_main,
                                       cfg->track.nled_aux,
                                       cfg->track.init_aux,
                                       cfg->track.box_len,
-                                      cfg->track.box_alwaysOn,
+                                      //cfg->track.box_alwaysOn,
+                                      param_option_is_active(&tck.cfg, BOX_MODE_OPTION),
                                       (int)cfg->track.kg, (int)(cfg->track.kg*1000)%1000, // std arduino sprintf() missing %f
                                       (int)cfg->track.kf, (int)(cfg->track.kf*1000)%1000, // std arduino sprintf() missing %f
+                                      param_option_is_active(&tck.cfg, AUTOSTART_MODE_OPTION),                                      
                                       EOL );
       serialCommand.sendCommand(txbuff);
   
-      sprintf( txbuff, "%s:%d,%d,%d,%d,%d%c", "QRAMP",
+      sprintf( txbuff, "%s:%d,%d,%d,%d,%d%c", "QRP",
                                       cfg->ramp.init,
                                       cfg->ramp.center,
                                       cfg->ramp.end,
                                       cfg->ramp.high,
-                                      cfg->ramp.alwaysOn,
+                                      //cfg->ramp.alwaysOn,
+                                      param_option_is_active(&tck.cfg, SLOPE_MODE_OPTION),
                                       EOL );
       serialCommand.sendCommand(txbuff);
   
-      sprintf( txbuff, "%s:%d,%d,%d,%d%c", "QRACE",
+      sprintf( txbuff, "%s:%d,%d,%d,%d%c", "QBT",
+                                      cfg->battery.delta,
+                                      cfg->battery.min,
+                                      cfg->battery.speed_boost_scaler,
+                                      param_option_is_active(&tck.cfg, BATTERY_MODE_OPTION),
+                                      EOL );
+      serialCommand.sendCommand(txbuff);
+      
+      sprintf( txbuff, "%s:%d,%d,%d,%d%c", "QRC",
                                       cfg->race.startline,
                                       cfg->race.nlap,
                                       cfg->race.nrepeat,
@@ -1028,46 +1087,29 @@ void enter_configuration_mode(){
 
  
 void param_load( struct cfgparam* cfg ) {
-    int cfgversion;
-    int eeAdress = eeadrInfo;
-    EEPROM.get( eeAdress, tck.cfg );
-    eeAdress += sizeof( cfgparam );
-    EEPROM.get( eeAdress, cfgversion );
 
-    sprintf( txbuff, "%s:%d%c", "Parameters Loaded from EEPROM - Cfg ver", cfgversion, EOL );
+    /**    
+    // Ignore EEPROM params during development of a new version of the [cfgparam]
+    param_setdefault( &tck.cfg );
+    sprintf( txbuff, "%s%c", "Temporary....DEFAULT PAREMETRS LOADED ", EOL );
+    serialCommand.sendCommand(txbuff);
+    return;
+    **/
+
+    EEPROM.get( eeadrInfo, tck.cfg );
+
+    sprintf( txbuff, "%s:%d%c", "EEPROM-v", tck.cfg.ver, EOL );
     serialCommand.sendCommand(txbuff);
 
-    if ( cfgversion != CFG_VER ) {
+    if ( tck.cfg.ver != CFGPARAM_VER ) { // [cfgparam.ver] read form EEPROM != [#define CFGPARAM_VER] in the code
+      // Each time a new version of the code modify the [cfgparam] struct, [#define CFGPARAM_VER] is also 
+      // changed to force the code enter here. 
+      // The previous values stored in EEPROM are invalid and need to be reset-to-default and
+      // stored in the EEPROM again with the new "structure" 
       param_setdefault( &tck.cfg );
-      eeAdress = 0;
-      EEPROM.put( eeAdress, tck.cfg );
-      eeAdress += sizeof( cfgparam );
-      EEPROM.put( eeAdress, CFG_VER );
-      sprintf( txbuff, "%s%c", "DEFAULT PAREMETRS LOADED (and Stored in EEPROM)", EOL );
+      EEPROM.put( eeadrInfo, tck.cfg );
+      sprintf( txbuff, "%s:%d%c", "DEFAULT->EEPROM-v)", tck.cfg.ver, EOL );
       serialCommand.sendCommand(txbuff);
-     
     }
-   
-}
 
-
-
-/*
- *  Custon Non-Blocking Delay() functions
- *    customDelayStart(unsigned long timeout)
- *    customDelayElapsed
- */
-/**
-unsigned long   customDelay_startTime=0;
-unsigned long   customDelay_timeout=0;
-void customDelayStart(unsigned long tout) {
-  customDelay_timeout=tout;
-  customDelay_startTime=millis();
 }
-boolean customDelayElapsed(){
-  if((millis() - customDelay_startTime) > customDelay_timeout) {
-    return(true);
-  }
-  return(false);
-}
-**/

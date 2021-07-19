@@ -13,10 +13,12 @@ extern "C"{
 #include "olr-controller.h"
 #include "olr-param.h"
 
-#define SPD_MIN_TRACK_AUX       0.8
-#define BATTERY_DELTA           0.03
-#define BATTERY_MIN             60
-#define SPEED_BOOST_SCALER      10
+
+#define SPD_MIN_TRACK_AUX       0.8   // change track by low speed
+//#define BATTERY_DELTA           0.03  // Decrease BATTERY_DELTA on each controller activation - used in charge rate too
+//#define BATTERY_DELTA           3     // unsigned char value [1-254] / will be divided by 100 [0.01-2.54]
+//#define BATTERY_MIN             60    // Battery does not descharge below BATTERY_MIN
+//#define SPEED_BOOST_SCALER      10 
 
 enum stcoin{ 
   COIN_RESET = -2,
@@ -51,11 +53,11 @@ typedef struct{
     byte nlap;
     byte repeats;
     uint32_t color;
-    int trackID;
+    uint8_t trackID;
     enum status st;
     bool leaving;
     float battery;
-    int charging;
+    bool charging;
 }car_t;
 
 
@@ -87,6 +89,8 @@ bool box_isactive( track_t* tck );
 
 int tracklen_configure( track_t* tck, int nled );
 
+int autostart_configure( track_t* tck, int autostart );
+
 int boxlen_configure( track_t* tck, int box_len, int boxalwaysOn );
 
 int physic_configure( track_t* tck,  float kgp,  float kfp );
@@ -97,7 +101,9 @@ void ramp_init( track_t* tck );
 
 bool ramp_isactive( track_t* tck );
 
-int  ramp_configure( track_t* tck, int init, int center, int end, int high, int alwaysOn );
+int  ramp_configure( track_t* tck, int init, int center, int end, uint8_t high, int alwaysOn );
+
+int  battery_configure( track_t* tck, int delta, int min, int boost, int active );
 
 int  race_configure( track_t* tck, int startline, int nlap, int nrepeat, int finishline );
 

@@ -10,37 +10,60 @@ extern "C"{
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MAXLED       300 
-#define BOXLEN        60 
-#define NUMLAP         5 
+// Default values loaded on "D" command received (Serial Protocol) 
+//////////////////////////////////////////////////////////////////
+#define MAXLED          300 
+#define BOXLEN          60 
+#define NUMLAP          5 
+#define BATTERY_MODE    false
+#define AUTOSTART_MODE  true
+#define BOX_ALWAYS_ON   false
+#define SLOPE_ALWAYS_ON false
+//////////////////////////////////////////////////////////////////
 
-#define BATTERY_MODE   1
 
-enum{
+// Position (bit) into the cfgparam.option byte for On|Off settings
+// Used in param_option_set()/param_option_is_active() calls
+enum cfgparam_option_bit {
+  BATTERY_MODE_OPTION   = 0,
+  AUTOSTART_MODE_OPTION = 1,
+  BOX_MODE_OPTION       = 2,
+  SLOPE_MODE_OPTION     = 3,
+  NOT_USED_1_OPTION     = 4,
+  NOT_USED_2_OPTION     = 5,
+  NOT_USED_3_OPTION     = 6,
+  NOT_USED_4_OPTION     = 7,
+};
+
+enum cfgpar {
+  CFGPARAM_VER = 6, // Change this value (+=1) every time the [cfgparam] struct is modified
+                    // This will force an update with the new [struct] to the settings 
+                   // stored in EEPROM with an old (invalid) struct
   LEN_UID = 16,
-  CFG_VER = 5,  // "5" in V0.9.6 (manage "permanent" param for Box and Slope)
 };
 
 struct cfgrace{
     bool startline;   // Used only in OLRNetwork 
-    int  nlap;
-    int  nrepeat;     // Used only in OLRNetwork 
+    uint8_t  nlap;
+    uint8_t  nrepeat;     // Used only in OLRNetwork 
     bool finishline;  // Used only in OLRNetwork 
 };
 
-// 
+struct cfgbattery{   // added in ver 0.9.7
+  uint8_t delta;              // unsigned char value [1-254] / will be divided by 100 [0.01-2.54]
+  uint8_t min;                // Battery does not descharge below this "min" percentage
+  uint8_t speed_boost_scaler;
+} ;
+
 struct cfgtrack  {
   int nled_total;
   int nled_main;
   int nled_aux;
   int init_aux;
-  int box_len;  // used to hold the Box Length if the default get changed.
+  int box_len;  // used to hold the Box Length if the default is changed.
                 // it's not possible to implicitly store it in nled_main,nled_aux
                 // because, if these are different to the default, box gets always activated
                 // (the software does not chek "box_isactive" to draw car position)
-  bool box_alwaysOn;  // added in ver 0.9.6
-
-  
   float kf;
   float kg;
   
@@ -51,8 +74,7 @@ struct cfgramp  {
   int init;
   int center;
   int end;
-  int high;
-  bool alwaysOn;  // added in ver 0.9.6
+  uint8_t high;
 };
 
 struct brdinfo {
@@ -60,15 +82,19 @@ struct brdinfo {
 };
 
 struct cfgparam {
-    bool setted;
-    struct cfgrace  race;  // added in ver 0.9.d
-    struct cfgtrack track;
-    struct cfgramp  ramp;
-    struct brdinfo  info;
+    uint8_t ver;      // Version of this [cfgparam] struct 
+    uint8_t option;   // Bit-mapped byte to store 'active' on|off for options (Battery, AutoStart, BoxalwaysOn, etc)
+    struct cfgrace    race;  // added in ver 0.9.d
+    struct cfgbattery battery;
+    struct cfgtrack   track;
+    struct cfgramp    ramp;
+    struct brdinfo    info;
 };
 
 
 void param_setdefault( struct cfgparam* cfg );
+void param_option_set( struct cfgparam* cfg, uint8_t option, boolean value );
+boolean param_option_is_active( struct cfgparam* cfg, uint8_t option);
 
 #ifdef __cplusplus
 } // extern "C"

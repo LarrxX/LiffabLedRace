@@ -67,8 +67,6 @@ float controller_getSpeed( controller_t* ct) {
 }
 
 
-
-
 float controller_getAccel ( void ) {
     return ACEL;
 }

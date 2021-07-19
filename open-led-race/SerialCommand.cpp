@@ -62,8 +62,7 @@ int SerialCommand::checkSerial() {
 void SerialCommand::sendCommand(char* str) {
   // get command length
   int dlen=0;
-//  for(; dlen<_bufLen; dlen++ ) { // limit transmitted command length to received command buffer 
-  for(; dlen<80; dlen++ ) { // limit transmitted command length to received command buffer 
+  for(; dlen<80; dlen++ ) { // "dlen<80" to avoid infinite loop on malformed str without EOC 
     if(*(str+dlen) == _eoc ){
       dlen++; // send EOC 
       break;
