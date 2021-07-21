@@ -379,7 +379,7 @@ void loop() {
   
       // Print p command!!! 
         unsigned long nowmillis = millis();
-        if( abs( nowmillis - lastmillis ) > 500 ){
+        if( abs( nowmillis - lastmillis ) > 250 ){
           lastmillis = nowmillis;
           print_cars_positions( cars );
         }
