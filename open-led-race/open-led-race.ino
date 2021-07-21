@@ -31,12 +31,11 @@
 */
 
  
-// 2021/07/14 - Ver 0.9.6 - lab branch
+// 2021/07/20 - Ver 0.9.6 - lab branch
 //   --see changelog.txt
 
 char const softwareId[] = "A4P0";  // A4P -> A = Open LED Race, 4P0 = Game ID (4P = 4 Players, 0=Type 0)
 char const version[] = "0.9.6";
-
 
 
 #include <Adafruit_NeoPixel.h>
@@ -201,13 +200,13 @@ void setup() {
 
   race.numcars = 2;
 
-  if( controller_isActive( DIG_CONTROL_3 )) {
+  if( controller_isActive( DIG_CONTROL_3 ) || param_option_is_active(&tck.cfg, PLAYER_3_OPTION) || param_option_is_active(&tck.cfg, PLAYER_4_OPTION)  ) {
     controller_init( &switchs[2], DIGITAL_MODE, DIG_CONTROL_3 );
     car_init( &cars[2], &switchs[2], COLOR3 );
     ++race.numcars;
   }
 
-  if( controller_isActive( DIG_CONTROL_4 )) {
+  if( controller_isActive( DIG_CONTROL_4 ) || param_option_is_active(&tck.cfg, PLAYER_4_OPTION)) {
     controller_init( &switchs[3], DIGITAL_MODE, DIG_CONTROL_4 );
     car_init( &cars[3], &switchs[3], COLOR4 );
     ++race.numcars;
@@ -278,40 +277,41 @@ void loop() {
       break;
 
     case READY:      
-      { if(param_option_is_active(&tck.cfg, AUTOSTART_MODE_OPTION)){ // Auto-Start Mode ON
-
-        if(customDelay.elapsed()) {
-          for( int i = 0; i < race.numcars; ++i) {
-            car_resetPosition( &cars[i] );  
-            cars[i].repeats = 0;
-          }
-          tck.ledcoin  = COIN_RESET;
-          race.phase = COUNTDOWN;
-          send_phase( race.phase );
-        }
-       }
-      else {int pstart=0;            
-            strip_clear( &tck );        
-            if( ramp_isactive( &tck ) )
-               draw_ramp( &tck );
-            if( box_isactive( &tck ) )
-               draw_box_entrypoint( &tck ); 
+      { 
+        if(param_option_is_active(&tck.cfg, AUTOSTART_MODE_OPTION)){ // Auto-Start Mode ON
+          if(customDelay.elapsed()) {
             for( int i = 0; i < race.numcars; ++i) {
-              if (controller_getStatus(cars[i].ct)==false){
-                    car_resetPosition( &cars[i] );  
-                    Serial.println(i);
-                    track.setPixelColor(i,cars[i].color); 
-                    cars[i].repeats = 0;                   
-                    pstart++;}
-              }      
+              car_resetPosition( &cars[i] );  
+              cars[i].repeats = 0;
+            }
+            tck.ledcoin  = COIN_RESET;
+            race.phase = COUNTDOWN;
+            send_phase( race.phase );
+          }
+       } else {
+          int pstart=0;            
+          strip_clear( &tck );        
+          if( ramp_isactive( &tck ) )
+             draw_ramp( &tck );
+          if( box_isactive( &tck ) )
+             draw_box_entrypoint( &tck ); 
+          for( int i = 0; i < race.numcars; ++i) {
+            if (controller_getStatus(cars[i].ct)==false){
+                  car_resetPosition( &cars[i] );  
+                  //Serial.println(i);
+                  track.setPixelColor(i,cars[i].color); 
+                  cars[i].repeats = 0;                   
+                  pstart++;
+            }
+          }      
 
-            track.setPixelColor(LED_SEMAPHORE , ((millis()/5)%64)*0x010100 );   
-            track.show();
-            if (pstart==race.numcars){tck.ledcoin  = COIN_RESET;
-                                         race.phase = COUNTDOWN;
-                                         send_phase( race.phase );}
+          track.setPixelColor(LED_SEMAPHORE , ((millis()/5)%64)*0x010100 );   
+          track.show();
+          if (pstart==race.numcars){tck.ledcoin  = COIN_RESET;
+                                       race.phase = COUNTDOWN;
+                                       send_phase( race.phase );}
                                          
-           }; 
+        }; 
       }
       break;
 
@@ -725,7 +725,7 @@ ack_t manageSerialCommand() {
     }
     break;
   
-  case '~' :                          // Exit "Configure Mode"
+  case '*' :                          // Exit "Configure Mode"
     {
       ack.type = cmd[0];
       if(race.phase == CONFIG) { // Ignore command if Board is not in "Configure Mode"
@@ -912,6 +912,23 @@ ack_t manageSerialCommand() {
       }
     break;  
 
+  case 'P' :                          //Parse Player 3/4 configuration -> P[2|3|4]
+    {
+      ack.type = cmd[0];
+  
+      char * pch = strtok (cmd,"P");
+      if( !pch ) return ack;
+  
+      int autostart = atoi( cmd + 1 );
+      int err = players_n_configure( &tck, autostart);
+      if( err ) return ack;
+      
+      ack.rp = OK;
+      }
+    break;  
+
+
+
        
   case 'K':                           // Parse Physic simulation parameters
     {
@@ -1024,11 +1041,13 @@ ack_t manageSerialCommand() {
                                       EOL );
       serialCommand.sendCommand(txbuff);
       
-      sprintf( txbuff, "%s:%d,%d,%d,%d%c", "QRC",
+      sprintf( txbuff, "%s:%d,%d,%d,%d,%d,%d%c", "QRC",
                                       cfg->race.startline,
                                       cfg->race.nlap,
                                       cfg->race.nrepeat,
                                       cfg->race.finishline,
+                                      param_option_is_active(&tck.cfg, PLAYER_3_OPTION),
+                                      param_option_is_active(&tck.cfg, PLAYER_4_OPTION),
                                       EOL );
       serialCommand.sendCommand(txbuff);
   

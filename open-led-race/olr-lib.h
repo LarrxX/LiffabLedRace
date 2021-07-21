@@ -91,6 +91,8 @@ int tracklen_configure( track_t* tck, int nled );
 
 int autostart_configure( track_t* tck, int autostart );
 
+int players_n_configure( track_t* tck, int val );
+
 int boxlen_configure( track_t* tck, int box_len, int boxalwaysOn );
 
 int physic_configure( track_t* tck,  float kgp,  float kfp );

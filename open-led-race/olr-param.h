@@ -16,9 +16,11 @@ extern "C"{
 #define BOXLEN          60 
 #define NUMLAP          5 
 #define BATTERY_MODE    false
-#define AUTOSTART_MODE  true
+#define AUTOSTART_MODE  false
 #define BOX_ALWAYS_ON   false
 #define SLOPE_ALWAYS_ON false
+#define PLAYER_3        false
+#define PLAYER_4        false
 //////////////////////////////////////////////////////////////////
 
 
@@ -29,8 +31,8 @@ enum cfgparam_option_bit {
   AUTOSTART_MODE_OPTION = 1,
   BOX_MODE_OPTION       = 2,
   SLOPE_MODE_OPTION     = 3,
-  NOT_USED_1_OPTION     = 4,
-  NOT_USED_2_OPTION     = 5,
+  PLAYER_3_OPTION       = 4,
+  PLAYER_4_OPTION       = 5,
   NOT_USED_3_OPTION     = 6,
   NOT_USED_4_OPTION     = 7,
 };

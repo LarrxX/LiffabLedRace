@@ -1,13 +1,22 @@
 Revisions history
 -----------------
-    * 2021-12-13: Ver 0.9.6 LAB - Gerardo 
-   ...............................
-   - Charge  battery function and telemetry test code (add BATTERY ( ",<0-100 value>  to end of "p" serial status ))
-   - Add BATTERY_DELTA variable for decremet battery on push buton flag change
-   - Add BATTERY_MIN  for user warning on low battery status
-   - Add blink efect on min battery condition 
-   - Quit tail lap efect
-   - Add coin to main track for BATTERY_MODE=1
+
+    * 2021-07-20: Ver 0.9.6 - Luca - Branch: "lab"  
+   ...............................................
+      - Manage config parameters (load/save/protocol) for:
+         - NEW: Autostart ("G")
+         - NEW: Battery ("E")
+         - NEW: Players number ("P")
+         - UPD: "Q" ("Get configuration" output changed)
+         - UPD: "~" ---> "*" (Commmand ID for "Leave configuration mode" changed)
+
+    * 2021-07-13: Ver 0.9.6 - Gerardo - Branch: "lab" 
+      - Charge  battery function and telemetry test code (add BATTERY ( ",<0-100 value>  to end of "p" serial status ))
+      - Add BATTERY_DELTA variable for decremet battery on push buton flag change
+      - Add BATTERY_MIN  for user warning on low battery status
+      - Add blink efect on min battery condition 
+      - Quit tail lap efect
+      - Add coin to main track for BATTERY_MODE=1
 
      * 2020-12-17: Ver 0.9.6- Luca // Gitlab Commit = 0.9.6a
        - Removed dependency from "AsyncSerialLib"

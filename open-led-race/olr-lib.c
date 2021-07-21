@@ -157,6 +157,32 @@ int autostart_configure( track_t* tck, int autostart ) {
   return 0;
 }
 
+
+
+int players_n_configure( track_t* tck, int val ) {
+  switch(val){
+    case 2 :
+      param_option_set(&tck->cfg, PLAYER_3_OPTION, false);
+      param_option_set(&tck->cfg, PLAYER_4_OPTION, false);
+      break;
+
+    case 3 :
+      param_option_set(&tck->cfg, PLAYER_3_OPTION, true);
+      param_option_set(&tck->cfg, PLAYER_4_OPTION, false);
+      break;
+
+    case 4 :
+      param_option_set(&tck->cfg, PLAYER_3_OPTION, true);
+      param_option_set(&tck->cfg, PLAYER_4_OPTION, true);
+      break;
+
+    default:
+      return(-1);
+  }
+  return(0);
+}
+
+
 int boxlen_configure( track_t* tck, int box_len, int boxalwaysOn ) {
   struct cfgtrack* cfg = &tck->cfg.track;
   
