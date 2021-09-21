@@ -223,7 +223,7 @@ void setup() {
 //    track_configure( &tck, 0 );
 //  }
 
-  if(digitalRead(DIG_CONTROL_2)==0 || tck.cfg.track.box_alwaysOn )//push switch 2 on reset for activate oil slick
+  if(digitalRead(DIG_CONTROL_2)==0 || tck.cfg.oil.alwaysOn )//push switch 2 on reset for activate oil slick
   {
     oil_init( &tck );
     draw_oil( &tck );
@@ -859,7 +859,8 @@ ack_t manageSerialCommand() {
       struct cfgparam const* cfg = &tck.cfg;
       tck.boxactive  = cfg->track.box_alwaysOn;
       tck.rampactive = cfg->ramp.alwaysOn;
-  
+      tck.oilactive = cfg->ramp.alwaysOn;
+      
       show_cfgpars_onstrip();
     }
     break;

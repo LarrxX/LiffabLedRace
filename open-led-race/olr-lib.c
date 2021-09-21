@@ -57,9 +57,29 @@ void process_aux_track( track_t* tck, car_t* car ){
     car->dist_aux += car->speed;
 }
 
+void process_oil(track_t*tck, car_t* car)
+{
+  struct cfgtrack const* cfg = &tck->cfg.track;
+  struct cfgoil const* o = &tck->cfg.oil;
+  
+  int const pos = (int)car->dist % cfg->nled_main;
+  if( pos >= o->begin && pos < (o->begin + o->length) )
+  {
+    if( controller_getStatus(car->ct) == 0 )
+    {
+        car->speed = 0;
+    }
+  }
+}
 
 void process_main_track( track_t* tck, car_t* car ) {
+    
     struct cfgtrack const* cfg = &tck->cfg.track;
+    
+    if( tck->oilactive )
+    {
+      process_oil(tck, car);
+    }
 
     if ( tck->rampactive ) { 
         struct cfgramp const* r = &tck->cfg.ramp;
@@ -72,10 +92,9 @@ void process_main_track( track_t* tck, car_t* car ) {
             //car->speed += cfg->kg * r->high * ( pos - r->center ); 
             car->speed += cfg->kg * r->high ; 
     } 
-    
+
     car->speed -= car->speed * cfg->kf;
     car->dist += car->speed;
-
 }
 
 void ramp_init( track_t* tck ) {
