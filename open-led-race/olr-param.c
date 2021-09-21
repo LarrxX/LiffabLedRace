@@ -14,6 +14,10 @@ void param_setdefault( struct cfgparam* cfg ) {
     cfg->ramp.high   = 6;
     cfg->ramp.alwaysOn = false;
 
+    cfg->oil.begin = 40;
+    cfg->oil.length = 5;
+    cfg->oil.alwaysOn = false;
+    
     cfg->track.nled_total = MAXLED;
     cfg->track.nled_main  = MAXLED; // 240 when boxes length = 60
     cfg->track.nled_aux   = 0; // 60 

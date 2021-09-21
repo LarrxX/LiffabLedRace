@@ -61,6 +61,7 @@ typedef struct {
   uint32_t ledtime;
   bool rampactive;
   bool boxactive;
+  bool oilactive;
 }track_t;
 
 
@@ -75,6 +76,10 @@ void update_track( track_t* tck, car_t* car );
 void process_main_track( track_t* tck, car_t* car );
 
 void process_aux_track( track_t* tck, car_t* car );
+
+void oil_init( track_t* tck );
+
+bool oil_isactive( track_t* tck );
 
 void box_init( track_t* tck );
 

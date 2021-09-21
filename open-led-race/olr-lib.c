@@ -98,6 +98,15 @@ void car_resetPosition( car_t* car) {
   car->leaving = false;
 }
 
+void oil_init( track_t* tck )
+{
+  tck->oilactive = true;
+}
+
+bool oil_isactive( track_t* tck)
+{
+  return tck->oilactive;
+}
 void box_init( track_t* tck ) {
   tck->boxactive = true;  
 }

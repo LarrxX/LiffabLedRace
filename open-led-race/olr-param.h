@@ -10,7 +10,7 @@ extern "C"{
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MAXLED       300 
+#define MAXLED       120 
 #define BOXLEN        60 
 #define NUMLAP         5 
 
@@ -54,6 +54,13 @@ struct cfgramp  {
   bool alwaysOn;  // added in ver 0.9.6
 };
 
+//Oil slick
+struct cfgoil {
+  int begin;
+  int length;
+  bool alwaysOn;
+};
+
 struct brdinfo {
   char uid[LEN_UID + 1];
 };
@@ -63,6 +70,7 @@ struct cfgparam {
     struct cfgrace  race;  // added in ver 0.9.d
     struct cfgtrack track;
     struct cfgramp  ramp;
+    struct cfgoil   oil;
     struct brdinfo  info;
 };
 

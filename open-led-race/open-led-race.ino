@@ -59,6 +59,7 @@ char const version[] = "0.9.6";
 #define COLOR_RAMP     track.Color(64,0,64)
 #define COLOR_COIN     track.Color(0,255,255)
 #define COLOR_BOXMARKS track.Color(64,64,0)
+#define COLOR_OIL      track.Color(64,64,0)
 #define LED_SEMAPHORE  12 
 
 #define CONTDOWN_PHASE_DURATION  2000 
@@ -213,15 +214,22 @@ void setup() {
   strip_clear( &tck ); 
 
 
-  // Check Box before Physic/Sound to allow user to have Box and Physics with no sound
-  if(digitalRead(DIG_CONTROL_2)==0 || tck.cfg.track.box_alwaysOn ) { //push switch 2 on reset for activate boxes (pit lane)
-    box_init( &tck );
-    track_configure( &tck, tck.cfg.track.nled_total - tck.cfg.track.box_len );
-    draw_box_entrypoint( &tck );
-  } else{
-    track_configure( &tck, 0 );
-  }
+//  // Check Box before Physic/Sound to allow user to have Box and Physics with no sound
+//  if(digitalRead(DIG_CONTROL_2)==0 || tck.cfg.track.box_alwaysOn ) { //push switch 2 on reset for activate boxes (pit lane)
+//    box_init( &tck );
+//    track_configure( &tck, tck.cfg.track.nled_total - tck.cfg.track.box_len );
+//    draw_box_entrypoint( &tck );
+//  } else{
+//    track_configure( &tck, 0 );
+//  }
 
+  if(digitalRead(DIG_CONTROL_2)==0 || tck.cfg.track.box_alwaysOn )//push switch 2 on reset for activate oil slick
+  {
+    oil_init( &tck );
+    draw_oil( &tck );
+    track.show();
+  }
+  
   if( digitalRead(DIG_CONTROL_1)==0  || tck.cfg.ramp.alwaysOn  ) { //push switch 1 on reset for activate physics
     ramp_init( &tck );    
     draw_ramp( &tck );
@@ -322,7 +330,9 @@ void loop() {
           draw_ramp( &tck );
         if( box_isactive( &tck ) )
               draw_box_entrypoint( &tck );
-  
+        if( oil_isactive( &tck) )
+              draw_oil( &tck );
+              
         for( int i = 0; i < race.numcars; ++i ) {
           run_racecycle( &cars[i], i );
           if( cars[i].st == CAR_FINISH ) {
@@ -477,6 +487,8 @@ boolean start_race_done( ) {
     strip_clear( &tck );
     if(ramp_isactive( &tck ))  draw_ramp( &tck );
     if(box_isactive( &tck ))   draw_box_entrypoint( &tck );
+    if(oil_isactive( &tck ))   draw_oil( &tck );
+    
     switch(countdown_phase) {
       case 1:
         tone(PIN_AUDIO,400);      
@@ -583,6 +595,8 @@ void show_cfgpars_onstrip(){
         draw_ramp( &tck );
   if( box_isactive( &tck ) )
         draw_box_entrypoint( &tck );
+  if( oil_isactive( &tck ) )
+        draw_oil( &tck );
   track.show();  
 }
 
@@ -618,7 +632,15 @@ void draw_box_entrypoint( track_t* _tck ) {
     track.setPixelColor(out  ,COLOR_BOXMARKS ); 
 }
 
-
+void draw_oil( track_t* _tck )
+{
+  struct cfgoil const* o = &_tck->cfg.oil;
+  int end = o->begin + o->length;
+  for( int i = o->begin; i < end; ++i )
+  {
+    track.setPixelColor(i, COLOR_OIL);
+  }
+}
 
 /* 
  *  Check Serial to see if there is a command ready to be processed
