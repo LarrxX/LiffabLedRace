@@ -65,7 +65,7 @@ void process_oil(track_t *tck, car_t *car)
     && controller_getStatus(car->ct) == 0)
   {
     car->speed = 0;
-    if (car->ct->timer.time() > 250)
+    if (car->ct->timer.time() > OIL_PRESS_DELAY)
     {
       car->dist += 1;
     }

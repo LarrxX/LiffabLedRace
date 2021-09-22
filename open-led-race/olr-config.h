@@ -5,7 +5,7 @@ char const version[] = "0.9.6";
 
 enum{
   LEN_UID = 16,
-  CFG_VER = 5,  // "5" in V0.9.6 (manage "permanent" param for Box and Slope)
+  CFG_VER = 6,  // "5" in V0.9.6 (manage "permanent" param for Box and Slope)
 };
 
 #define MAX_CARS 4
@@ -36,6 +36,18 @@ enum{
 #define COLOR_COIN     track.Color(0,255,255)
 #define COLOR_BOXMARKS track.Color(64,64,0)
 #define COLOR_OIL      track.Color(64,64,0)
+
+#define RAMP_INIT       80
+#define RAMP_CENTER     90
+#define RAMP_END        100
+#define RAMP_HIGH       3
+#define RAMP_ALWAYS_ON  false
+
+#define OIL_BEGIN       40
+#define OIL_LENGTH      9
+#define OIL_ALWAYS_ON   false
+#define OIL_PRESS_DELAY 100
+
 #define LED_SEMAPHORE  12 
 
 #define PIN_VCC_ADC1   6  

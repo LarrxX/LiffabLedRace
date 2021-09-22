@@ -8,15 +8,15 @@ void param_setdefault( struct cfgparam* cfg ) {
     cfg->race.nrepeat = 1;
     cfg->race.finishline = true;
 
-    cfg->ramp.init   = 80;
-    cfg->ramp.center = 90;
-    cfg->ramp.end    = 100;
-    cfg->ramp.high   = 6;
-    cfg->ramp.alwaysOn = false;
+    cfg->ramp.init   = RAMP_INIT;
+    cfg->ramp.center = RAMP_CENTER;
+    cfg->ramp.end    = RAMP_END;
+    cfg->ramp.high   = RAMP_HIGH;
+    cfg->ramp.alwaysOn = RAMP_ALWAYS_ON;
 
-    cfg->oil.begin = 35;
-    cfg->oil.length = 15;
-    cfg->oil.alwaysOn = false;
+    cfg->oil.begin = OIL_BEGIN;
+    cfg->oil.length = OIL_LENGTH;
+    cfg->oil.alwaysOn = OIL_ALWAYS_ON;
     
     cfg->track.nled_total = MAXLED;
     cfg->track.nled_main  = MAXLED; // 240 when boxes length = 60
