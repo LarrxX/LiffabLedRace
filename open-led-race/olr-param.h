@@ -1,11 +1,6 @@
 #ifndef _OLR_PARAM_LIB_h
 #define _OLR_PARAM_LIB_h                   
 
-#ifdef __cplusplus
-
-extern "C"{
-#endif
-
 #include "Arduino.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -76,10 +71,6 @@ struct cfgparam {
 
 
 void param_setdefault( struct cfgparam* cfg );
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif 
  

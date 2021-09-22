@@ -1,15 +1,9 @@
 #ifndef _OLR_CONTROLLER_LIB_h
 #define _OLR_CONTROLLER_LIB_h                   
 
-#ifdef __cplusplus
-
-extern "C"{
-#endif
-
 #include "Arduino.h"
 #include <stdint.h>
 #include <stdbool.h>
-
 
 #define DIG_CONTROL_1  A2 // switch player 1 to PIN and GND
 #define DIG_CONTROL_2  A0 // switch player 2 to PIN and GND
@@ -18,8 +12,6 @@ extern "C"{
 
 #define PIN_VCC_ADC1   6  
 #define PIN_VCC_ADC2   7  
-
-
 
 enum ctr_type{
     NOT_DEFINED = 0,
@@ -48,11 +40,6 @@ float controller_getSpeed( controller_t* ct );
 float controller_getAccel ( void );
 
 bool controller_isActive( int pin );
-
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif 
  

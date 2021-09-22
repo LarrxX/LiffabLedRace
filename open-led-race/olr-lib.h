@@ -2,11 +2,6 @@
 #ifndef _OLR_LIB_h
 #define _OLR_LIB_h                   
 
-#ifdef __cplusplus
-
-extern "C"{
-#endif
-
 #include <Arduino.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -100,9 +95,5 @@ bool ramp_isactive( track_t* tck );
 int  ramp_configure( track_t* tck, int init, int center, int end, int high, int alwaysOn );
 
 int  race_configure( track_t* tck, int startline, int nlap, int nrepeat, int finishline );
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif
