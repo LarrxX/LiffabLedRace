@@ -57,7 +57,8 @@ float controller_getSpeed( controller_t* ct) {
     float speed = 0.0;
     if ( (ct->flag_sw == 1 ) && (controller_getStatus( ct ) == 0) ) {
         ct->flag_sw = 0;
-        speed = ACEL;
+        ct->timer.start();
+        speed = controller_getAccel();
     }
 
     if ( (ct->flag_sw == 0 ) && (controller_getStatus( ct ) == 1 ) ) {

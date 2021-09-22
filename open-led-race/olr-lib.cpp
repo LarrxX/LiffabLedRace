@@ -1,8 +1,6 @@
 #include "Arduino.h"
 #include "olr-lib.h"
 
-
-
 void car_init( car_t* car, controller_t* ct, uint32_t color ) {
   car->ct = ct;
   car->color = color;
@@ -57,17 +55,19 @@ void process_aux_track( track_t* tck, car_t* car ){
     car->dist_aux += car->speed;
 }
 
-void process_oil(track_t*tck, car_t* car)
+void process_oil(track_t *tck, car_t *car)
 {
-  struct cfgtrack const* cfg = &tck->cfg.track;
-  struct cfgoil const* o = &tck->cfg.oil;
-  
+  struct cfgtrack const *cfg = &tck->cfg.track;
+  struct cfgoil *o = &tck->cfg.oil;
+
   int const pos = (int)car->dist % cfg->nled_main;
-  if( pos >= o->begin && pos < (o->begin + o->length) )
+  if (pos >= o->begin && pos < (o->begin + o->length) 
+    && controller_getStatus(car->ct) == 0)
   {
-    if( controller_getStatus(car->ct) == 0 )
+    car->speed = 0;
+    if (car->ct->timer.time() > 250)
     {
-        car->speed = 0;
+      car->dist += 1;
     }
   }
 }
@@ -81,7 +81,7 @@ void process_main_track( track_t* tck, car_t* car ) {
       process_oil(tck, car);
     }
 
-    if ( tck->rampactive ) { 
+    else if ( tck->rampactive ) { 
         struct cfgramp const* r = &tck->cfg.ramp;
         int const pos = (int)car->dist % cfg->nled_main;
         if ( pos >= r->init && pos < r->center )

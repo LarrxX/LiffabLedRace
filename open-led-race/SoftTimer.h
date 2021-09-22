@@ -12,6 +12,7 @@ class SoftTimer {
     void set(unsigned long);
     void start(void);
     void start(unsigned long);
+    unsigned long time();
     boolean elapsed(void);
  
   private:  

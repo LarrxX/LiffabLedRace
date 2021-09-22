@@ -24,12 +24,15 @@ void SoftTimer::start(unsigned long tout) {
   this->start();
 }
 
-
+unsigned long SoftTimer::time()
+{
+  return millis() - startTime;
+}
 /*
  * 
  */
 boolean SoftTimer::elapsed(){
-  if((millis() - this->startTime) > this->timeout) {
+  if(this->time() > this->timeout) {
     return(true);
   }
   return(false);

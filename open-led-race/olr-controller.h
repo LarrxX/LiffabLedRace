@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include "SoftTimer.h"
 
 #define DIG_CONTROL_1  A2 // switch player 1 to PIN and GND
 #define DIG_CONTROL_2  A0 // switch player 2 to PIN and GND
@@ -27,6 +28,7 @@ typedef struct{
     int badc;
     int delta_analog;
     byte flag_sw;
+    SoftTimer timer;
 }controller_t;    
 
 void controller_setup( void );
