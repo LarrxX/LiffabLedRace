@@ -5,14 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "SoftTimer.h"
+#include "olr-config.h"
 
-#define DIG_CONTROL_1  A2 // switch player 1 to PIN and GND
-#define DIG_CONTROL_2  A0 // switch player 2 to PIN and GND
-#define DIG_CONTROL_3  A3 // switch player 3 to PIN and GND
-#define DIG_CONTROL_4  A1 // switch player 4 to PIN and GND
-
-#define PIN_VCC_ADC1   6  
-#define PIN_VCC_ADC2   7  
 
 enum ctr_type{
     NOT_DEFINED = 0,

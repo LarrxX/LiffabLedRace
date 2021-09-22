@@ -32,45 +32,13 @@
 // 2020/12/10 - Ver 0.9.6
 //   --see changelog.txt
 
-char const softwareId[] = "A4P0";  // A4P -> A = Open LED Race, 4P0 = Game ID (4P = 4 Players, 0=Type 0)
-char const version[] = "0.9.6";
-
-
-
 #include <Adafruit_NeoPixel.h>
 #include <EEPROM.h>
+#include "olr-config.h"
 #include "olr-lib.h"
 #include "olr-param.h"
 #include "SoftTimer.h"
 #include "SerialCommand.h"
-
-#define PIN_LED        2    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
-#define PIN_AUDIO      3    // through CAP 2uf to speaker 8 ohms
-
-#define REC_COMMAND_BUFLEN  32  // received command buffer size
-#define TX_COMMAND_BUFLEN   80  // send command buffer size
-#define EOL            '\n' // End of Command char used in Protocol
-
-#define COLOR1         track.Color(255,0,0)
-#define COLOR2         track.Color(0,255,0)
-#define COLOR3         track.Color(0,0,255)
-#define COLOR4         track.Color(255,255,255)
-
-#define COLOR_RAMP     track.Color(64,0,64)
-#define COLOR_COIN     track.Color(0,255,255)
-#define COLOR_BOXMARKS track.Color(64,64,0)
-#define COLOR_OIL      track.Color(64,64,0)
-#define LED_SEMAPHORE  12 
-
-#define CONTDOWN_PHASE_DURATION  2000 
-#define CONTDOWN_STARTSOUND_DURATION  40 
-
-#define NEWRACE_DELAY  5000 
-
-enum{
-  MAX_CARS = 4,
-};
-
 
 enum loglevel {  // used in Serial Protocol "!" command (send log/error messageS)
     ECHO = 0,

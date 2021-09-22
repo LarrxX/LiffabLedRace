@@ -4,17 +4,7 @@
 #include "Arduino.h"
 #include <stdint.h>
 #include <stdbool.h>
-
-#define MAXLED       120 
-#define BOXLEN        60 
-#define NUMLAP         5 
-
-
-
-enum{
-  LEN_UID = 16,
-  CFG_VER = 5,  // "5" in V0.9.6 (manage "permanent" param for Box and Slope)
-};
+#include "olr-config.h"
 
 struct cfgrace{
     bool startline;   // Used only in OLRNetwork 
