@@ -37,8 +37,11 @@ char const version[] = "1.0.0";
 
 #include "Defines.h"
 #include "SerialCommunication.h"
+#include "Player.h"
 
-SerialCommunication serial;
+SerialCommunication SerialCom;
+
+Player Players[MAX_PLAYERS];
 
 bool ENABLE_RAMP = 0;
 bool VIEW_RAMP = 0;
@@ -123,6 +126,9 @@ void set_loop(word H, word a, word b, word c)
 void setup()
 {
   Serial.begin(115200);
+
+  INIT_PLAYERS
+
   for (int i = 0; i < NPIXELS; i++)
   {
     gravity_map[i] = 127;
@@ -309,23 +315,23 @@ int get_relative_position4(void)
 void print_cars_position(void)
 {
   int rpos = get_relative_position1();
-  serial.SendCommand("p%d%d%d,%d%c", 1, 1, loop1, rpos, EOL);
+  SerialCom.SendCommand("p%d%d%d,%d%c", 1, 1, loop1, rpos, EOL);
 
   rpos = get_relative_position2();
-  serial.SendCommand("p%d%d%d,%d%c", 2, 1, loop2, rpos, EOL);
+  SerialCom.SendCommand("p%d%d%d,%d%c", 2, 1, loop2, rpos, EOL);
 
   rpos = get_relative_position3();
-  serial.SendCommand("p%d%d%d,%d%c", 3, 1, loop3, rpos, EOL);
+  SerialCom.SendCommand("p%d%d%d,%d%c", 3, 1, loop3, rpos, EOL);
 
   rpos = get_relative_position4();
-  serial.SendCommand("p%d%d%d,%d%c", 4, 1, loop4, rpos, EOL);
+  SerialCom.SendCommand("p%d%d%d,%d%c", 4, 1, loop4, rpos, EOL);
 }
 
 void draw_car1(void)
 {
   for (int i = 0; i <= loop1; i++)
   {
-    track.setPixelColor(((word)dist1 % NPIXELS) + i, track.COLOR1);
+    track.setPixelColor(((word)dist1 % NPIXELS) + i, COLOR_P1);
   };
 }
 
@@ -333,7 +339,7 @@ void draw_car2(void)
 {
   for (int i = 0; i <= loop2; i++)
   {
-    track.setPixelColor(((word)dist2 % NPIXELS) + i, track.COLOR2);
+    track.setPixelColor(((word)dist2 % NPIXELS) + i, COLOR_P2);
   };
 }
 
@@ -341,7 +347,7 @@ void draw_car3(void)
 {
   for (int i = 0; i <= loop3; i++)
   {
-    track.setPixelColor(((word)dist3 % NPIXELS) + i, track.COLOR3);
+    track.setPixelColor(((word)dist3 % NPIXELS) + i, COLOR_P3);
   };
 }
 
@@ -349,7 +355,7 @@ void draw_car4(void)
 {
   for (int i = 0; i <= loop4; i++)
   {
-    track.setPixelColor(((word)dist4 % NPIXELS) + i, track.COLOR4);
+    track.setPixelColor(((word)dist4 % NPIXELS) + i, COLOR_P4);
   };
 }
 
@@ -495,10 +501,10 @@ void loop()
 
   if (loop1 > loop_max)
   {
-    serial.SendCommand("w1%c", EOL);
+    SerialCom.SendCommand("w1%c", EOL);
     for (int i = 0; i < MAXLEDCIRCLE; i++)
     {
-      circle.setPixelColor(i, track.COLOR1);
+      circle.setPixelColor(i, COLOR_P1);
     };
     circle.show();
     winner_fx(1);
@@ -519,10 +525,10 @@ void loop()
   }
   if (loop2 > loop_max)
   {
-    serial.SendCommand("w2%c", EOL);
+    SerialCom.SendCommand("w2%c", EOL);
     for (int i = 0; i < MAXLEDCIRCLE; i++)
     {
-      circle.setPixelColor(i, track.COLOR2);
+      circle.setPixelColor(i, COLOR_P2);
     };
     circle.show();
     winner_fx(2);
@@ -543,11 +549,11 @@ void loop()
   }
   if (loop3 > loop_max)
   {
-    serial.SendCommand("w1%c", EOL);
+    SerialCom.SendCommand("w1%c", EOL);
 
     for (int i = 0; i < MAXLEDCIRCLE; i++)
     {
-      circle.setPixelColor(i, track.COLOR3);
+      circle.setPixelColor(i, COLOR_P3);
     };
     circle.show();
     winner_fx(1);
@@ -568,10 +574,10 @@ void loop()
   }
   if (loop4 > loop_max)
   {
-    serial.SendCommand("w2%c", EOL);
+    SerialCom.SendCommand("w2%c", EOL);
     for (int i = 0; i < MAXLEDCIRCLE; i++)
     {
-      circle.setPixelColor(i, track.COLOR4);
+      circle.setPixelColor(i, COLOR_P4);
     };
     circle.show();
     winner_fx(2);
@@ -661,13 +667,13 @@ void loop()
 void checkSerialCommand()
 {
   int clen = 0;
-  const char *cmd = serial.ReadSerial(clen);
+  const char *cmd = SerialCom.ReadSerial(clen);
 
   if (clen == 0)
     return; // No commands received
   if (clen < 0)
   {                                                                  // Error receiving command
-    serial.SendCommand("!1Error reading serial command:[%d]", clen); // Send a warning to host
+    SerialCom.SendCommand("!1Error reading serial command:[%d]", clen); // Send a warning to host
     return;
   }
   // clen > 0 ---> Command with length=clen ready in  cmd[]
@@ -676,7 +682,7 @@ void checkSerialCommand()
   {
   case '#': // Handshake -> send back
   {
-    serial.SendCommand("#%c", EOL);
+    SerialCom.SendCommand("#%c", EOL);
   }
     return;
 
@@ -685,25 +691,25 @@ void checkSerialCommand()
     // send back @OK
     // No real cfg mode here, but send @OK so the Desktop app (Upload, configure)
     // can send a GET SOFTWARE Type/Ver command and identify this software
-    serial.SendCommand("@OK%c", EOL);
+    SerialCom.SendCommand("@OK%c", EOL);
   }
     return;
 
   case '?': // Get Software Id
   {
-    serial.SendCommand("%s%s%c", "?", softwareId, EOL);
+    SerialCom.SendCommand("%s%s%c", "?", softwareId, EOL);
   }
     return;
 
   case '%': // Get Software Version
   {
-    serial.SendCommand("%s%s%c", "%", version, EOL);
+    SerialCom.SendCommand("%s%s%c", "%", version, EOL);
   }
     return;
   }
 
   // if we get here, the command it's not managed by this software -> Answer <CommandId>NOK
-  serial.SendCommand("%cNOK%c", cmd[0], EOL);
+  SerialCom.SendCommand("%cNOK%c", cmd[0], EOL);
 
   return;
 }
@@ -713,5 +719,5 @@ void checkSerialCommand()
  */
 void send_race_phase(int phase)
 {
-  serial.SendCommand("R%d%c", phase, EOL);
+  SerialCom.SendCommand("R%d%c", phase, EOL);
 }
