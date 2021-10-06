@@ -29,7 +29,7 @@ void SerialCommunication::SendCommand(const char *formattedString, ...)
     WriteToStream(_transmitBuffer);
 }
 
-const char *SerialCommunication::ReadSerial(int &length)
+const char *SerialCommunication::ReadSerial(word &length)
 {
     while (_stream->available())
     {

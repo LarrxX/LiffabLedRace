@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Defines.h"
+#include <Arduino.h>
 
 class Stream;
 
@@ -15,13 +16,13 @@ protected:
     char _transmitBuffer[TX_COMMAND_BUFLEN];
 
     Stream *_stream;
-    int _receiveIndex;
+    word _receiveIndex;
 
 public:
     static SerialCommunication& instance();
 
     void SendCommand(const char *formattedString, ...);
-    const char* ReadSerial(int& length);
+    const char* ReadSerial(word& length);
 
 protected:
     void WriteToStream(const char *command);
