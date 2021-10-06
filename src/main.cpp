@@ -41,8 +41,6 @@ char const version[] = "1.0.0";
 #include "Controller.h"
 #include "Car.h"
 
-SerialCommunication SerialCom;
-
 Player Players[MAX_PLAYERS];
 
 bool ENABLE_RAMP = 0;
@@ -268,7 +266,7 @@ void draw_cars()
 
 void show_winner(byte winner)
 {
-    SerialCom.SendCommand("W%d%c", winner, EOL);
+    SerialCommunication::instance().SendCommand("W%d%c", winner, EOL);
     
     for (int i = 0; i < MAXLEDCIRCLE; i++)
     {
@@ -344,7 +342,7 @@ void loop()
   //   tone(PIN_AUDIO, FBEEP + int(speed1 * 440 * 2) + int(speed2 * 440 * 3));
 
   delay(tdelay);
-  
+
   if (TBEEP > 0)
   {
     TBEEP--;
@@ -368,13 +366,13 @@ void loop()
 void checkSerialCommand()
 {
   int clen = 0;
-  const char *cmd = SerialCom.ReadSerial(clen);
+  const char *cmd = SerialCommunication::instance().ReadSerial(clen);
 
   if (clen == 0)
     return; // No commands received
   if (clen < 0)
   {                                                                  // Error receiving command
-    SerialCom.SendCommand("!1Error reading serial command:[%d]", clen); // Send a warning to host
+    SerialCommunication::instance().SendCommand("!1Error reading serial command:[%d]", clen); // Send a warning to host
     return;
   }
   // clen > 0 ---> Command with length=clen ready in  cmd[]
@@ -383,7 +381,7 @@ void checkSerialCommand()
   {
   case '#': // Handshake -> send back
   {
-    SerialCom.SendCommand("#%c", EOL);
+    SerialCommunication::instance().SendCommand("#%c", EOL);
   }
     return;
 
@@ -392,25 +390,25 @@ void checkSerialCommand()
     // send back @OK
     // No real cfg mode here, but send @OK so the Desktop app (Upload, configure)
     // can send a GET SOFTWARE Type/Ver command and identify this software
-    SerialCom.SendCommand("@OK%c", EOL);
+    SerialCommunication::instance().SendCommand("@OK%c", EOL);
   }
     return;
 
   case '?': // Get Software Id
   {
-    SerialCom.SendCommand("%s%s%c", "?", softwareId, EOL);
+    SerialCommunication::instance().SendCommand("%s%s%c", "?", softwareId, EOL);
   }
     return;
 
   case '%': // Get Software Version
   {
-    SerialCom.SendCommand("%s%s%c", "%", version, EOL);
+    SerialCommunication::instance().SendCommand("%s%s%c", "%", version, EOL);
   }
     return;
   }
 
   // if we get here, the command it's not managed by this software -> Answer <CommandId>NOK
-  SerialCom.SendCommand("%cNOK%c", cmd[0], EOL);
+  SerialCommunication::instance().SendCommand("%cNOK%c", cmd[0], EOL);
 
   return;
 }
@@ -420,5 +418,5 @@ void checkSerialCommand()
  */
 void send_race_phase(int phase)
 {
-  SerialCom.SendCommand("R%d%c", phase, EOL);
+  SerialCommunication::instance().SendCommand("R%d%c", phase, EOL);
 }

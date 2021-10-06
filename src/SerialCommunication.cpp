@@ -2,9 +2,20 @@
 
 #include <Arduino.h>
 
+SerialCommunication* SerialCommunication::_instance = NULL;
+
 SerialCommunication::SerialCommunication() : _stream(&Serial),
                                              _receiveIndex(0)
 {
+}
+
+SerialCommunication& SerialCommunication::instance()
+{
+    if( _instance == NULL )
+    {
+        _instance = new SerialCommunication();
+    }
+    return *_instance;
 }
 
 void SerialCommunication::SendCommand(const char *formattedString, ...)
