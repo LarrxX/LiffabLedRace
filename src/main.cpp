@@ -63,27 +63,8 @@ unsigned long previousRedraw = 0;
 int TBEEP = 0;
 int FBEEP = 0;
 byte SMOTOR = 0;
-float speed1 = 0;
-float speed2 = 0;
-float speed3 = 0;
-float speed4 = 0;
-float dist1 = 0;
-float dist2 = 0;
-float dist3 = 0;
-float dist4 = 0;
-
-byte loop1 = 0;
-byte loop2 = 0;
-byte loop3 = 0;
-byte loop4 = 0;
 
 byte previousLeader = 0;
-
-byte flag_sw1 = 0;
-byte flag_sw2 = 0;
-byte flag_sw3 = 0;
-byte flag_sw4 = 0;
-byte draworder = 0;
 
 unsigned long timestamp = 0;
 
@@ -264,112 +245,9 @@ void winner_fx(byte w)
   }
 };
 
-int get_relative_position1(void)
-{
-  enum
-  {
-    MIN_RPOS = 0,
-    MAX_RPOS = 99,
-  };
-  int trackdist = 0;
-  int pos = 0;
-  trackdist = (int)dist1 % NPIXELS;
-  pos = map(trackdist, 0, NPIXELS - 1, MIN_RPOS, MAX_RPOS);
-  return pos;
-}
-
-int get_relative_position2(void)
-{
-  enum
-  {
-    MIN_RPOS = 0,
-    MAX_RPOS = 99,
-  };
-  int trackdist = 0;
-  int pos = 0;
-  trackdist = (int)dist2 % NPIXELS;
-  pos = map(trackdist, 0, NPIXELS - 1, MIN_RPOS, MAX_RPOS);
-  return pos;
-}
-
-int get_relative_position3(void)
-{
-  enum
-  {
-    MIN_RPOS = 0,
-    MAX_RPOS = 99,
-  };
-  int trackdist = 0;
-  int pos = 0;
-  trackdist = (int)dist3 % NPIXELS;
-  pos = map(trackdist, 0, NPIXELS - 1, MIN_RPOS, MAX_RPOS);
-  return pos;
-}
-
-int get_relative_position4(void)
-{
-  enum
-  {
-    MIN_RPOS = 0,
-    MAX_RPOS = 99,
-  };
-  int trackdist = 0;
-  int pos = 0;
-  trackdist = (int)dist4 % NPIXELS;
-  pos = map(trackdist, 0, NPIXELS - 1, MIN_RPOS, MAX_RPOS);
-  return pos;
-}
-
-void print_cars_position(void)
-{
-  int rpos = get_relative_position1();
-  SerialCom.SendCommand("p%d%d%d,%d%c", 1, 1, loop1, rpos, EOL);
-
-  rpos = get_relative_position2();
-  SerialCom.SendCommand("p%d%d%d,%d%c", 2, 1, loop2, rpos, EOL);
-
-  rpos = get_relative_position3();
-  SerialCom.SendCommand("p%d%d%d,%d%c", 3, 1, loop3, rpos, EOL);
-
-  rpos = get_relative_position4();
-  SerialCom.SendCommand("p%d%d%d,%d%c", 4, 1, loop4, rpos, EOL);
-}
-
-void draw_car1(void)
-{
-  for (int i = 0; i <= loop1; i++)
-  {
-    track.setPixelColor(((word)dist1 % NPIXELS) + i, COLOR_P1);
-  };
-}
-
-void draw_car2(void)
-{
-  for (int i = 0; i <= loop2; i++)
-  {
-    track.setPixelColor(((word)dist2 % NPIXELS) + i, COLOR_P2);
-  };
-}
-
-void draw_car3(void)
-{
-  for (int i = 0; i <= loop3; i++)
-  {
-    track.setPixelColor(((word)dist3 % NPIXELS) + i, COLOR_P3);
-  };
-}
-
-void draw_car4(void)
-{
-  for (int i = 0; i <= loop4; i++)
-  {
-    track.setPixelColor(((word)dist4 % NPIXELS) + i, COLOR_P4);
-  };
-}
-
 void draw_cars()
 {
-  if( (millis() - previousRedraw) > 500 )
+  if( (millis() - previousRedraw) > 1000 )
   {
     previousRedraw = millis();
     for( byte i = 0; i < MAX_PLAYERS; ++i )
@@ -462,9 +340,11 @@ void loop()
 
   track.show();
   
-  if (SMOTOR == 1)
-    tone(PIN_AUDIO, FBEEP + int(speed1 * 440 * 2) + int(speed2 * 440 * 3));
+  // if (SMOTOR == 1)
+  //   tone(PIN_AUDIO, FBEEP + int(speed1 * 440 * 2) + int(speed2 * 440 * 3));
+
   delay(tdelay);
+  
   if (TBEEP > 0)
   {
     TBEEP--;
@@ -473,12 +353,12 @@ void loop()
   {
     FBEEP = 0;
   };
-  cont_print++;
-  if (cont_print > 100)
-  {
-    print_cars_position();
-    cont_print = 0;
-  }
+  // cont_print++;
+  // if (cont_print > 100)
+  // {
+  //   print_cars_position();
+  //   cont_print = 0;
+  // }
 }
 
 /*
