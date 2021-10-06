@@ -38,6 +38,8 @@ char const version[] = "1.0.0";
 #include "Defines.h"
 #include "SerialCommunication.h"
 #include "Player.h"
+#include "Controller.h"
+#include "Car.h"
 
 SerialCommunication SerialCom;
 
@@ -55,6 +57,8 @@ int win_music[] = {
     3136};
 
 byte gravity_map[MAXLED];
+byte drawOrder[MAX_PLAYERS];
+unsigned long previousRedraw = 0;
 
 int TBEEP = 0;
 int FBEEP = 0;
@@ -73,12 +77,7 @@ byte loop2 = 0;
 byte loop3 = 0;
 byte loop4 = 0;
 
-byte leader = 0;
-byte loop_max = 5; //total laps race
-
-float ACEL = 0.2;
-float kf = 0.015; //friction constant
-float kg = 0.003; //gravity constant
+byte previousLeader = 0;
 
 byte flag_sw1 = 0;
 byte flag_sw2 = 0;
@@ -129,19 +128,21 @@ void setup()
 
   INIT_PLAYERS
 
-  for (int i = 0; i < NPIXELS; i++)
+  for (byte i = 0; i < NPIXELS; i++)
   {
     gravity_map[i] = 127;
   };
+  
+  for( byte i = 0; i < MAX_PLAYERS; ++i)
+  {
+    drawOrder[i] = i;
+  }
+
   track.begin();
   circle.begin();
   circle.setBrightness(125);
-  pinMode(PIN_P1, INPUT_PULLUP);
-  pinMode(PIN_P2, INPUT_PULLUP);
-  pinMode(PIN_P3, INPUT_PULLUP);
-  pinMode(PIN_P4, INPUT_PULLUP);
 
-  if ((digitalRead(PIN_P1) == 0)) //push switch 1 on reset for activate physics
+  if (Players[0].controller().isPressed()) //push switch 1 on reset for activate physics
   {
     ENABLE_RAMP = 1;
     set_ramp(HIGH_RAMP, INI_RAMP, MED_RAMP, END_RAMP);
@@ -159,7 +160,7 @@ void setup()
     delay(500);
     noTone(PIN_AUDIO);
     delay(500);
-    if ((digitalRead(PIN_P1) == 0))
+    if (Players[0].controller().isPressed())
     {
       VIEW_RAMP = 1;
     } // if retain push switch 1 set view ramp
@@ -174,14 +175,14 @@ void setup()
     };
   };
 
-  if ((digitalRead(PIN_P2) == 0))
+  if (Players[1].controller().isPressed())
   {
     delay(1000);
     tone(PIN_AUDIO, 1000);
     delay(500);
     noTone(PIN_AUDIO);
     delay(500);
-    if ((digitalRead(PIN_P2) == 1))
+    if (Players[1].controller().isPressed())
       SMOTOR = 1;
   } //push switch 2 until a tone beep on reset for activate magic FX  ;-)
 
@@ -191,10 +192,16 @@ void setup()
 void start_race()
 {
   send_race_phase(4); // Race phase 4: Countdown
-  for (int i = 0; i < NPIXELS; i++)
+  for( byte i = 0; i < MAX_PLAYERS; ++i)
+  {
+    Players[i].Reset();
+  }
+
+  for (byte i = 0; i < NPIXELS; i++)
   {
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
+
   track.show();
   circle.fill(circle.Color(0, 0, 255), 0, 6);
   circle.fill(circle.Color(0, 255, 0), 6, 6);
@@ -235,6 +242,7 @@ void start_race()
   delay(2000);
   noTone(PIN_AUDIO);
   timestamp = 0;
+  previousLeader = 0;
   send_race_phase(5); // Race phase 4: Race Started
 };
 
@@ -359,9 +367,42 @@ void draw_car4(void)
   };
 }
 
+void draw_cars()
+{
+  if( (millis() - previousRedraw) > 500 )
+  {
+    previousRedraw = millis();
+    for( byte i = 0; i < MAX_PLAYERS; ++i )
+    {
+      byte j = random(i, MAX_PLAYERS);
+      byte tmp = drawOrder[j];
+      drawOrder[j] = drawOrder[i];
+      drawOrder[i] = tmp;
+    }
+  }
+
+  for( byte i = 0; i < MAX_PLAYERS; ++i )
+  {
+    Players[drawOrder[i]].car().Draw(&track);
+  }
+
+}
+
+void show_winner(byte winner)
+{
+    SerialCom.SendCommand("W%d%c", winner, EOL);
+    
+    for (int i = 0; i < MAXLEDCIRCLE; i++)
+    {
+      circle.setPixelColor(i, Players[i].car().getColor());
+    };
+    circle.show();
+    
+    winner_fx(winner);
+}
+
 void loop()
 {
-
   // look for commands received on serial
   //checkSerialCommand();
 
@@ -381,266 +422,46 @@ void loop()
     };
   };
 
-  if ((flag_sw1 == 1) && (digitalRead(PIN_P1) == 0))
+  float maxDist = 0.f;
+  byte currentLeader = 0;
+  for( byte i = 0; i < MAX_PLAYERS; ++i )
   {
-    flag_sw1 = 0;
-    speed1 += ACEL;
-  };
-  if ((flag_sw1 == 0) && (digitalRead(PIN_P1) == 1))
-  {
-    flag_sw1 = 1;
-  };
+    Players[i].Update();
 
-  if ((gravity_map[(word)dist1 % NPIXELS]) < 127)
-    speed1 -= kg * (127 - (gravity_map[(word)dist1 % NPIXELS]));
-  if ((gravity_map[(word)dist1 % NPIXELS]) > 127)
-    speed1 += kg * ((gravity_map[(word)dist1 % NPIXELS]) - 127);
-
-  speed1 -= speed1 * kf;
-
-  if ((flag_sw2 == 1) && (digitalRead(PIN_P2) == 0))
-  {
-    flag_sw2 = 0;
-    speed2 += ACEL;
-  };
-  if ((flag_sw2 == 0) && (digitalRead(PIN_P2) == 1))
-  {
-    flag_sw2 = 1;
-  };
-
-  if ((gravity_map[(word)dist2 % NPIXELS]) < 127)
-    speed2 -= kg * (127 - (gravity_map[(word)dist2 % NPIXELS]));
-  if ((gravity_map[(word)dist2 % NPIXELS]) > 127)
-    speed2 += kg * ((gravity_map[(word)dist2 % NPIXELS]) - 127);
-
-  speed2 -= speed2 * kf;
-
-  if ((flag_sw3 == 1) && (digitalRead(PIN_P3) == 0))
-  {
-    flag_sw3 = 0;
-    speed3 += ACEL;
-  };
-  if ((flag_sw3 == 0) && (digitalRead(PIN_P3) == 1))
-  {
-    flag_sw3 = 1;
-  };
-
-  if ((gravity_map[(word)dist3 % NPIXELS]) < 127)
-    speed3 -= kg * (127 - (gravity_map[(word)dist3 % NPIXELS]));
-  if ((gravity_map[(word)dist3 % NPIXELS]) > 127)
-    speed3 += kg * ((gravity_map[(word)dist3 % NPIXELS]) - 127);
-
-  speed3 -= speed3 * kf;
-
-  if ((flag_sw4 == 1) && (digitalRead(PIN_P4) == 0))
-  {
-    flag_sw4 = 0;
-    speed4 += ACEL;
-  };
-  if ((flag_sw4 == 0) && (digitalRead(PIN_P4) == 1))
-  {
-    flag_sw4 = 1;
-  };
-
-  if ((gravity_map[(word)dist4 % NPIXELS]) < 127)
-    speed4 -= kg * (127 - (gravity_map[(word)dist4 % NPIXELS]));
-  if ((gravity_map[(word)dist4 % NPIXELS]) > 127)
-    speed4 += kg * ((gravity_map[(word)dist4 % NPIXELS]) - 127);
-
-  speed4 -= speed4 * kf;
-
-  dist1 += speed1;
-  dist2 += speed2;
-
-  dist3 += speed3;
-  dist4 += speed4;
-
-  if (dist1 > dist2)
-  {
-    if (leader == 2)
+    if( Players[i].car().isFinishedRace())
     {
-      FBEEP = 440;
-      TBEEP = 10;
-    }
-    leader = 1;
-  }
-  if (dist2 > dist1)
-  {
-    if (leader == 1)
-    {
-      FBEEP = 440 * 2;
-      TBEEP = 10;
-    }
-    leader = 2;
-  };
-
-  if (dist1 > NPIXELS * loop1)
-  {
-    loop1++;
-    TBEEP = 10;
-    FBEEP = 440;
-  };
-  if (dist2 > NPIXELS * loop2)
-  {
-    loop2++;
-    TBEEP = 10;
-    FBEEP = 440 * 2;
-  };
-  if (dist3 > NPIXELS * loop3)
-  {
-    loop3++;
-    TBEEP = 10;
-    FBEEP = 440;
-  };
-  if (dist4 > NPIXELS * loop4)
-  {
-    loop4++;
-    TBEEP = 10;
-    FBEEP = 440 * 4;
-  };
-
-  if (loop1 > loop_max)
-  {
-    SerialCom.SendCommand("w1%c", EOL);
-    for (int i = 0; i < MAXLEDCIRCLE; i++)
-    {
-      circle.setPixelColor(i, COLOR_P1);
-    };
-    circle.show();
-    winner_fx(1);
-    loop1 = 0;
-    loop2 = 0;
-    loop3 = 0;
-    loop4 = 0;
-    dist1 = 0;
-    dist2 = 0;
-    dist3 = 0;
-    dist4 = 0;
-    speed1 = 0;
-    speed2 = 0;
-    speed3 = 0;
-    speed4 = 0;
-    timestamp = 0;
-    start_race();
-  }
-  if (loop2 > loop_max)
-  {
-    SerialCom.SendCommand("w2%c", EOL);
-    for (int i = 0; i < MAXLEDCIRCLE; i++)
-    {
-      circle.setPixelColor(i, COLOR_P2);
-    };
-    circle.show();
-    winner_fx(2);
-    loop1 = 0;
-    loop2 = 0;
-    loop3 = 0;
-    loop4 = 0;
-    dist1 = 0;
-    dist2 = 0;
-    dist3 = 0;
-    dist4 = 0;
-    speed1 = 0;
-    speed2 = 0;
-    speed3 = 0;
-    speed4 = 0;
-    timestamp = 0;
-    start_race();
-  }
-  if (loop3 > loop_max)
-  {
-    SerialCom.SendCommand("w1%c", EOL);
-
-    for (int i = 0; i < MAXLEDCIRCLE; i++)
-    {
-      circle.setPixelColor(i, COLOR_P3);
-    };
-    circle.show();
-    winner_fx(1);
-    loop1 = 0;
-    loop2 = 0;
-    loop3 = 0;
-    loop4 = 0;
-    dist1 = 0;
-    dist2 = 0;
-    dist3 = 0;
-    dist4 = 0;
-    speed1 = 0;
-    speed2 = 0;
-    speed3 = 0;
-    speed4 = 0;
-    timestamp = 0;
-    start_race();
-  }
-  if (loop4 > loop_max)
-  {
-    SerialCom.SendCommand("w2%c", EOL);
-    for (int i = 0; i < MAXLEDCIRCLE; i++)
-    {
-      circle.setPixelColor(i, COLOR_P4);
-    };
-    circle.show();
-    winner_fx(2);
-    loop1 = 0;
-    loop2 = 0;
-    loop3 = 0;
-    loop4 = 0;
-    dist1 = 0;
-    dist2 = 0;
-    dist3 = 0;
-    dist4 = 0;
-    speed1 = 0;
-    speed2 = 0;
-    speed3 = 0;
-    speed4 = 0;
-    timestamp = 0;
-    start_race();
-  }
-
-  if ((millis() & 512) == (512 * draworder))
-  {
-    if (draworder == 0)
-    {
-      draworder = 1;
+      show_winner(i);
+      start_race();
+      break;
     }
     else
     {
-      draworder = 0;
-    }
-  };
-  if (abs(round(speed1 * 100)) > abs(round(speed2 * 100)))
-  {
-    draworder = 1;
-  };
-  if (abs(round(speed2 * 100)) > abs(round(speed1 * 100)))
-  {
-    draworder = 0;
-  };
-  if (abs(round(speed3 * 100)) > abs(round(speed3 * 100)))
-  {
-    draworder = 1;
-  };
-  if (abs(round(speed4 * 100)) > abs(round(speed4 * 100)))
-  {
-    draworder = 0;
-  };
+      if (Players[i].car().getDistance() > maxDist)
+      {
+        maxDist = Players[i].car().getDistance();
+        currentLeader = i;
+      }
 
-  if (draworder == 0)
-  {
-    draw_car1();
-    draw_car2();
-    draw_car3();
-    draw_car4();
+      if (Players[i].car().isStartingNewLoop())
+      {
+        FBEEP = 440 * (currentLeader + 1);
+        TBEEP = 10;
+      }
+    }
   }
-  else
+  
+  //Beep when someone new takes the lead
+  if( previousLeader != currentLeader )
   {
-    draw_car2();
-    draw_car1();
-    draw_car4();
-    draw_car3();
+    FBEEP = 440 * (currentLeader + 1);
+    TBEEP = 10;
+    previousLeader = currentLeader;
   }
+  
+  draw_cars();
 
   track.show();
+  
   if (SMOTOR == 1)
     tone(PIN_AUDIO, FBEEP + int(speed1 * 440 * 2) + int(speed2 * 440 * 3));
   delay(tdelay);

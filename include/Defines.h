@@ -3,6 +3,8 @@
 #define MAXLED 120      // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
 
+#define MAX_LOOPS 5 //Number of loops in the race
+
 #define PIN_LED 25    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_CIRCLE 26 // R 500 ohms to IN pin for WS2812 and WS2813, for WS2813 IN pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 
@@ -35,3 +37,7 @@
 
 #define REC_COMMAND_BUFLEN 32
 #define TX_COMMAND_BUFLEN 64
+
+#define ACEL 0.2f //Acceleration
+#define kf 0.015f //friction constant
+#define kg 0.003f //gravity constant

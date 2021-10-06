@@ -10,6 +10,11 @@ class Controller
 
     public:
     Controller(byte pin);
+    bool isPressed() const;
 
-    bool isPressed();
+    void Reset();
+    void Update();
+    
+    bool alreadyPressed() const { return _alreadyPressed; }
+    void setAlreadyPressed( bool pressed ) { _alreadyPressed = pressed; }
 };

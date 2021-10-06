@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+class Adafruit_NeoPixel;
+
 class Car
 {
     protected:
@@ -9,7 +11,22 @@ class Car
     float _speed;
     float _distance;
     byte _currentLoop;
+    bool _newLoopStarted;
+    bool _finishedRace;
 
     public:
     Car(uint32_t color);
+
+    void Update();
+    void Reset();
+    void Draw(Adafruit_NeoPixel* led) const;
+
+    void setSpeed( float speed) { _speed = speed; }
+    void increaseSpeed( float inc ) { _speed += inc; }
+
+    bool isStartingNewLoop() const { return _newLoopStarted; }
+    bool isFinishedRace() const { return _finishedRace; }
+
+    float getDistance() const { return _distance; }
+    uint32_t getColor() const { return _color; }
 };
