@@ -67,7 +67,10 @@ byte previousLeader = 0;
 unsigned long timestamp = 0;
 
 Adafruit_NeoPixel track = Adafruit_NeoPixel(MAXLED, PIN_LED, NEO_GRB + NEO_KHZ800);
+
+#ifdef LED_CIRCLE
 Adafruit_NeoPixel circle = Adafruit_NeoPixel(MAXLEDCIRCLE, PIN_CIRCLE, NEO_GRB + NEO_KHZ800);
+#endif
 
 int tdelay = 5;
 
@@ -111,15 +114,18 @@ void setup()
   {
     gravity_map[i] = 127;
   };
-  
-  for( byte i = 0; i < MAX_PLAYERS; ++i)
+
+  for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
     drawOrder[i] = i;
   }
 
   track.begin();
+
+#ifdef LED_CIRCLE
   circle.begin();
   circle.setBrightness(125);
+#endif
 
   if (Players[0].controller().isPressed()) //push switch 1 on reset for activate physics
   {
@@ -171,7 +177,7 @@ void setup()
 void start_race()
 {
   send_race_phase(4); // Race phase 4: Countdown
-  for( byte i = 0; i < MAX_PLAYERS; ++i)
+  for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
     Players[i].Reset();
   }
@@ -182,44 +188,61 @@ void start_race()
   };
 
   track.show();
+
+#ifdef LED_CIRCLE
   circle.fill(circle.Color(0, 0, 255), 0, 6);
   circle.fill(circle.Color(0, 255, 0), 6, 6);
   circle.fill(circle.Color(255, 0, 0), 12, 6);
   circle.fill(circle.Color(255, 255, 255), 18, 6);
   circle.show();
+#endif
+
   delay(2000);
+
   track.setPixelColor(12, track.Color(0, 255, 0));
   track.setPixelColor(11, track.Color(0, 255, 0));
   track.show();
+
+#ifdef LED_CIRCLE
   circle.fill(circle.Color(255, 255, 255), 0, 6);
   circle.fill(circle.Color(0, 0, 255), 6, 6);
   circle.fill(circle.Color(255, 0, 0), 12, 6);
   circle.fill(circle.Color(0, 255, 0), 18, 6);
   circle.show();
+#endif
+
   tone(PIN_AUDIO, 400);
   delay(2000);
   noTone(PIN_AUDIO);
+
   track.setPixelColor(12, track.Color(0, 0, 0));
   track.setPixelColor(11, track.Color(0, 0, 0));
   track.setPixelColor(10, track.Color(255, 255, 0));
   track.setPixelColor(9, track.Color(255, 255, 0));
   track.show();
+
+#ifdef LED_CIRCLE
   circle.fill(circle.Color(0, 255, 0), 0, 6);
   circle.fill(circle.Color(255, 255, 255), 6, 6);
   circle.fill(circle.Color(0, 0, 255), 12, 6);
   circle.fill(circle.Color(255, 0, 0), 18, 6);
   circle.show();
+#endif
+
   tone(PIN_AUDIO, 600);
   delay(2000);
   noTone(PIN_AUDIO);
+
   track.setPixelColor(9, track.Color(0, 0, 0));
   track.setPixelColor(10, track.Color(0, 0, 0));
   track.setPixelColor(8, track.Color(255, 0, 0));
   track.setPixelColor(7, track.Color(255, 0, 0));
   track.show();
+
   tone(PIN_AUDIO, 1200);
   delay(2000);
   noTone(PIN_AUDIO);
+
   timestamp = 0;
   previousLeader = 0;
   send_race_phase(5); // Race phase 4: Race Started
@@ -245,10 +268,10 @@ void winner_fx(byte w)
 
 void draw_cars()
 {
-  if( (millis() - previousRedraw) > 1000 )
+  if ((millis() - previousRedraw) > 1000)
   {
     previousRedraw = millis();
-    for( byte i = 0; i < MAX_PLAYERS; ++i )
+    for (byte i = 0; i < MAX_PLAYERS; ++i)
     {
       byte j = random(i, MAX_PLAYERS);
       byte tmp = drawOrder[j];
@@ -257,24 +280,24 @@ void draw_cars()
     }
   }
 
-  for( byte i = 0; i < MAX_PLAYERS; ++i )
+  for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
     Players[drawOrder[i]].car().Draw(&track);
   }
-
 }
 
 void show_winner(byte winner)
 {
-    SerialCommunication::instance().SendCommand("W%d%c", winner, EOL);
-    
-    for (int i = 0; i < MAXLEDCIRCLE; i++)
-    {
-      circle.setPixelColor(i, Players[i].car().getColor());
-    };
-    circle.show();
-    
-    winner_fx(winner);
+  SerialCommunication::instance().SendCommand("W%d%c", winner, EOL);
+#ifdef LED_CIRCLE
+  for (int i = 0; i < MAXLEDCIRCLE; i++)
+  {
+    circle.setPixelColor(i, Players[i].car().getColor());
+  };
+  circle.show();
+#endif
+
+  winner_fx(winner);
 }
 
 void loop()
@@ -300,15 +323,15 @@ void loop()
 
   float maxDist = 0.f;
   byte currentLeader = 0;
-  for( byte i = 0; i < MAX_PLAYERS; ++i )
+  for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
     Players[i].Update();
 
-    if( Players[i].car().isFinishedRace())
+    if (Players[i].car().isFinishedRace())
     {
       show_winner(i);
       start_race();
-      break;
+      return;
     }
     else
     {
@@ -325,19 +348,19 @@ void loop()
       }
     }
   }
-  
+
   //Beep when someone new takes the lead
-  if( previousLeader != currentLeader )
+  if (previousLeader != currentLeader)
   {
     FBEEP = 440 * (currentLeader + 1);
     TBEEP = 10;
     previousLeader = currentLeader;
   }
-  
+
   draw_cars();
 
   track.show();
-  
+
   // if (SMOTOR == 1)
   //   tone(PIN_AUDIO, FBEEP + int(speed1 * 440 * 2) + int(speed2 * 440 * 3));
 
@@ -371,7 +394,7 @@ void checkSerialCommand()
   if (clen == 0)
     return; // No commands received
   if (clen < 0)
-  {                                                                  // Error receiving command
+  {                                                                                           // Error receiving command
     SerialCommunication::instance().SendCommand("!1Error reading serial command:[%d]", clen); // Send a warning to host
     return;
   }

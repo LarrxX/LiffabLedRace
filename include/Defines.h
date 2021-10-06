@@ -1,5 +1,7 @@
 #pragma once
 
+//#define LED_CIRCLE
+
 #define MAXLED 120      // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
 

@@ -40,14 +40,17 @@ void Player::Reset()
     }
 }
 
+#include "SerialCommunication.h"
+
 void Player::Update()
 {
     if (isInit())
     {
         if( _controller->isPressed() && !_controller->alreadyPressed() )
         {
-            _car->Update();
+            _car->increaseSpeed(ACEL);
         }
+        _car->Update();
         _controller->Update();
     }
 }
