@@ -47,9 +47,6 @@ char const version[] = "1.0.0";
 DynamicArray<Player> Players(MAX_PLAYERS);
 DynamicPointerArray<IObstacle*> Obstacles;
 
-bool ENABLE_RAMP = 0;
-bool VIEW_RAMP = 0;
-
 word win_music[] = {
     2637, 2637, 0, 2637,
     0, 2093, 2637, 0,
@@ -68,32 +65,6 @@ Adafruit_NeoPixel track = Adafruit_NeoPixel(MAXLED, PIN_LED, NEO_GRB + NEO_KHZ80
 #ifdef LED_CIRCLE
 Adafruit_NeoPixel circle = Adafruit_NeoPixel(MAXLEDCIRCLE, PIN_CIRCLE, NEO_GRB + NEO_KHZ800);
 #endif
-
-void set_ramp(word H, word a, word b, word c)
-{
-  for (word i = 0; i < (b - a); i++)
-  {
-    gravity_map[a + i] = 127 - i * ((float)H / (b - a));
-  };
-  gravity_map[b] = 127;
-  for (word i = 0; i < (c - b); i++)
-  {
-    gravity_map[b + i + 1] = 127 + H - i * ((float)H / (c - b));
-  };
-}
-
-void set_loop(word H, word a, word b, word c)
-{
-  for (word i = 0; i < (b - a); i++)
-  {
-    gravity_map[a + i] = 127 - i * ((float)H / (b - a));
-  };
-  gravity_map[b] = 255;
-  for (word i = 0; i < (c - b); i++)
-  {
-    gravity_map[b + i + 1] = 127 + H - i * ((float)H / (c - b));
-  };
-}
 
 void start_race()
 {
@@ -190,40 +161,7 @@ void setup()
   circle.setBrightness(125);
 #endif
 
-  if (Players[0].controller().isPressed()) //push switch 1 on reset for activate physics
-  {
-    ENABLE_RAMP = 1;
-    set_ramp(HIGH_RAMP, INI_RAMP, MED_RAMP, END_RAMP);
-    for (word i = 0; i < (MED_RAMP - INI_RAMP); i++)
-    {
-      track.setPixelColor(INI_RAMP + i, track.Color(24 + i * 4, 0, 24 + i * 4));
-    };
-    for (word i = 0; i < (END_RAMP - MED_RAMP); i++)
-    {
-      track.setPixelColor(END_RAMP - i, track.Color(24 + i * 4, 0, 24 + i * 4));
-    };
-    track.show();
-    delay(1000);
-    tone(PIN_AUDIO, 500);
-    delay(500);
-    noTone(PIN_AUDIO);
-    delay(500);
-    if (Players[0].controller().isPressed())
-    {
-      VIEW_RAMP = 1;
-    } // if retain push switch 1 set view ramp
-    else
-    {
-      for (word i = 0; i < MAXLED; i++)
-      {
-        track.setPixelColor(i, track.Color(0, 0, 0));
-      };
-      track.show();
-      VIEW_RAMP = 0;
-    };
-  };
-
-  if (Players[1].controller().isPressed())
+  if (Players[0].controller().isPressed())
   {
     delay(1000);
     tone(PIN_AUDIO, 1000);
@@ -232,7 +170,7 @@ void setup()
     delay(500);
     if (Players[1].controller().isPressed())
       SMOTOR = 1;
-  } //push switch 2 until a tone beep on reset for activate magic FX  ;-)
+  } //push switch 1 until a tone beep on reset for activate magic FX  ;-)
 
   start_race();
 }
@@ -296,18 +234,6 @@ void loop()
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
   
-  if ((ENABLE_RAMP == 1) && (VIEW_RAMP == 1))
-  {
-    for (word i = 0; i < (MED_RAMP - INI_RAMP); i++)
-    {
-      track.setPixelColor(INI_RAMP + i, track.Color(24 + i * 4, 0, 24 + i * 4));
-    };
-    for (word i = 0; i < (END_RAMP - MED_RAMP); i++)
-    {
-      track.setPixelColor(END_RAMP - i, track.Color(24 + i * 4, 0, 24 + i * 4));
-    };
-  };
-
   for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
     Players[i].Update(Obstacles);
