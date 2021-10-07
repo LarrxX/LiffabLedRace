@@ -38,7 +38,11 @@ char const version[] = "1.0.0";
 #include "Controller.h"
 #include "Car.h"
 
+#include "RampObstacle.h"
+#include "OilObstacle.h"
+
 Player Players[MAX_PLAYERS];
+Obstacle* Obstacles[MAX_OBSTACLES];
 
 bool ENABLE_RAMP = 0;
 bool VIEW_RAMP = 0;
@@ -166,6 +170,7 @@ void setup()
   Serial.begin(115200);
 
   INIT_PLAYERS
+  INIT_OBSTACLES
 
   for (byte i = 0; i < MAXLED; i++)
   {
@@ -323,7 +328,7 @@ void loop()
 
       if (Players[i].car().isStartingNewLoop())
       {
-        FBEEP = 440 * (currentLeader + 1);
+        FBEEP = 440 * (i + 1);
         TBEEP = 10;
       }
     }
@@ -338,6 +343,11 @@ void loop()
   }
 
   draw_cars();
+
+  for( byte i = 0; i < MAX_OBSTACLES; ++i )
+  {
+    Obstacles[i]->Update();
+  }
 
   track.show();
 

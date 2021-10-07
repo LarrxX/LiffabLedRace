@@ -17,6 +17,12 @@
 #define END_RAMP 420
 #define HIGH_RAMP 25
 
+#define MAX_OBSTACLES 2
+
+#define INIT_OBSTACLES                \
+    Obstacles[0] = new OilObstacle(50,100,Adafruit_NeoPixel::Color(255, 0, 0)); \
+    Obstacles[1] = new RampObstacle(150,30,Adafruit_NeoPixel::Color(255, 0, 0));
+
 #define MAX_PLAYERS 4
 #define PIN_P1 16 // switch player 1 to PIN and GND
 #define PIN_P2 17 // switch player 2 to PIN and GND
@@ -28,7 +34,7 @@
 #define COLOR_P3 Adafruit_NeoPixel::Color(0, 0, 255)
 #define COLOR_P4 Adafruit_NeoPixel::Color(255, 255, 255)
 
-#define INIT_PLAYERS                 \
+#define INIT_PLAYERS                   \
     Players[0].Init(COLOR_P1, PIN_P1); \
     Players[1].Init(COLOR_P2, PIN_P2); \
     Players[2].Init(COLOR_P3, PIN_P3); \
@@ -43,3 +49,5 @@
 #define ACEL 0.2f //Acceleration
 #define kf 0.015f //friction constant
 #define kg 0.003f //gravity constant
+
+#define DYNAMIC_CHUNK_SIZE 5
