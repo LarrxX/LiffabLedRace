@@ -26,7 +26,7 @@
  https://openledrace.net/open-software/
 */
 
-char const softwareId[] = "OLR-Liffab"; 
+char const softwareId[] = "OLR-Liffab";
 char const version[] = "1.0.0";
 
 #include <ESP32Tone.h>
@@ -41,8 +41,10 @@ char const version[] = "1.0.0";
 #include "RampObstacle.h"
 #include "OilObstacle.h"
 
-Player Players[MAX_PLAYERS];
-Obstacle* Obstacles[MAX_OBSTACLES];
+#include "DynamicArray.h"
+
+DynamicArray<Player> Players(MAX_PLAYERS);
+Obstacle *Obstacles[MAX_OBSTACLES];
 
 bool ENABLE_RAMP = 0;
 bool VIEW_RAMP = 0;
@@ -59,8 +61,6 @@ unsigned long previousRedraw = 0;
 word TBEEP = 0;
 word FBEEP = 0;
 byte SMOTOR = 0;
-
-byte previousLeader = 0;
 
 Adafruit_NeoPixel track = Adafruit_NeoPixel(MAXLED, PIN_LED, NEO_GRB + NEO_KHZ800);
 
@@ -161,8 +161,6 @@ void start_race()
   tone(PIN_AUDIO, 1200);
   delay(2000);
   noTone(PIN_AUDIO);
-
-  previousLeader = 0;
 }
 
 void setup()
@@ -294,6 +292,7 @@ void loop()
   {
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
+  
   if ((ENABLE_RAMP == 1) && (VIEW_RAMP == 1))
   {
     for (word i = 0; i < (MED_RAMP - INI_RAMP); i++)
@@ -306,8 +305,6 @@ void loop()
     };
   };
 
-  float maxDist = 0.f;
-  byte currentLeader = 0;
   for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
     Players[i].Update();
@@ -318,33 +315,27 @@ void loop()
       start_race();
       return;
     }
-    else
-    {
-      if (Players[i].car().getDistance() > maxDist)
-      {
-        maxDist = Players[i].car().getDistance();
-        currentLeader = i;
-      }
 
-      if (Players[i].car().isStartingNewLoop())
-      {
-        FBEEP = 440 * (i + 1);
-        TBEEP = 10;
-      }
+    if (Players[i].car().isStartingNewLoop())
+    {
+      FBEEP = 440 * (i + 1);
+      TBEEP = 10;
     }
   }
 
+  byte previousLeader = Players[0].id();
+  Players.Sort();
   //Beep when someone new takes the lead
-  if (previousLeader != currentLeader)
+  if (previousLeader != Players[0].id())
   {
-    FBEEP = 440 * (currentLeader + 1);
+    SerialCommunication::instance().SendCommand("%d overtook %d\n", Players[0].id(), previousLeader);
+    FBEEP = 440 * (Players[0].id() + 1);
     TBEEP = 10;
-    previousLeader = currentLeader;
   }
 
   draw_cars();
 
-  for( byte i = 0; i < MAX_OBSTACLES; ++i )
+  for (byte i = 0; i < MAX_OBSTACLES; ++i)
   {
     Obstacles[i]->Update();
   }

@@ -8,20 +8,24 @@ class Controller;
 class Player
 {
     protected:
-    bool _isInit;
     Car *_car;
     Controller *_controller;
-    
+    static byte _ID;
+    byte _id;
 
     public:
-    Player();
+    Player(uint32_t carColor, byte controllerPin);
     ~Player();
-    void Init(uint32_t carColor, byte controllerPin);
 
     void Update();
     void Reset();
-            
-    const bool& isInit() const{ return _isInit; }
+    
     const Controller& controller() const { return *_controller; }
     const Car& car() const { return *_car; }
+    byte id() const { return _id;}
+
+    bool operator<(const Player& other) const;
+    
+    private:
+    Player();
 };
