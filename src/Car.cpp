@@ -48,3 +48,9 @@ void Car::Draw(Adafruit_NeoPixel *led) const
     led->setPixelColor(((word)_distance % MAXLED) + i, _color);
   };
 }
+
+//Get distance in current loop
+float Car::getCurrentDistance() const
+{
+  return getDistance() - (_currentLoop * MAXLED);
+}

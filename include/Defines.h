@@ -20,8 +20,8 @@
 #define MAX_OBSTACLES 2
 
 #define INIT_OBSTACLES                \
-    Obstacles[0] = new OilObstacle(50,100,Adafruit_NeoPixel::Color(255, 0, 0)); \
-    Obstacles[1] = new RampObstacle(150,30,Adafruit_NeoPixel::Color(255, 0, 0));
+    Obstacles.Add(new OilObstacle(100,110,Adafruit_NeoPixel::Color(0, 255, 255))); \
+    Obstacles.Add(new RampObstacle(30,50,Adafruit_NeoPixel::Color(255, 0, 255)));
 
 #define MAX_PLAYERS 4
 #define PIN_P1 16 // switch player 1 to PIN and GND

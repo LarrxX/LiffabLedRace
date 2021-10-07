@@ -4,9 +4,13 @@
 #include "Controller.h"
 #include "Defines.h"
 
+#include "DynamicPointerArray.h"
+#include "IObstacle.h"
+
 byte Player::_ID = 0;
 
-Player::Player(uint32_t carColor, byte controllerPin) : _id(_ID++)
+Player::Player(uint32_t carColor, byte controllerPin) : _currentObstacle(0),
+ _id(_ID++)
 {
     _car = new Car(carColor);
     _controller = new Controller(controllerPin);
@@ -27,14 +31,26 @@ void Player::Reset()
 {
     _car->Reset();
     _controller->Reset();
+    _currentObstacle = 0;
 }
 
-void Player::Update()
+void Player::Update(DynamicPointerArray<IObstacle*>& obstacles)
 {
     if (_controller->isPressed() && !_controller->alreadyPressed())
     {
         _car->increaseSpeed(ACEL);
     }
+
+    if( _car->getCurrentDistance() >= obstacles[_currentObstacle]->getEnd())
+    {
+        ++_currentObstacle;
+        if( _currentObstacle == obstacles.Count() )
+        {
+            _currentObstacle = 0;
+        }
+    }
+    
+    obstacles[_currentObstacle]->Update(_car);
     _car->Update();
     _controller->Update();
 }

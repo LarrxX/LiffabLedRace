@@ -42,9 +42,10 @@ char const version[] = "1.0.0";
 #include "OilObstacle.h"
 
 #include "DynamicArray.h"
+#include "DynamicPointerArray.h"
 
 DynamicArray<Player> Players(MAX_PLAYERS);
-Obstacle *Obstacles[MAX_OBSTACLES];
+DynamicPointerArray<IObstacle*> Obstacles;
 
 bool ENABLE_RAMP = 0;
 bool VIEW_RAMP = 0;
@@ -169,6 +170,8 @@ void setup()
 
   INIT_PLAYERS
   INIT_OBSTACLES
+
+  Obstacles.Sort();
 
   for (byte i = 0; i < MAXLED; i++)
   {
@@ -307,7 +310,7 @@ void loop()
 
   for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
-    Players[i].Update();
+    Players[i].Update(Obstacles);
 
     if (Players[i].car().isFinishedRace())
     {
@@ -333,12 +336,11 @@ void loop()
     TBEEP = 10;
   }
 
-  draw_cars();
-
-  for (byte i = 0; i < MAX_OBSTACLES; ++i)
+  for( byte i = 0; i < Obstacles.Count(); ++i )
   {
-    Obstacles[i]->Update();
+    Obstacles[i]->Draw(&track);
   }
+  draw_cars();
 
   track.show();
 

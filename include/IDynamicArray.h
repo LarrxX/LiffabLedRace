@@ -63,7 +63,19 @@ public:
 
     void Sort()
     {
-        QuickSort(0, _used - 1);
+        //Bubble sort (since we have very small arrays)
+        for (byte step = 0; step < _used - 1; ++step)
+        {
+            for (byte i = 0; i < _used - step - 1; ++i)
+            {
+                if (isSmaller(_array[i + 1], _array[i]))
+                {
+                    T tmp = _array[i];
+                    _array[i] = _array[i + 1];
+                    _array[i + 1] = tmp;
+                }
+            }
+        }
     }
 
     T &operator[](size_t i)
@@ -85,40 +97,5 @@ private:
         _used = 0;
         _allocated = initialSize;
         _array = (T *)malloc(initialSize * sizeof(T));
-    }
-
-    void QuickSort(size_t low, size_t high)
-    {
-        size_t i = low;
-        size_t j = high;
-        T pivot = _array[(low + high) / 2];
-
-        while (i <= j)
-        {
-            while (isSmaller(_array[i], pivot))
-                ++i;
-
-            while (isSmaller(pivot, _array[j]))
-                --j;
-
-            if (i <= j)
-            {
-                T tmp = _array[i];
-                _array[i] = _array[j];
-                _array[j] = tmp;
-                ++i;
-                --j;
-            }
-        }
-
-        if (low < j)
-        {
-            QuickSort(low, j);
-        }
-
-        if (i < high)
-        {
-            QuickSort(i, high);
-        }
     }
 };

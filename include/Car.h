@@ -29,4 +29,5 @@ class Car
 
     float getDistance() const { return _distance; }
     uint32_t getColor() const { return _color; }
+    float getCurrentDistance() const;
 };

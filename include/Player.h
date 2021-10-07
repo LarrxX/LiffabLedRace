@@ -4,20 +4,27 @@
 
 class Car;
 class Controller;
+class IObstacle;
+
+template <class T>
+class DynamicPointerArray;
 
 class Player
 {
     protected:
     Car *_car;
     Controller *_controller;
+    byte _currentObstacle;
+    
     static byte _ID;
     byte _id;
+
 
     public:
     Player(uint32_t carColor, byte controllerPin);
     ~Player();
 
-    void Update();
+    void Update(DynamicPointerArray<IObstacle*>& obstacles);
     void Reset();
     
     const Controller& controller() const { return *_controller; }
