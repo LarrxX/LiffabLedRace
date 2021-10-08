@@ -27,7 +27,7 @@ class Car
     bool isStartingNewLoop() const { return _newLoopStarted; }
     bool isFinishedRace() const { return _finishedRace; }
 
-    float getDistance() const { return _distance; }
+    float getTotalDistance() const { return _distance; }
     uint32_t getColor() const { return _color; }
     float getCurrentDistance() const;
 };

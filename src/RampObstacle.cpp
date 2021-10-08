@@ -9,7 +9,7 @@ RampObstacle::RampObstacle(word start, word end, uint32_t color) : IObstacle(sta
 
 void RampObstacle::Update(Car *car)
 {
-    float carPos = car->getDistance();
+    float carPos = car->getCurrentDistance();
     if (carPos >= _start && carPos <= _end)
     {
         Serial.println("Car is on RAMP!");

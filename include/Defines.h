@@ -34,11 +34,10 @@
 #define COLOR_P3 Adafruit_NeoPixel::Color(0, 0, 255)
 #define COLOR_P4 Adafruit_NeoPixel::Color(255, 255, 255)
 
-#define INIT_PLAYERS                   \
-    Players.Add(Player(COLOR_P1, PIN_P1)); \
-    Players.Add(Player(COLOR_P2, PIN_P2)); \
-    Players.Add(Player(COLOR_P3, PIN_P3)); \
-    Players.Add(Player(COLOR_P4, PIN_P4));
+#define INIT_PLAYERS  Players.Add(Player(COLOR_P1, PIN_P1)); \
+     Players.Add(Player(COLOR_P2, PIN_P2)); \
+     Players.Add(Player(COLOR_P3, PIN_P3)); \
+     Players.Add(Player(COLOR_P4, PIN_P4));
 
 // Serial Communications
 #define EOL '\n' // End of Command char used in Protocol

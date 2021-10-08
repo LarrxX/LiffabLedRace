@@ -9,7 +9,7 @@ OilObstacle::OilObstacle(word start, word end, uint32_t color) : IObstacle(start
 
 void OilObstacle::Update(Car *car)
 {
-    float carPos = car->getDistance();
+    float carPos = car->getCurrentDistance();
     if (carPos >= _start && carPos <= _end)
     {
         Serial.println("Car is in OIL!");

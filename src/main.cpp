@@ -33,7 +33,6 @@ char const version[] = "1.0.0";
 #include <Adafruit_NeoPixel.h>
 
 #include "Defines.h"
-#include "SerialCommunication.h"
 #include "Player.h"
 #include "Controller.h"
 #include "Car.h"
@@ -215,7 +214,7 @@ void draw_cars()
 
 void show_winner(byte winner)
 {
-  SerialCommunication::instance().SendCommand("W%d%c", winner, EOL);
+  Serial.printf("Winner: %d", winner);
 #ifdef LED_CIRCLE
   for (word i = 0; i < MAXLEDCIRCLE; i++)
   {
@@ -257,7 +256,7 @@ void loop()
   //Beep when someone new takes the lead
   if (previousLeader != Players[0].id())
   {
-    SerialCommunication::instance().SendCommand("%d overtook %d\n", Players[0].id(), previousLeader);
+    Serial.printf("%d overtook %d\n", Players[0].id(), previousLeader);
     FBEEP = 440 * (Players[0].id() + 1);
     TBEEP = 10;
   }

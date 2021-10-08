@@ -63,6 +63,11 @@ public:
 
     void Sort()
     {
+        if( _used <= 1 )
+        {
+            return;
+        }
+        
         //Bubble sort (since we have very small arrays)
         for (byte step = 0; step < _used - 1; ++step)
         {
