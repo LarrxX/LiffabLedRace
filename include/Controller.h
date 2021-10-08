@@ -6,7 +6,8 @@ class Controller
 {
     protected:
     byte _pin;
-    bool _alreadyPressed; //flag_sw
+    bool _alreadyPressed;
+    unsigned long _pressedTime;
 
     public:
     Controller(byte pin);
@@ -17,4 +18,6 @@ class Controller
     
     bool alreadyPressed() const { return _alreadyPressed; }
     void setAlreadyPressed( bool pressed ) { _alreadyPressed = pressed; }
+
+    unsigned long getPressedTime() const { return _pressedTime; }
 };

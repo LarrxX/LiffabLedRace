@@ -40,11 +40,6 @@ void Player::Update(DynamicPointerArray<IObstacle *> &obstacles)
         _car->accelerate(ACEL);
     }
 
-    if (_car->isStartingNewLoop())
-    {
-        _currentObstacle = 0;
-    }
-
     if (_currentObstacle < obstacles.Count())
     {
         obstacles[_currentObstacle]->Update(this);
@@ -56,6 +51,11 @@ void Player::Update(DynamicPointerArray<IObstacle *> &obstacles)
 
     _car->Update();
     _controller->Update();
+
+    if (_car->isStartingNewLoop())
+    {
+        _currentObstacle = 0;
+    }
 }
 
 bool Player::operator<(const Player &other) const

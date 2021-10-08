@@ -28,6 +28,8 @@ class Car
     bool isFinishedRace() const { return _finishedRace; }
 
     float getTotalDistance() const { return _distance; }
-    uint32_t getColor() const { return _color; }
     float getCurrentDistance() const;
+    void increaseDistance(float inc) { _distance += inc; }
+    uint32_t getColor() const { return _color; }
+    
 };

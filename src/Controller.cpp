@@ -9,14 +9,17 @@ Controller::Controller(byte pin) : _pin(pin)
 void Controller::Reset()
 {
     _alreadyPressed = false;
+    _pressedTime = 0;
 }
 
 void Controller::Update()
 {
     if (isPressed() && !_alreadyPressed)
     {
+        _pressedTime = millis();
         _alreadyPressed = true;
     };
+    
     if (_alreadyPressed && !isPressed())
     {
         _alreadyPressed = false;

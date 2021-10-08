@@ -12,9 +12,11 @@
 
 #define PIN_AUDIO 32 // through CAP 2uf to speaker 8 ohms
 
+#define OIL_PRESS_DELAY 500
+
 #define INIT_OBSTACLES                \
-    Obstacles.Add(new OilObstacle(100,110,Adafruit_NeoPixel::Color(0, 255, 255))); \
-    Obstacles.Add(new RampObstacle(30,50,10,Adafruit_NeoPixel::Color(127, 0, 127), RampObstacle::RAMP_HILL));
+    Obstacles.Add(new OilObstacle(30,45,Adafruit_NeoPixel::Color(255, 255, 0))); \
+    Obstacles.Add(new RampObstacle(100,120,10,Adafruit_NeoPixel::Color(127, 0, 127), RampObstacle::RAMP_HILL));
 
 #define MAX_PLAYERS 4
 #define PIN_P1 16 // switch player 1 to PIN and GND

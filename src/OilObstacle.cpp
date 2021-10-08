@@ -3,8 +3,9 @@
 #include <Adafruit_NeoPixel.h>
 
 #include "Player.h"
+#include "Controller.h"
 #include "Car.h"
-
+#include "Defines.h"
 
 OilObstacle::OilObstacle(word start, word end, uint32_t color) : IObstacle(start, end, color)
 {
@@ -15,7 +16,15 @@ void OilObstacle::Update(Player *player)
     float carPos = player->car().getCurrentDistance();
     if (carPos >= _start && carPos <= _end)
     {
-        Serial.println("Car is in OIL!");
+        if( player->controller().isPressed() && !player->controller().alreadyPressed())
+        {
+            player->mutableCar().setSpeed(0);
+            
+            if( (millis() - player->controller().getPressedTime()) > OIL_PRESS_DELAY )
+            {
+            player->mutableCar().increaseDistance(1);
+            }
+        }
     }
 }
 
