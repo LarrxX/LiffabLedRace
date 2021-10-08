@@ -37,7 +37,7 @@ void Player::Update(DynamicPointerArray<IObstacle *> &obstacles)
 {
     if (_controller->isPressed() && !_controller->alreadyPressed())
     {
-        _car->increaseSpeed(ACEL);
+        _car->accelerate(ACEL);
     }
 
     if (_car->isStartingNewLoop())
@@ -47,7 +47,7 @@ void Player::Update(DynamicPointerArray<IObstacle *> &obstacles)
 
     if (_currentObstacle < obstacles.Count())
     {
-        obstacles[_currentObstacle]->Update(_car);
+        obstacles[_currentObstacle]->Update(this);
         if (_car->getCurrentDistance() >= obstacles[_currentObstacle]->getEnd())
         {
             ++_currentObstacle;

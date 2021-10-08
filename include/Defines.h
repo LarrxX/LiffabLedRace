@@ -12,16 +12,9 @@
 
 #define PIN_AUDIO 32 // through CAP 2uf to speaker 8 ohms
 
-#define INI_RAMP 300
-#define MED_RAMP 360
-#define END_RAMP 420
-#define HIGH_RAMP 25
-
-#define MAX_OBSTACLES 2
-
 #define INIT_OBSTACLES                \
     Obstacles.Add(new OilObstacle(100,110,Adafruit_NeoPixel::Color(0, 255, 255))); \
-    Obstacles.Add(new RampObstacle(30,50,Adafruit_NeoPixel::Color(255, 0, 255)));
+    Obstacles.Add(new RampObstacle(30,50,10,Adafruit_NeoPixel::Color(127, 0, 127), RampObstacle::RAMP_HILL));
 
 #define MAX_PLAYERS 4
 #define PIN_P1 16 // switch player 1 to PIN and GND
@@ -39,14 +32,8 @@
      Players.Add(Player(COLOR_P3, PIN_P3)); \
      Players.Add(Player(COLOR_P4, PIN_P4));
 
-// Serial Communications
-#define EOL '\n' // End of Command char used in Protocol
-
-#define REC_COMMAND_BUFLEN 32
-#define TX_COMMAND_BUFLEN 64
-
 #define ACEL 0.2f //Acceleration
-#define kf 0.015f //friction constant
-#define kg 0.003f //gravity constant
+#define KF 0.015f //friction constant
+#define KG 0.003f //gravity constant
 
 #define DYNAMIC_CHUNK_SIZE 5

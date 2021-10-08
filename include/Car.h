@@ -22,7 +22,7 @@ class Car
     void Draw(Adafruit_NeoPixel* led) const;
 
     void setSpeed( float speed) { _speed = speed; }
-    void increaseSpeed( float inc ) { _speed += inc; }
+    void accelerate( float inc ) { _speed += inc; }
 
     bool isStartingNewLoop() const { return _newLoopStarted; }
     bool isFinishedRace() const { return _finishedRace; }

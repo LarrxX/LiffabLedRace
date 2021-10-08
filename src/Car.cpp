@@ -21,12 +21,8 @@ void Car::Reset()
 void Car::Update()
 {
   _newLoopStarted = false;
-  //   if ((gravity_map[(word)dist1 % NPIXELS]) < 127)
-  //     speed1 -= kg * (127 - (gravity_map[(word)dist1 % NPIXELS]));
-  //   if ((gravity_map[(word)dist1 % NPIXELS]) > 127)
-  //     speed1 += kg * ((gravity_map[(word)dist1 % NPIXELS]) - 127);
 
-  _speed -= _speed * kf; //friction
+  _speed -= _speed * KF; //friction
 
   _distance += _speed;
 

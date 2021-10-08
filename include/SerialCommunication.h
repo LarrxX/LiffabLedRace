@@ -5,6 +5,10 @@
 
 class Stream;
 
+#define EOL '\n' // End of Command char used in Protocol
+#define REC_COMMAND_BUFLEN 32
+#define TX_COMMAND_BUFLEN 64
+
 class SerialCommunication
 {
 private:

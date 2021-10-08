@@ -29,6 +29,8 @@ class Player
     
     const Controller& controller() const { return *_controller; }
     const Car& car() const { return *_car; }
+    Car& mutableCar() { return *_car; }
+    
     byte id() const { return _id;}
 
     bool operator<(const Player& other) const;

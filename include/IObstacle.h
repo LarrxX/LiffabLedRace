@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-class Car;
+class Player;
 class Adafruit_NeoPixel;
 
 class IObstacle
@@ -14,7 +14,7 @@ public:
 
 public:
     IObstacle(word start, word end, uint32_t color);
-    virtual void Update(Car* car) = 0;
+    virtual void Update(Player* player) = 0;
     virtual void Draw(Adafruit_NeoPixel* led) = 0;
 
     word getEnd() const { return _end; };

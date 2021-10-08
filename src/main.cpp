@@ -44,7 +44,7 @@ char const version[] = "1.0.0";
 #include "DynamicPointerArray.h"
 
 DynamicArray<Player> Players(MAX_PLAYERS);
-DynamicPointerArray<IObstacle*> Obstacles;
+DynamicPointerArray<IObstacle*> Obstacles(2);
 
 word win_music[] = {
     2637, 2637, 0, 2637,
@@ -67,7 +67,7 @@ Adafruit_NeoPixel circle = Adafruit_NeoPixel(MAXLEDCIRCLE, PIN_CIRCLE, NEO_GRB +
 
 void start_race()
 {
-  for (byte i = 0; i < MAX_PLAYERS; ++i)
+  for (byte i = 0; i < Players.Count(); ++i)
   {
     Players[i].Reset();
   }
@@ -77,6 +77,10 @@ void start_race()
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
 
+  for( byte i = 0; i < Obstacles.Count(); ++i )
+  {
+    Obstacles[i]->Draw(&track);
+  }
   track.show();
 
 #ifdef LED_CIRCLE
@@ -233,7 +237,7 @@ void loop()
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
   
-  for (byte i = 0; i < MAX_PLAYERS; ++i)
+  for (byte i = 0; i < Players.Count(); ++i)
   {
     Players[i].Update(Obstacles);
 
