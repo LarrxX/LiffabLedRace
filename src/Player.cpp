@@ -7,13 +7,11 @@
 #include "DynamicPointerArray.h"
 #include "IObstacle.h"
 
-byte Player::_ID = 0;
-
-Player::Player(uint32_t carColor, byte controllerPin) : _currentObstacle(0),
-                                                        _id(_ID++)
+Player::Player(uint32_t carColor, byte controllerPin, char *name) : _car(new Car(carColor)),
+                                                                    _controller(new Controller(controllerPin)),
+                                                                    _currentObstacle(0)
 {
-    _car = new Car(carColor);
-    _controller = new Controller(controllerPin);
+    setName(name);
 }
 
 Player::~Player()
@@ -31,6 +29,15 @@ void Player::Reset()
     _car->Reset();
     _controller->Reset();
     _currentObstacle = 0;
+}
+
+void Player::setName(char *name)
+{
+    if (strlen(name) >= MAX_NAME_LENGTH)
+    {
+        name[MAX_NAME_LENGTH - 1] = '\0';
+    }
+    strcpy(_name, name);
 }
 
 void Player::Update(DynamicPointerArray<IObstacle *> &obstacles)
@@ -62,8 +69,18 @@ bool Player::operator<(const Player &other) const
 {
     if (_car->getTotalDistance() == other._car->getTotalDistance())
     {
-        return _id < other._id;
+        return (strcmp(_name, other._name) <= 0);
     }
     //We want the player with the greatest distance to be first
     return _car->getTotalDistance() > other._car->getTotalDistance();
+}
+
+bool Player::operator==(const Player &other) const
+{
+    return _car == other._car;
+}
+
+bool Player::operator!=(const Player &other) const
+{
+    return !(*this == other);
 }

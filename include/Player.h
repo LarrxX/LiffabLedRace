@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "Defines.h"
+
 class Car;
 class Controller;
 class IObstacle;
@@ -11,30 +13,30 @@ class DynamicPointerArray;
 
 class Player
 {
-    protected:
+protected:
     Car *_car;
     Controller *_controller;
     byte _currentObstacle;
-    
-    static byte _ID;
-    byte _id;
+    char _name[MAX_NAME_LENGTH];
 
-
-    public:
-    Player(uint32_t carColor, byte controllerPin);
+public:
+    Player(uint32_t carColor, byte controllerPin, char *name);
     ~Player();
 
-    void Update(DynamicPointerArray<IObstacle*>& obstacles);
+    void Update(DynamicPointerArray<IObstacle *> &obstacles);
     void Reset();
-    
-    const Controller& controller() const { return *_controller; }
-    const Car& car() const { return *_car; }
-    Car& mutableCar() { return *_car; }
-    
-    byte id() const { return _id;}
 
-    bool operator<(const Player& other) const;
-    
-    private:
+    const Controller &controller() const { return *_controller; }
+    const Car &car() const { return *_car; }
+    Car &mutableCar() { return *_car; }
+
+    const char *getName() const { return _name; }
+    void setName(char *name);
+
+    bool operator<(const Player &other) const;
+    bool operator==(const Player &other) const;
+    bool operator!=(const Player &other) const;
+
+private:
     Player();
 };

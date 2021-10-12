@@ -255,13 +255,13 @@ void loop()
     }
   }
 
-  byte previousLeader = Players[0].id();
+  Player previousLeader = Players[0];
   Players.Sort();
   //Beep when someone new takes the lead
-  if (previousLeader != Players[0].id())
+  if (previousLeader != Players[0])
   {
-    Serial.printf("%d overtook %d\n", Players[0].id(), previousLeader);
-    FBEEP = 440 * (Players[0].id() + 1);
+    Serial.printf("%s overtook %s\n", Players[0].getName(), previousLeader.getName());
+    FBEEP = 440;
     TBEEP = 10;
   }
 

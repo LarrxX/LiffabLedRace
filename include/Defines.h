@@ -19,6 +19,7 @@
     Obstacles.Add(new RampObstacle(100,120,10,Adafruit_NeoPixel::Color(127, 0, 127), RampObstacle::RAMP_HILL));
 
 #define MAX_PLAYERS 4
+#define MAX_NAME_LENGTH 15
 #define PIN_P1 16 // switch player 1 to PIN and GND
 #define PIN_P2 17 // switch player 2 to PIN and GND
 #define PIN_P3 18 // switch player 3 to PIN and GND
@@ -29,10 +30,10 @@
 #define COLOR_P3 Adafruit_NeoPixel::Color(0, 0, 255)
 #define COLOR_P4 Adafruit_NeoPixel::Color(255, 255, 255)
 
-#define INIT_PLAYERS  Players.Add(Player(COLOR_P1, PIN_P1)); \
-     Players.Add(Player(COLOR_P2, PIN_P2)); \
-     Players.Add(Player(COLOR_P3, PIN_P3)); \
-     Players.Add(Player(COLOR_P4, PIN_P4));
+#define INIT_PLAYERS  Players.Add(Player(COLOR_P1, PIN_P1, (char*)"Player 1")); \
+     Players.Add(Player(COLOR_P2, PIN_P2, (char*)"Player 2")); \
+     Players.Add(Player(COLOR_P3, PIN_P3, (char*)"Player 3")); \
+     Players.Add(Player(COLOR_P4, PIN_P4, (char*)"Player 4"));
 
 #define ACEL 0.2f //Acceleration
 #define KF 0.015f //friction constant
