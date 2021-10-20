@@ -52,27 +52,9 @@ void WebService::Init()
                    request->send_P(200, "text/html", _index_html.c_str(), processor);
                });
 
-    _server.on("/player0", HTTP_GET, [](AsyncWebServerRequest *request)
+    _server.on("/player", HTTP_GET, [](AsyncWebServerRequest *request)
                {
-                   WebService::Instance().modifyPlayer(0, request);
-                   request->send_P(200, "text/html", _index_html.c_str(), processor);
-               });
-
-    _server.on("/player1", HTTP_GET, [](AsyncWebServerRequest *request)
-               {
-                   WebService::Instance().modifyPlayer(1, request);
-                   request->send_P(200, "text/html", _index_html.c_str(), processor);
-               });
-
-    _server.on("/player2", HTTP_GET, [](AsyncWebServerRequest *request)
-               {
-                   WebService::Instance().modifyPlayer(2, request);
-                   request->send_P(200, "text/html", _index_html.c_str(), processor);
-               });
-
-    _server.on("/player3", HTTP_GET, [](AsyncWebServerRequest *request)
-               {
-                   WebService::Instance().modifyPlayer(3, request);
+                   WebService::Instance().modifyPlayer(request);
                    request->send_P(200, "text/html", _index_html.c_str(), processor);
                });
 
@@ -110,13 +92,16 @@ void WebService::Init()
     _server.begin();
 }
 
-void WebService::modifyPlayer(byte index, AsyncWebServerRequest *request)
+void WebService::modifyPlayer(AsyncWebServerRequest *request)
 {
     String input_value;
-    if (request->hasParam("PlayerName"))
-    {   RaceStarted = false;
+    int index;
+    if (request->hasParam("PlayerName") && request->hasParam("index"))
+    {   
+        RaceStarted = false;
 
         input_value = request->getParam("PlayerName")->value();
+        index = request->getParam("index")->value().toInt();
         Players[index].setName(const_cast<char *>(input_value.c_str()));
         buildIndexHTML();
     }
@@ -148,8 +133,9 @@ void WebService::buildPlayersHTML()
 {
     _players_html = "<div class='w3-bar'><h2>Players</h2>";
 
-    //<form action='/playeri'>
+    //<form action='/player'>
     //<span style="background-color: rgba(255, 0, 0, 1);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>1 - Name1 <input type='text' name='PlayerName' size = MAX_NAME_LENGTH>
+    //<input type='hidden' name='index' value='i'><br>
     //<input type='submit' value='Submit'><br>
     //</form><br>
     for (word i = 0; i < Players.Count(); ++i)
@@ -157,7 +143,21 @@ void WebService::buildPlayersHTML()
         uint8_t r, g, b;
         SplitColor(Players[i].car().getColor(), r, g, b);
 
-        _players_html += "<form action='/player" + String(i) + "'><span style='background-color: rgba(" + String(r) + "," + String(g) + "," + String(b) + ", 1);'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;" + String(i + 1) + " - " + Players[i].getName() + " <input type='text' name='PlayerName' size=" + String(MAX_NAME_LENGTH) + "><input type='submit' value='Submit'></form><br>";
+        _players_html += "<form action='/player'><span style='background-color: rgba("
+        + String(r)
+        + ","
+        + String(g)
+        + ","
+        + String(b)
+        + ", 1);'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;"
+        + String(i + 1)
+        + " - "
+        + Players[i].getName()
+        + " <input type='text' name='PlayerName' size="
+        + String(MAX_NAME_LENGTH)
+        + "><input type='hidden' name='index' value='"
+        + String(i)
+        + "'><input type='submit' value='Submit'></form><br>";
     }
 
     _players_html += "</div>";

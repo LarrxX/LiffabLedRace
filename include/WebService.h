@@ -17,7 +17,7 @@ private:
 public:
   static WebService &Instance();
   void Init();
-  void modifyPlayer( byte index, AsyncWebServerRequest *request);
+  void modifyPlayer( AsyncWebServerRequest *request);
 
 private:
   AsyncWebServer _server;
