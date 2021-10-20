@@ -17,6 +17,7 @@ private:
 public:
   static WebService &Instance();
   void Init();
+  void modifyPlayer( byte index, AsyncWebServerRequest *request);
 
 private:
   AsyncWebServer _server;
@@ -35,7 +36,7 @@ private:
 
   
   void notFound(AsyncWebServerRequest *request);
-  
+
   void buildPlayersHTML();
   void buildObstaclesHTML();
   void buildIndexHTML();

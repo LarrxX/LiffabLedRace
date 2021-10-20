@@ -26,8 +26,6 @@ WebService &WebService::Instance()
 
 void WebService::Init()
 {
-    buildPlayersHTML();
-    buildObstaclesHTML();
     buildIndexHTML();
 
     Serial.begin(115200);
@@ -51,6 +49,30 @@ void WebService::Init()
     _server.on("/Stop", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceStarted = false;
+                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+               });
+
+    _server.on("/player0", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   WebService::Instance().modifyPlayer(0, request);
+                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+               });
+
+    _server.on("/player1", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   WebService::Instance().modifyPlayer(1, request);
+                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+               });
+
+    _server.on("/player2", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   WebService::Instance().modifyPlayer(2, request);
+                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+               });
+
+    _server.on("/player3", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   WebService::Instance().modifyPlayer(3, request);
                    request->send_P(200, "text/html", _index_html.c_str(), processor);
                });
 
@@ -88,6 +110,18 @@ void WebService::Init()
     _server.begin();
 }
 
+void WebService::modifyPlayer(byte index, AsyncWebServerRequest *request)
+{
+    String input_value;
+    if (request->hasParam("PlayerName"))
+    {   RaceStarted = false;
+
+        input_value = request->getParam("PlayerName")->value();
+        Players[index].setName(const_cast<char *>(input_value.c_str()));
+        buildIndexHTML();
+    }
+}
+
 void WebService::notFound(AsyncWebServerRequest *request)
 {
     request->send(404, "text/plain", "Not found");
@@ -122,74 +156,50 @@ void WebService::buildPlayersHTML()
     {
         uint8_t r, g, b;
         SplitColor(Players[i].car().getColor(), r, g, b);
-        
-        _players_html += "<form action='/player"
-        + String(i)
-        + "'><span style='background-color: rgba("
-        + String(r) + "," 
-        + String(g) + "," 
-        + String(b) + ", 1);'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;"
-        + String(i+1) 
-        + " - "
-        + Players[i].getName()
-        + " <input type='text' name='PlayerName' size="
-        + String(MAX_NAME_LENGTH)
-        +"><input type='submit' value='Submit'></form><br>";
+
+        _players_html += "<form action='/player" + String(i) + "'><span style='background-color: rgba(" + String(r) + "," + String(g) + "," + String(b) + ", 1);'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;" + String(i + 1) + " - " + Players[i].getName() + " <input type='text' name='PlayerName' size=" + String(MAX_NAME_LENGTH) + "><input type='submit' value='Submit'></form><br>";
     }
 
-    _players_html +="</div>";
+    _players_html += "</div>";
 }
 
 void WebService::buildObstaclesHTML()
 {
     _obstacles_html = "<div class='w3-bar'><h2>Obstacles</h2>";
-    
+
     String type;
-    
+
     //<form action='/obstaclei'>
     //<span style="background-color: rgba(255, 0, 0, 1);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>1 - Type: start(%start%) <input type='text' name='Start' size=5>
     // end(%end%) <input type='text' name='End' size=5>
     // <input type='submit' value='Submit'><br>
     //</form><br>
-    for( word i = 0; i < Obstacles.Count(); ++i )
+    for (word i = 0; i < Obstacles.Count(); ++i)
     {
         uint8_t r, g, b;
         SplitColor(Obstacles[i]->getColor(), r, g, b);
 
-        switch(Obstacles[i]->getType())
+        switch (Obstacles[i]->getType())
         {
-            case IObstacle::ObstacleType::OBSTACLE_OIL:
+        case IObstacle::ObstacleType::OBSTACLE_OIL:
             type = "Oil";
             break;
 
-            case IObstacle::ObstacleType::OBSTACLE_RAMP:
+        case IObstacle::ObstacleType::OBSTACLE_RAMP:
             type = "Ramp";
             break;
         }
 
-        _obstacles_html += "<form action='/obstacle"
-        + String(i)
-        + "'><span style='background-color: rgba("
-        + String(r) + "," 
-        + String(g) + "," 
-        + String(b) + ", 1);'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;"
-        + String(i+1) 
-        + " - "
-        + type
-        + ": Start ("
-        + String(Obstacles[i]->getStart())
-        + ") <input type='text' name='Start' size=5>"
-        + " End ("
-        + String(Obstacles[i]->getEnd())
-        + ") <input type='text' name='End' size=5>"
-        +" <input type='submit' value='Submit'></form><br>";
-
+        _obstacles_html += "<form action='/obstacle" + String(i) + "'><span style='background-color: rgba(" + String(r) + "," + String(g) + "," + String(b) + ", 1);'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;" + String(i + 1) + " - " + type + ": Start (" + String(Obstacles[i]->getStart()) + ") <input type='text' name='Start' size=5>" + " End (" + String(Obstacles[i]->getEnd()) + ") <input type='text' name='End' size=5>" + " <input type='submit' value='Submit'></form><br>";
     }
     _obstacles_html += "</div>";
 }
 
 void WebService::buildIndexHTML()
 {
+    buildPlayersHTML();
+    buildObstaclesHTML();
+
     _index_html = R"rawliteral(
     <!DOCTYPE html>
     <html lang='fr'>
