@@ -47,6 +47,7 @@ static const word win_music[] = {
 
 byte drawOrder[MAX_PLAYERS];
 unsigned long previousRedraw = 0;
+bool raceRunning = false;
 
 word TBEEP = 0;
 word FBEEP = 0;
@@ -54,6 +55,8 @@ byte SMOTOR = 0;
 
 void start_race()
 {
+  raceRunning = true;
+
   for (byte i = 0; i < Players.Count(); ++i)
   {
     Players[i].Reset();
@@ -127,6 +130,8 @@ void start_race()
 
 void setup()
 {
+  raceRunning = false;
+  
   INIT_PLAYERS
   INIT_OBSTACLES
   Obstacles.Sort();
@@ -211,51 +216,65 @@ void loop()
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
 
-  for (byte i = 0; i < Players.Count(); ++i)
-  {
-    Players[i].Update(Obstacles);
-
-    if (Players[i].car().isFinishedRace())
-    {
-      show_winner(i);
-      start_race();
-      return;
-    }
-
-    if (Players[i].car().isStartingNewLoop())
-    {
-      FBEEP = 440 * (i + 1);
-      TBEEP = 10;
-    }
-  }
-
-  Player previousLeader = Players[0];
-  Players.Sort();
-  //Beep when someone new takes the lead
-  if (previousLeader != Players[0])
-  {
-    Serial.printf("%s overtook %s\n", Players[0].getName(), previousLeader.getName());
-    FBEEP = 440;
-    TBEEP = 10;
-  }
-
   for (byte i = 0; i < Obstacles.Count(); ++i)
   {
     Obstacles[i]->Draw(&track);
   }
-  draw_cars();
+
+  if (RaceStarted)
+  {
+    if( !raceRunning)
+    {
+      start_race();
+    }
+    
+    for (byte i = 0; i < Players.Count(); ++i)
+    {
+      Players[i].Update(Obstacles);
+
+      if (Players[i].car().isFinishedRace())
+      {
+        show_winner(i);
+        start_race();
+        return;
+      }
+
+      if (Players[i].car().isStartingNewLoop())
+      {
+        FBEEP = 440 * (i + 1);
+        TBEEP = 10;
+      }
+    }
+
+    Player previousLeader = Players[0];
+    Players.Sort();
+    //Beep when someone new takes the lead
+    if (previousLeader != Players[0])
+    {
+      Serial.printf("%s overtook %s\n", Players[0].getName(), previousLeader.getName());
+      FBEEP = 440;
+      TBEEP = 10;
+    }
+
+    // if (SMOTOR == 1)
+    //   tone(PIN_AUDIO, FBEEP + word(speed1 * 440 * 2) + word(speed2 * 440 * 3));
+
+    draw_cars();
+
+    if (TBEEP > 0)
+    {
+      TBEEP--;
+    }
+    else
+    {
+      FBEEP = 0;
+    };
+  }
+  else //RaceStarted==false
+  {
+    raceRunning = false;
+    delay(500);
+  }
 
   track.show();
-
-  // if (SMOTOR == 1)
-  //   tone(PIN_AUDIO, FBEEP + word(speed1 * 440 * 2) + word(speed2 * 440 * 3));
-
-  if (TBEEP > 0)
-  {
-    TBEEP--;
-  }
-  else
-  {
-    FBEEP = 0;
-  };
 }

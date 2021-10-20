@@ -10,14 +10,7 @@
 
 namespace RaceConfig
 {
-    enum State
-    {
-        RACE_STOPPED,
-        RACE_STARTED,
-        RACE_CONFIGURING
-    };
-
-    extern State RaceState;
+    extern bool RaceStarted;
  
     extern word MaxLoops;
     extern word MaxLED;

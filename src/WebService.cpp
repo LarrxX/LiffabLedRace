@@ -77,20 +77,20 @@ void WebService::Init()
 
     _server.on("/Start", HTTP_GET, [](AsyncWebServerRequest *request)
                {
-                   RaceState = RACE_STARTED;
+                   RaceStarted = true;
                    request->send_P(200, "text/html", _index_html, processor);
                });
 
     _server.on("/Stop", HTTP_GET, [](AsyncWebServerRequest *request)
                {
-                   RaceState = RACE_STOPPED;
+                   RaceStarted = false;
                    request->send_P(200, "text/html", _index_html, processor);
                });
 
     _server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    String input_value;
-
+                    bool requestOK = true;
                    if (request->hasParam("MaxLED"))
                    {
                        input_value = request->getParam("MaxLED")->value();
@@ -106,7 +106,14 @@ void WebService::Init()
                    else
                    {
                        input_value = "No message sent";
+                       requestOK = false;
                    }
+
+                   if( requestOK )
+                   {
+                       RaceStarted = false;
+                   }
+                   
                    Serial.println(input_value);
                    request->send_P(200, "text/html", _index_html, processor);
                });
@@ -123,15 +130,7 @@ String WebService::processor(const String &var)
 {
     if (var == "RACE_STATUS")
     {
-        switch (RaceState)
-        {
-        case RACE_STOPPED:
-            return "Stopped";
-        case RACE_STARTED:
-            return "Running";
-        case RACE_CONFIGURING:
-            return "Configuring";
-        }
+        return RaceStarted ? "Started" : "Stopped";
     }
     else if (var == "MaxLoops")
     {

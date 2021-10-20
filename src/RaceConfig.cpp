@@ -4,7 +4,7 @@
 
 namespace RaceConfig
 {
-    State RaceState = RACE_STARTED;
+    bool RaceStarted = true;
 
     word MaxLoops = DEFAULT_LOOPS;
     word MaxLED = DEFAULT_LED;
