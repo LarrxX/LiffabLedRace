@@ -16,7 +16,9 @@
  the Free Software Foundation; either version 3 of the License, or
  (at your option) any later version.
 
- 
+ @author LarrxX 
+
+ heavily modified version of the original
  by gbarbarov@singulardevices.com  for Arduino day Seville 2019 
  https://www.hackster.io/gbarbarov/open-led-race-a0331a
  https://twitter.com/openledrace
@@ -26,44 +28,29 @@
  https://openledrace.net/open-software/
 */
 
-char const softwareId[] = "OLR-Liffab";
-char const version[] = "1.0.0";
-
 #include <ESP32Tone.h>
-#include <Adafruit_NeoPixel.h>
 
-#include "Defines.h"
-#include "Player.h"
 #include "Controller.h"
 #include "Car.h"
 
 #include "RampObstacle.h"
 #include "OilObstacle.h"
 
-#include "DynamicArray.h"
-#include "DynamicPointerArray.h"
+#include "WebService.h"
 
-DynamicArray<Player> Players(MAX_PLAYERS);
-DynamicPointerArray<IObstacle*> Obstacles(2);
+using namespace RaceConfig;
 
-word win_music[] = {
+static const word win_music[] = {
     2637, 2637, 0, 2637,
     0, 2093, 2637, 0,
     3136};
 
-byte gravity_map[MAXLED];
 byte drawOrder[MAX_PLAYERS];
 unsigned long previousRedraw = 0;
 
 word TBEEP = 0;
 word FBEEP = 0;
 byte SMOTOR = 0;
-
-Adafruit_NeoPixel track = Adafruit_NeoPixel(MAXLED, PIN_LED, NEO_GRB + NEO_KHZ800);
-
-#ifdef LED_CIRCLE
-Adafruit_NeoPixel circle = Adafruit_NeoPixel(MAXLEDCIRCLE, PIN_CIRCLE, NEO_GRB + NEO_KHZ800);
-#endif
 
 void start_race()
 {
@@ -72,12 +59,12 @@ void start_race()
     Players[i].Reset();
   }
 
-  for (byte i = 0; i < MAXLED; i++)
+  for (byte i = 0; i < MaxLED; i++)
   {
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
 
-  for( byte i = 0; i < Obstacles.Count(); ++i )
+  for (byte i = 0; i < Obstacles.Count(); ++i)
   {
     Obstacles[i]->Draw(&track);
   }
@@ -140,17 +127,11 @@ void start_race()
 
 void setup()
 {
-  Serial.begin(115200);
-
   INIT_PLAYERS
   INIT_OBSTACLES
-
   Obstacles.Sort();
 
-  for (byte i = 0; i < MAXLED; i++)
-  {
-    gravity_map[i] = 127;
-  };
+  WebService::Instance().Init();
 
   for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
@@ -180,20 +161,13 @@ void setup()
 
 void winner_fx(byte w)
 {
-  int msize = sizeof(win_music) / sizeof(word);
-  for (byte note = 0; note < msize; note++)
+  word msize = sizeof(win_music) / sizeof(word);
+  for (word note = 0; note < msize; ++note)
   {
-    if (SMOTOR == 1)
-    {
-      tone(PIN_AUDIO, win_music[note] / (3 - w), 200);
-    }
-    else
-    {
-      tone(PIN_AUDIO, win_music[note], 200);
-    };
-    delay(230);
-    noTone(PIN_AUDIO);
-  }
+    tone(PIN_AUDIO, win_music[note] / (5 - w), 200);
+  };
+  delay(230);
+  noTone(PIN_AUDIO);
 };
 
 void draw_cars()
@@ -232,11 +206,11 @@ void show_winner(byte winner)
 
 void loop()
 {
-  for (word i = 0; i < MAXLED; i++)
+  for (word i = 0; i < MaxLED; i++)
   {
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
-  
+
   for (byte i = 0; i < Players.Count(); ++i)
   {
     Players[i].Update(Obstacles);
@@ -265,7 +239,7 @@ void loop()
     TBEEP = 10;
   }
 
-  for( byte i = 0; i < Obstacles.Count(); ++i )
+  for (byte i = 0; i < Obstacles.Count(); ++i)
   {
     Obstacles[i]->Draw(&track);
   }
@@ -275,8 +249,6 @@ void loop()
 
   // if (SMOTOR == 1)
   //   tone(PIN_AUDIO, FBEEP + word(speed1 * 440 * 2) + word(speed2 * 440 * 3));
-
-  delay(5);
 
   if (TBEEP > 0)
   {

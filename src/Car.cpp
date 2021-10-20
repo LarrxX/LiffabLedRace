@@ -2,7 +2,9 @@
 
 #include <Adafruit_NeoPixel.h>
 
-#include "Defines.h"
+#include "RaceConfig.h"
+
+using namespace RaceConfig;
 
 Car::Car(uint32_t color) : _color(color)
 {
@@ -26,11 +28,12 @@ void Car::Update()
 
   _distance += _speed;
 
-  if (_distance > _currentLoop * MAXLED)
+  if (_distance > _currentLoop * MaxLED)
   {
     _newLoopStarted = true;
     ++_currentLoop;
-    if (_currentLoop == MAX_LOOPS)
+    Serial.printf("Loop %d/%d\n",_currentLoop, MaxLoops);
+    if (_currentLoop >= MaxLoops)
     {
       _finishedRace = true;
     }
@@ -41,12 +44,12 @@ void Car::Draw(Adafruit_NeoPixel *led) const
 {
   for (byte i = 0; i <= _currentLoop; ++i)
   {
-    led->setPixelColor(((word)_distance % MAXLED) + i, _color);
+    led->setPixelColor(((word)_distance % MaxLED) + i, _color);
   };
 }
 
 //Get distance in current loop
 float Car::getCurrentDistance() const
 {
-  return getTotalDistance() - ((_currentLoop - 1) * MAXLED);
+  return getTotalDistance() - ((_currentLoop - 1) * MaxLED);
 }

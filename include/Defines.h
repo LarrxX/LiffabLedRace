@@ -2,10 +2,10 @@
 
 //#define LED_CIRCLE
 
-#define MAXLED 120      // MAX LEDs actives on strip
+#define DEFAULT_LED 120      // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
 
-#define MAX_LOOPS 5 //Number of loops in the race
+#define DEFAULT_LOOPS 5 //Number of loops in the race
 
 #define PIN_LED 25    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_CIRCLE 26 // R 500 ohms to IN pin for WS2812 and WS2813, for WS2813 IN pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
@@ -16,7 +16,7 @@
 
 #define INIT_OBSTACLES                \
     Obstacles.Add(new OilObstacle(30,45,Adafruit_NeoPixel::Color(255, 255, 0))); \
-    Obstacles.Add(new RampObstacle(100,120,10,Adafruit_NeoPixel::Color(127, 0, 127), RampObstacle::RAMP_HILL));
+    Obstacles.Add(new RampObstacle(100,120,5,Adafruit_NeoPixel::Color(127, 0, 127), RampObstacle::RAMP_HILL));
 
 #define MAX_PLAYERS 4
 #define MAX_NAME_LENGTH 15
