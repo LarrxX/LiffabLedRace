@@ -4,8 +4,13 @@
 
 class OilObstacle : public IObstacle
 {
-    public:
+protected:
+    word _pressDelay;
+
+public:
+    word getPressDelay() const { return _pressDelay; }
+    void setPressDelay(word delay) { _pressDelay = delay; }
     OilObstacle(word start, word end, uint32_t color);
-    void Update(Player* player) override;
-    void Draw(Adafruit_NeoPixel* led) override;
+    void Update(Player *player) override;
+    void Draw(Adafruit_NeoPixel *led) override;
 };

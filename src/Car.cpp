@@ -32,7 +32,6 @@ void Car::Update()
   {
     _newLoopStarted = true;
     ++_currentLoop;
-    Serial.printf("Loop %d/%d\n",_currentLoop, MaxLoops);
     if (_currentLoop >= MaxLoops)
     {
       _finishedRace = true;

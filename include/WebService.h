@@ -18,6 +18,7 @@ public:
   static WebService &Instance();
   void Init();
   void modifyPlayer( AsyncWebServerRequest *request);
+  void modifyObstacle( AsyncWebServerRequest *request);
 
 private:
   AsyncWebServer _server;

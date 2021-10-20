@@ -273,8 +273,7 @@ void loop()
   else //RaceStarted==false
   {
     raceRunning = false;
-    delay(500);
   }
 
-  track.show();
+   track.show();
 }

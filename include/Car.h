@@ -31,5 +31,6 @@ class Car
     float getCurrentDistance() const;
     void increaseDistance(float inc) { _distance += inc; }
     uint32_t getColor() const { return _color; }
+    void setColor(uint32_t color) { _color = color; }
     
 };

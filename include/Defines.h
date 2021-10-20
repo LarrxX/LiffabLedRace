@@ -12,7 +12,7 @@
 
 #define PIN_AUDIO 32 // through CAP 2uf to speaker 8 ohms
 
-#define OIL_PRESS_DELAY 500
+#define OIL_PRESS_DELAY_DEFAULT 500
 
 #define INIT_OBSTACLES                \
     Obstacles.Add(new OilObstacle(30,45,Adafruit_NeoPixel::Color(255, 255, 0))); \

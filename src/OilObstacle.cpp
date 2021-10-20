@@ -7,7 +7,8 @@
 #include "Car.h"
 #include "Defines.h"
 
-OilObstacle::OilObstacle(word start, word end, uint32_t color) : IObstacle(start, end, color)
+OilObstacle::OilObstacle(word start, word end, uint32_t color) : IObstacle(start, end, color),
+                                                                 _pressDelay(OIL_PRESS_DELAY_DEFAULT)
 {
     _type = IObstacle::ObstacleType::OBSTACLE_OIL;
 }
@@ -17,13 +18,13 @@ void OilObstacle::Update(Player *player)
     float carPos = player->car().getCurrentDistance();
     if (carPos >= _start && carPos <= _end)
     {
-        if( player->controller().isPressed() && !player->controller().alreadyPressed())
+        if (player->controller().isPressed() && !player->controller().alreadyPressed())
         {
             player->mutableCar().setSpeed(0);
-            
-            if( (millis() - player->controller().getPressedTime()) > OIL_PRESS_DELAY )
+
+            if ((millis() - player->controller().getPressedTime()) > _pressDelay)
             {
-            player->mutableCar().increaseDistance(1);
+                player->mutableCar().increaseDistance(1);
             }
         }
     }
