@@ -112,21 +112,17 @@ String WebService::processor(const String &var)
 
 void WebService::buildPlayersHTML()
 {
-    _players_html = R"rawliteral(
-    <div class='w3-bar'>
-        <h2>Players</h2>
-        <form action='/players'>
-        )rawliteral";
+    _players_html = "<div class='w3-bar'><h2>Players</h2>";
 
+    //<form action='/playeri'>
+    //<span style="background-color: rgba(255, 0, 0, 1);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>1 - Name1 <input type='text' name='PlayerName' size = MAX_NAME_LENGTH>
+    //<input type='submit' value='Submit'><br>
+    //</form><br>
     for (word i = 0; i < Players.Count(); ++i)
     {
         uint8_t r, g, b;
         SplitColor(Players[i].car().getColor(), r, g, b);
         
-        //<form action='/player1'>
-        //<span style="background-color: rgba(255, 0, 0, 1);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>1 - Name1: <input type='text' name='PlayerName'>
-        //<input type='submit' value='Submit'><br>
-        //</form><br>
         _players_html += "<form action='/player"
         + String(i)
         + "'><span style='background-color: rgba("
@@ -136,7 +132,9 @@ void WebService::buildPlayersHTML()
         + String(i+1) 
         + " - "
         + Players[i].getName()
-        + "<input type='text' name='PlayerName'><input type='submit' value='Submit'></form><br>";
+        + " <input type='text' name='PlayerName' size="
+        + String(MAX_NAME_LENGTH)
+        +"><input type='submit' value='Submit'></form><br>";
     }
 
     _players_html +="</div>";
@@ -144,11 +142,50 @@ void WebService::buildPlayersHTML()
 
 void WebService::buildObstaclesHTML()
 {
-    _obstacles_html = R"rawliteral(
-    <div class='w3-bar'>
-        <h1>Obstacles</h1>
-    </div>
-    )rawliteral";
+    _obstacles_html = "<div class='w3-bar'><h2>Obstacles</h2>";
+    
+    String type;
+    
+    //<form action='/obstaclei'>
+    //<span style="background-color: rgba(255, 0, 0, 1);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>1 - Type: start(%start%) <input type='text' name='Start' size=5>
+    // end(%end%) <input type='text' name='End' size=5>
+    // <input type='submit' value='Submit'><br>
+    //</form><br>
+    for( word i = 0; i < Obstacles.Count(); ++i )
+    {
+        uint8_t r, g, b;
+        SplitColor(Obstacles[i]->getColor(), r, g, b);
+
+        switch(Obstacles[i]->getType())
+        {
+            case IObstacle::ObstacleType::OBSTACLE_OIL:
+            type = "Oil";
+            break;
+
+            case IObstacle::ObstacleType::OBSTACLE_RAMP:
+            type = "Ramp";
+            break;
+        }
+
+        _obstacles_html += "<form action='/obstacle"
+        + String(i)
+        + "'><span style='background-color: rgba("
+        + String(r) + "," 
+        + String(g) + "," 
+        + String(b) + ", 1);'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;"
+        + String(i+1) 
+        + " - "
+        + type
+        + ": Start ("
+        + String(Obstacles[i]->getStart())
+        + ") <input type='text' name='Start' size=5>"
+        + " End ("
+        + String(Obstacles[i]->getEnd())
+        + ") <input type='text' name='End' size=5>"
+        +" <input type='submit' value='Submit'></form><br>";
+
+    }
+    _obstacles_html += "</div>";
 }
 
 void WebService::buildIndexHTML()
@@ -176,11 +213,11 @@ void WebService::buildIndexHTML()
       <br><hr><br>
       <div class='w3-bar'>
       <form action='/get'>
-        Nombre de LEDs (%MaxLED%)   : <input type='text' name='MaxLED'>
+        Nombre de LEDs (%MaxLED%)   : <input type='text' name='MaxLED' size=5>
         <input type='submit' value='Submit'>
       </form><br>
       <form action='/get'>
-        Nombre de tours (%MaxLoops%): <input type='text' name='MaxLoops'>
+        Nombre de tours (%MaxLoops%): <input type='text' name='MaxLoops' size=2>
         <input type='submit' value='Submit'>
       </form><br>
       </div>

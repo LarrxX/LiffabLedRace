@@ -9,6 +9,7 @@
 
 OilObstacle::OilObstacle(word start, word end, uint32_t color) : IObstacle(start, end, color)
 {
+    _type = IObstacle::ObstacleType::OBSTACLE_OIL;
 }
 
 void OilObstacle::Update(Player *player)

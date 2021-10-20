@@ -12,6 +12,7 @@ RampObstacle::RampObstacle(word start, word end, byte height, uint32_t color, Ra
                                                                                                  _style(style),
                                                                                                  _height(height)
 {
+    _type = IObstacle::ObstacleType::OBSTACLE_RAMP;
 }
 
 void RampObstacle::Update(Player *player)
