@@ -22,4 +22,11 @@ namespace RaceConfig
     {
         track = Adafruit_NeoPixel(MaxLED, PIN_LED, NEO_GRB + NEO_KHZ800);
     }
+
+    void SplitColor(uint32_t color32, uint8_t &r, uint8_t &g, uint8_t &b)
+    {
+        r = ((color32 >> 16) & 0xFF);
+        g = ((color32 >> 8) & 0xFF);
+        b = (color32 & 0xFF);
+    }
 };

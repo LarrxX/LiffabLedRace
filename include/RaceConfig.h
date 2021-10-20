@@ -19,11 +19,12 @@ namespace RaceConfig
     extern DynamicPointerArray<IObstacle *> Obstacles;
 
     extern Adafruit_NeoPixel track;
-
-    void ResetTrack();
 #ifdef LED_CIRCLE
     extern Adafruit_NeoPixel circle;
 #endif
+
+    void ResetTrack();
+    void SplitColor( uint32_t color32, uint8_t& r, uint8_t& g, uint8_t& b);
 };
 
 #endif //RACE_CONFIG
