@@ -53,14 +53,19 @@ word TBEEP = 0;
 word FBEEP = 0;
 byte SMOTOR = 0;
 
-void start_race()
+void ResetPlayers()
 {
-  raceRunning = true;
-
   for (byte i = 0; i < Players.Count(); ++i)
   {
     Players[i].Reset();
   }
+}
+
+void start_race()
+{
+  raceRunning = true;
+
+  ResetPlayers();
 
   for (byte i = 0; i < MaxLED; i++)
   {
@@ -272,6 +277,11 @@ void loop()
   }
   else //RaceStarted==false
   {
+    if( raceRunning )
+    {
+      ResetPlayers();
+      Players.Sort();
+    }
     raceRunning = false;
   }
 

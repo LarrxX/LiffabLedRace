@@ -69,7 +69,7 @@ bool Player::operator<(const Player &other) const
 {
     if (_car->getTotalDistance() == other._car->getTotalDistance())
     {
-        return (strcmp(_name, other._name) <= 0);
+        return (_controller->getPin() < other._controller->getPin());
     }
     //We want the player with the greatest distance to be first
     return _car->getTotalDistance() > other._car->getTotalDistance();
