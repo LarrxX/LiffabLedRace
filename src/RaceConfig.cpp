@@ -17,9 +17,4 @@ namespace RaceConfig
 #ifdef LED_CIRCLE
     Adafruit_NeoPixel circle = Adafruit_NeoPixel(MAXLEDCIRCLE, PIN_CIRCLE, NEO_GRB + NEO_KHZ800);
 #endif
-
-    void ResetTrack()
-    {
-        track = Adafruit_NeoPixel(MaxLED, PIN_LED, NEO_GRB + NEO_KHZ800);
-    }
 };

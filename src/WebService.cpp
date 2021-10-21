@@ -72,37 +72,20 @@ void WebService::Init()
                    request->send_P(200, "text/html", _index_html.c_str(), processor);
                });
 
-    _server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request)
+    _server.on("/general", HTTP_GET, [](AsyncWebServerRequest *request)
                {
-                   String input_value;
-                   bool requestOK = true;
-                   if (request->hasParam("MaxLED"))
-                   {
-                       input_value = request->getParam("MaxLED")->value();
-                       MaxLED = input_value.toInt();
-                       ResetTrack();
-                   }
-                   else if (request->hasParam("MaxLoops"))
-                   {
-                       input_value = request->getParam("MaxLoops")->value();
-                       MaxLoops = input_value.toInt();
-                   }
-                   else
-                   {
-                       input_value = "No message sent";
-                       requestOK = false;
-                   }
-
-                   if (requestOK)
-                   {
-                       RaceStarted = false;
-                   }
-
-                   Serial.println(input_value);
+                   WebService::Instance().modifyGeneral(request);
                    request->send_P(200, "text/html", _index_html.c_str(), processor);
                });
-
+    
     _server.begin();
+}
+
+void WebService::modifyGeneral( AsyncWebServerRequest *request)
+{
+    MaxLED = request->getParam("MaxLED")->value().toInt();
+    MaxLoops = request->getParam("MaxLoops")->value().toInt();
+    track.updateLength(MaxLED);
 }
 
 void WebService::modifyPlayer(AsyncWebServerRequest *request)
@@ -178,7 +161,7 @@ String WebService::processor(const String &var)
 
 void WebService::buildPlayersHTML()
 {
-    _players_html = "<div class='w3-bar'><h2>Players</h2>";
+    _players_html = "<div class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br><h2>Players</h2>";
 
     //<form action='/player'>
     //<input type='color' name='Color' value=#COLOR>1 - Name1 <input type='text' name='Name' size = MAX_NAME_LENGTH>
@@ -208,7 +191,7 @@ void WebService::buildPlayersHTML()
 
 void WebService::buildObstaclesHTML()
 {
-    _obstacles_html = "<div class='w3-bar'><h2>Obstacles</h2>";
+    _obstacles_html = "<div class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br><h2>Obstacles</h2>";
 
     String typeName;
     String specifics;
@@ -309,18 +292,19 @@ void WebService::buildIndexHTML()
       <div class='w3-card w3-blue w3-padding-small w3-jumbo w3-center'>
         <p>Race Status: %RACE_STATUS% </p>
       </div>
-      <div class='w3-bar'>
+      <div class='w3-center'>
         <a href='/Start' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:50%; height:50%;'>Start</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <a href='/Stop' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:50%; height:50%;'>Stop</a>
       </div>
-      <br><hr><br>
       <div class='w3-bar'>
-      <form action='/get'>
+      <br><hr style="height:3px;color:black;background-color:black"><br>
+      <h2>General</h2>
+      <form action='/general'>
         Circuit LED count: <input type='text' name='MaxLED' value='%MaxLED%' size=5>
-        <input type='submit'>
-      </form><br>
-      <form action='/get'>
+        <br>
         Number of loops: <input type='text' name='MaxLoops' value='%MaxLoops%' size=2>
+        <br>
         <input type='submit'>
       </form><br>
       </div>
