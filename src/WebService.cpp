@@ -5,6 +5,8 @@
 #include "RampObstacle.h"
 #include "ColorUtils.h"
 
+#include "CSS.h"
+
 using namespace RaceConfig;
 using namespace ColorUtils;
 
@@ -265,9 +267,9 @@ void WebService::buildObstaclesHTML()
         + String(color)
         + "'> "
         + String(i + 1)
-        + " - "
+        + " - <b>"
         + typeName
-        + ": Start <input type='text' name='Start' value='"
+        + "</b>: Start <input type='text' name='Start' value='"
         + String(Obstacles[i]->getStart())
         + "' size=5> End <input type='text' name='End' value='" 
         + String(Obstacles[i]->getEnd())
@@ -293,7 +295,11 @@ void WebService::buildIndexHTML()
     <head>
         <title>OpenLedRace Configuration</title>
         <meta http-equiv='refresh' content='60' name='viewport' content='width=device-width, initial-scale=1' charset='UTF-8'/>
-        <link rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css'> 
+        <style>
+        )rawliteral"
+    + String(css)
+    + R"rawliteral(
+        </style>
     </head>
     <body>
     <div class='w3-center w3-padding-16'>
