@@ -46,36 +46,38 @@ void WebService::Init()
     Serial.println(IP);
 
     _server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-               { request->send_P(200, "text/html", _index_html.c_str(), processor); });
+               { request->send_P(200, "text/html", _index_html.c_str()); });
 
     _server.on("/Start", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceStarted = true;
-                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+                   WebService::Instance().buildIndexHTML();
+                   request->send_P(200, "text/html", _index_html.c_str());
                });
 
     _server.on("/Stop", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceStarted = false;
-                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+                   WebService::Instance().buildIndexHTML();
+                   request->send_P(200, "text/html", _index_html.c_str());
                });
 
     _server.on("/player", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    WebService::Instance().modifyPlayer(request);
-                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+                   request->send_P(200, "text/html", _index_html.c_str());
                });
 
     _server.on("/obstacle", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    WebService::Instance().modifyObstacle(request);
-                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+                   request->send_P(200, "text/html", _index_html.c_str());
                });
 
     _server.on("/general", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    WebService::Instance().modifyGeneral(request);
-                   request->send_P(200, "text/html", _index_html.c_str(), processor);
+                   request->send_P(200, "text/html", _index_html.c_str());
                });
     
     _server.begin();
@@ -90,8 +92,6 @@ void WebService::modifyGeneral( AsyncWebServerRequest *request)
 
 void WebService::modifyPlayer(AsyncWebServerRequest *request)
 {
-    RaceStarted = false;
-
     int index = request->getParam("Index")->value().toInt();
     String newName = request->getParam("Name")->value();
     uint32_t newColor = FromHTMLColor(request->getParam("Color")->value().c_str());
@@ -142,23 +142,6 @@ void WebService::notFound(AsyncWebServerRequest *request)
     request->send(404, "text/plain", "Not found");
 }
 
-String WebService::processor(const String &var)
-{
-    if (var == "RACE_STATUS")
-    {
-        return RaceStarted ? "Started" : "Stopped";
-    }
-    else if (var == "MaxLoops")
-    {
-        return String(MaxLoops);
-    }
-    else if (var == "MaxLED")
-    {
-        return String(MaxLED);
-    }
-    return String();
-}
-
 void WebService::buildPlayersHTML()
 {
     _players_html = "<div class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br><h2>Players</h2>";
@@ -183,7 +166,12 @@ void WebService::buildPlayersHTML()
         + String(MAX_NAME_LENGTH)
         + "><input type='hidden' name='Index' value='"
         + String(i)
-        + "'><input type='submit'></form><br>";
+        + "'>";
+        if( !RaceStarted)
+        {
+            _players_html += "<input type='submit'>";
+        }
+        _players_html += "</form><br>";
     }
 
     _players_html += "</div>";
@@ -261,8 +249,12 @@ void WebService::buildObstaclesHTML()
         + "'><input type='hidden' name='Type' value='"
         + String(Obstacles[i]->getType())
         + "'>"
-        + specifics
-        + " <input type='submit'></form><br>";
+        + specifics;
+        if( !RaceStarted)
+        {
+            _obstacles_html += "<input type='submit'>";
+        }
+        _obstacles_html += "</form><br>";
     }
     _obstacles_html += "</div>";
 }
@@ -289,32 +281,36 @@ void WebService::buildIndexHTML()
         <H1>Liffab</H1>
         <H2>Open LED Race Configuration</H2>
       </div>
-      <div class='w3-card w3-blue w3-padding-small w3-jumbo w3-center'>
-        <p>Race Status: %RACE_STATUS% </p>
+      <div class='w3-card )rawliteral"
+    + (RaceStarted ? "w3-green" : "w3-red")
+    + R"rawliteral( w3-padding-small w3-jumbo w3-center'>
+        <p>Race Status: )rawliteral"
+    + (RaceStarted ? "Started" : "Stopped")
+    + R"rawliteral(</p>
       </div>
       <div class='w3-center'>
-        <a href='/Start' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:50%; height:50%;'>Start</a>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a href='/Stop' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:50%; height:50%;'>Stop</a>
+        <a href='/Start' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:40%; height:50%;'>Start</a>
+        <a href='/Stop' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:40%; height:50%;'>Stop</a>
       </div>
       <div class='w3-bar'>
       <br><hr style="height:3px;color:black;background-color:black"><br>
       <h2>General</h2>
       <form action='/general'>
-        Circuit LED count: <input type='text' name='MaxLED' value='%MaxLED%' size=5>
+        Circuit LED count: <input type='text' name='MaxLED' value=')rawliteral"
+    + String(MaxLED)
+    + R"rawliteral(' size=5>
         <br>
-        Number of loops: <input type='text' name='MaxLoops' value='%MaxLoops%' size=2>
-        <br>
-        <input type='submit'>
-      </form><br>
-      </div>
-      )rawliteral";
+        Number of loops: <input type='text' name='MaxLoops' value=')rawliteral"
+    + String(MaxLoops)
+    +"' size=2><br>";
 
-    _index_html += _players_html;
-    _index_html += _obstacles_html;
-
-    _index_html += R"rawliteral(
-     </body>
-     </html>
- )rawliteral";
+    if(!RaceStarted)
+    {
+        _index_html += "<input type='submit'>";
+    }
+    
+    _index_html += "</form><br></div>"
+    + _players_html
+    + _obstacles_html
+    +"</body></html>";
 }

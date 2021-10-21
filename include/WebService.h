@@ -39,8 +39,5 @@ private:
 
   void buildPlayersHTML();
   void buildObstaclesHTML();
-  void buildIndexHTML();
-
-  static String processor(const String &var);
-  
+  void buildIndexHTML();  
 };
