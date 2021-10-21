@@ -71,6 +71,8 @@ void WebService::Init()
     _server.on("/obstacle", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    WebService::Instance().modifyObstacle(request);
+                   Obstacles.Sort();
+                   WebService::Instance().buildIndexHTML();
                    request->send_P(200, "text/html", _index_html.c_str());
                });
 
@@ -80,6 +82,22 @@ void WebService::Init()
                    request->send_P(200, "text/html", _index_html.c_str());
                });
     
+    _server.on("/addoil", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   Obstacles.Add(new OilObstacle(0,10, DEFAULT_OIL_COLOR));
+                   Obstacles.Sort();
+                   WebService::Instance().buildIndexHTML();
+                   request->send_P(200, "text/html", _index_html.c_str());
+               });
+    
+    _server.on("/addramp", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   Obstacles.Add(new RampObstacle(0,10, 5, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_HILL));
+                   Obstacles.Sort();
+                   WebService::Instance().buildIndexHTML();
+                   request->send_P(200, "text/html", _index_html.c_str());
+               });
+
     _server.begin();
 }
 
@@ -107,6 +125,11 @@ void WebService::modifyPlayer(AsyncWebServerRequest *request)
 void WebService::modifyObstacle(AsyncWebServerRequest *request)
 {
     int index = request->getParam("Index")->value().toInt();
+    if( request->hasParam("Delete"))
+    {
+        Obstacles.Remove(index);
+        return;
+    }
     IObstacle::ObstacleType type = (IObstacle::ObstacleType)(request->getParam("Type")->value().toInt());
     int start = request->getParam("Start")->value().toInt();
     int end = request->getParam("End")->value().toInt();
@@ -134,7 +157,6 @@ void WebService::modifyObstacle(AsyncWebServerRequest *request)
     }
     break;
     }
-    buildIndexHTML();
 }
 
 void WebService::notFound(AsyncWebServerRequest *request)
@@ -252,11 +274,23 @@ void WebService::buildObstaclesHTML()
         + specifics;
         if( !RaceStarted)
         {
-            _obstacles_html += "<input type='submit'>";
+            _obstacles_html += R"rawliteral(<input type='submit'>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>REMOVE</b><input type='checkbox' name='Delete' value='delete'>)rawliteral";
         }
         _obstacles_html += "</form><br>";
     }
     _obstacles_html += "</div>";
+    
+    //Buttons to add obstacles
+    if( !RaceStarted)
+    {
+        _obstacles_html += R"rawliteral(
+        <div class='w3-center'>
+        <form style='display:inline-block;' action='/addoil'><input type='submit' value='Add Oil'></form>
+        &nbsp;&nbsp;&nbsp;
+        <form style='display:inline-block;' action='/addramp'><input type='submit' value='Add Ramp'></form>
+        </div>)rawliteral";
+    }
 }
 
 void WebService::buildIndexHTML()

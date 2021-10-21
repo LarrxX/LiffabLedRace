@@ -2,7 +2,7 @@
 
 //#define LED_CIRCLE
 
-#define DEFAULT_LED 120      // MAX LEDs actives on strip
+#define DEFAULT_LED 120 // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
 
 #define DEFAULT_LOOPS 5 //Number of loops in the race
@@ -14,9 +14,12 @@
 
 #define OIL_PRESS_DELAY_DEFAULT 500
 
-#define INIT_OBSTACLES                \
-    Obstacles.Add(new OilObstacle(30,45,Adafruit_NeoPixel::Color(255, 255, 0))); \
-    Obstacles.Add(new RampObstacle(100,120,5,Adafruit_NeoPixel::Color(127, 0, 127), RampObstacle::RAMP_HILL));
+#define DEFAULT_OIL_COLOR Adafruit_NeoPixel::Color(255, 255, 0)
+#define DEFAULT_RAMP_COLOR Adafruit_NeoPixel::Color(127, 0, 127)
+
+#define INIT_OBSTACLES                                         \
+    Obstacles.Add(new OilObstacle(40, 47, DEFAULT_OIL_COLOR)); \
+    Obstacles.Add(new RampObstacle(80, 100, 5, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_HILL));
 
 #define MAX_PLAYERS 4
 #define MAX_NAME_LENGTH 15
@@ -30,10 +33,11 @@
 #define COLOR_P3 Adafruit_NeoPixel::Color(0, 0, 255)
 #define COLOR_P4 Adafruit_NeoPixel::Color(255, 255, 255)
 
-#define INIT_PLAYERS  Players.Add(Player(COLOR_P1, PIN_P1, (char*)"Player 1")); \
-     Players.Add(Player(COLOR_P2, PIN_P2, (char*)"Player 2")); \
-     Players.Add(Player(COLOR_P3, PIN_P3, (char*)"Player 3")); \
-     Players.Add(Player(COLOR_P4, PIN_P4, (char*)"Player 4"));
+#define INIT_PLAYERS                                           \
+    Players.Add(Player(COLOR_P1, PIN_P1, (char *)"Player 1")); \
+    Players.Add(Player(COLOR_P2, PIN_P2, (char *)"Player 2")); \
+    Players.Add(Player(COLOR_P3, PIN_P3, (char *)"Player 3")); \
+    Players.Add(Player(COLOR_P4, PIN_P4, (char *)"Player 4"));
 
 #define ACEL 0.2f //Acceleration
 #define KF 0.015f //friction constant
