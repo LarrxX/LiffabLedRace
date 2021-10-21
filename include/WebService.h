@@ -6,7 +6,6 @@
 #include <ESPAsyncWebServer.h>
 
 #include "RaceConfig.h"
-using namespace RaceConfig;
 
 class WebService
 {

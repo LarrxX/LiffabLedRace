@@ -24,9 +24,6 @@ namespace RaceConfig
 #endif
 
     void ResetTrack();
-    void SplitColor( uint32_t color32, uint8_t& r, uint8_t& g, uint8_t& b);
-    void ToHTMLColor(uint32_t color32, char html[7]);
-    uint32_t FromHTMLColor(const char* color);
 };
 
 #endif //RACE_CONFIG

@@ -3,6 +3,11 @@
 #include "Car.h"
 #include "OilObstacle.h"
 #include "RampObstacle.h"
+#include "ColorUtils.h"
+
+
+using namespace RaceConfig;
+using namespace ColorUtils;
 
 WebService *WebService::_instance = NULL;
 

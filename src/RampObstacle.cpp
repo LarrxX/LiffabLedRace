@@ -6,7 +6,7 @@
 #include "Car.h"
 #include "Defines.h"
 
-#include "RaceConfig.h"
+#include "ColorUtils.h"
 
 RampObstacle::RampObstacle(word start, word end, byte height, uint32_t color, RampStyle style) : IObstacle(start, end, color),
                                                                                                  _style(style),
@@ -146,6 +146,6 @@ float RampObstacle::MoveDown(word left, word right, float position)
 uint32_t RampObstacle::ColorMultiply(uint32_t color, float mul)
 {
     uint8_t r, g, b;
-    RaceConfig::SplitColor(color, r, g, b);
+    ColorUtils::SplitColor(color, r, g, b);
     return ((uint32_t)(r * mul) << 16) | ((uint32_t)(g * mul) << 8) | (uint32_t)(b * mul);
 }
