@@ -8,6 +8,8 @@
 
 #include "ColorUtils.h"
 
+const char *RampObstacle::_StyleNames[] = {"Hill", "Hole", "Up", "Down"};
+
 RampObstacle::RampObstacle(word start, word end, byte height, uint32_t color, RampStyle style) : IObstacle(start, end, color),
                                                                                                  _style(style),
                                                                                                  _height(height)
@@ -63,6 +65,8 @@ void RampObstacle::Update(Player *player)
             acceleration = MoveDown(_start, _end, carPos);
         }
         break;
+        default:
+            break;
         }
     }
 
@@ -102,6 +106,9 @@ void RampObstacle::Draw(Adafruit_NeoPixel *led)
         DrawDown(_start, _end, led);
     }
     break;
+
+    default:
+        break;
     }
 }
 

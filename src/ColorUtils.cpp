@@ -9,7 +9,7 @@ namespace ColorUtils
         b = (color32 & 0xFF);
     }
 
-    void ToHTMLColor(uint32_t color32, char html[7])
+    void ToHTMLColor(uint32_t color32, char html[8])
     {
         uint8_t r, g, b;
         SplitColor(color32, r, g, b);

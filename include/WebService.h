@@ -33,8 +33,7 @@ private:
   static String _index_html;
   static String _players_html;
   static String _obstacles_html;
-
-  
+    
   void notFound(AsyncWebServerRequest *request);
 
   void buildPlayersHTML();
