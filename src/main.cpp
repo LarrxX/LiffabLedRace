@@ -73,75 +73,62 @@ void ResetPlayers()
 
 void start_race()
 {
+  Serial.println("start_race");
   raceRunning = true;
-
+  Serial.println("start_resetplayer");
   ResetPlayers();
 
-  for (byte i = 0; i < MaxLED; i++)
+  Serial.println("start_resettrack");
+  for (word i = 0; i < MaxLED; i++)
   {
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
 
+  Serial.println("start_obstacles");
   for (byte i = 0; i < Obstacles.Count(); ++i)
   {
     Obstacles[i]->Draw(&track);
   }
   track.show();
 
-#ifdef LED_CIRCLE
-  circle.fill(circle.Color(0, 0, 255), 0, 6);
-  circle.fill(circle.Color(0, 255, 0), 6, 6);
-  circle.fill(circle.Color(255, 0, 0), 12, 6);
-  circle.fill(circle.Color(255, 255, 255), 18, 6);
-  circle.show();
-#endif
+  #ifdef LED_CIRCLE
+    Serial.println("Arc en ciel");
+    rainbow(3);
+    circle.show();
+    circle.fill(circle.Color(255,0,0),0,24);
+    circle.show();
+  #endif
 
-  delay(2000);
-
-  track.setPixelColor(12, track.Color(0, 255, 0));
-  track.setPixelColor(11, track.Color(0, 255, 0));
-  track.show();
-
-#ifdef LED_CIRCLE
-  circle.fill(circle.Color(255, 255, 255), 0, 6);
-  circle.fill(circle.Color(0, 0, 255), 6, 6);
-  circle.fill(circle.Color(255, 0, 0), 12, 6);
-  circle.fill(circle.Color(0, 255, 0), 18, 6);
-  circle.show();
-#endif
 
   tone(PIN_AUDIO, 400);
   delay(2000);
   noTone(PIN_AUDIO);
 
-  track.setPixelColor(12, track.Color(0, 0, 0));
-  track.setPixelColor(11, track.Color(0, 0, 0));
-  track.setPixelColor(10, track.Color(255, 255, 0));
-  track.setPixelColor(9, track.Color(255, 255, 0));
-  track.show();
-
-#ifdef LED_CIRCLE
-  circle.fill(circle.Color(0, 255, 0), 0, 6);
-  circle.fill(circle.Color(255, 255, 255), 6, 6);
-  circle.fill(circle.Color(0, 0, 255), 12, 6);
-  circle.fill(circle.Color(255, 0, 0), 18, 6);
-  circle.show();
-#endif
+  #ifdef LED_CIRCLE
+    circle.fill(circle.Color(255,0,0),0,24);
+    circle.show();
+  #endif
 
   tone(PIN_AUDIO, 600);
   delay(2000);
   noTone(PIN_AUDIO);
 
-  track.setPixelColor(9, track.Color(0, 0, 0));
-  track.setPixelColor(10, track.Color(0, 0, 0));
-  track.setPixelColor(8, track.Color(255, 0, 0));
-  track.setPixelColor(7, track.Color(255, 0, 0));
-  track.show();
+  #ifdef LED_CIRCLE
+    circle.fill(circle.Color(255,132,0),0,24);
+    circle.show();
+  #endif
 
   tone(PIN_AUDIO, 1200);
   delay(2000);
   noTone(PIN_AUDIO);
   raceStartTime = millis();
+
+#ifdef LED_CIRCLE
+    circle.fill(circle.Color(0,255,0),0,24);
+    circle.show();
+#endif
+
+  Serial.println("race_started");
 }
 
 void setup()
@@ -240,7 +227,7 @@ void show_winner(byte winner)
 #ifdef LED_CIRCLE
   for (word i = 0; i < MAXLEDCIRCLE; i++)
   {
-    circle.setPixelColor(i, Players[i].car().getColor());
+    theaterChase(Players[i].car().getColor(),50);
   };
   circle.show();
 #endif
@@ -291,6 +278,10 @@ void loop()
     if (previousLeader != Players[0])
     {
       Serial.printf("%s overtook %s\n", Players[0].getName(), previousLeader.getName());
+#ifdef LED_CIRCLE
+      circle.fill(Players[0].car().getColor(),0,24);
+      circle.show();
+#endif
       FBEEP = 440;
       TBEEP = 10;
     }

@@ -24,10 +24,16 @@ namespace RaceConfig
     extern Adafruit_NeoPixel track;
 #ifdef LED_CIRCLE
     extern Adafruit_NeoPixel circle;
+    
+    void colorWipe(uint32_t c, uint8_t wait); 
+    void theaterChase(uint32_t c, uint8_t wait); 
+    void rainbow(uint8_t wait);
+
 #endif
 
     void Save();
     void Load();
+
 
     bool checkAndSaveRecord(const char* name, unsigned long time);
     void deleteRecord();

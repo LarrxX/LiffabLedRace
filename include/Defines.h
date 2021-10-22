@@ -1,6 +1,6 @@
 #pragma once
 
-//#define LED_CIRCLE
+#define LED_CIRCLE
 
 #ifdef ESP32
     #define EEPROM_SIZE 300
@@ -8,15 +8,15 @@
     #define USE_SPIFFS
 #endif
 
-#define DEFAULT_LED 120 // MAX LEDs actives on strip
+#define DEFAULT_LED 600 // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
 
 #define DEFAULT_LOOPS 5 //Number of loops in the race
 
-#define PIN_LED 25    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
-#define PIN_CIRCLE 26 // R 500 ohms to IN pin for WS2812 and WS2813, for WS2813 IN pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
+#define PIN_LED 21    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
+#define PIN_CIRCLE 17 // R 500 ohms to IN pin for WS2812 and WS2813, for WS2813 IN pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 
-#define PIN_AUDIO 32 // through CAP 2uf to speaker 8 ohms
+#define PIN_AUDIO 5 // through CAP 2uf to speaker 8 ohms
 
 #define OIL_PRESS_DELAY_DEFAULT 500
 
@@ -29,10 +29,10 @@
 
 #define MAX_PLAYERS 4
 #define MAX_NAME_LENGTH 15
-#define PIN_P1 16 // switch player 1 to PIN and GND
-#define PIN_P2 17 // switch player 2 to PIN and GND
-#define PIN_P3 18 // switch player 3 to PIN and GND
-#define PIN_P4 19 // switch player 4 to PIN and GND
+#define PIN_P1 22 // switch player 1 to PIN and GND
+#define PIN_P2 23 // switch player 2 to PIN and GND
+#define PIN_P3 14 // switch player 3 to PIN and GND
+#define PIN_P4 12 // switch player 4 to PIN and GND
 
 #define COLOR_P1 Adafruit_NeoPixel::Color(255, 0, 0)
 #define COLOR_P2 Adafruit_NeoPixel::Color(0, 255, 0)

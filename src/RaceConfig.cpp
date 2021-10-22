@@ -32,6 +32,57 @@ namespace RaceConfig
     Adafruit_NeoPixel circle = Adafruit_NeoPixel(MAXLEDCIRCLE, PIN_CIRCLE, NEO_GRB + NEO_KHZ800);
 #endif
 
+    uint32_t Wheel(byte WheelPos) {
+        if(WheelPos < 85) {
+        return circle.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+        } 
+        else if(WheelPos < 170) {
+        WheelPos -= 85;
+        return circle.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+        } 
+        else {
+        WheelPos -= 170;
+        return circle.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+        }
+    }
+
+    // Circle led - Fill the dots one after the other with a color
+    void colorWipe(uint32_t c, uint8_t wait) {
+        for(uint16_t i=0; i<circle.numPixels(); i++) {
+            circle.setPixelColor(i, c);
+            circle.show();
+            delay(wait);
+        }
+    }
+
+    // Circle led - rainbow
+    void rainbow(uint8_t wait) {
+        uint16_t i, j;
+        for(j=0; j<256; j++) {
+            for(i=0; i<circle.numPixels(); i++) {
+                circle.setPixelColor(i, Wheel((i*1+j) & 255));
+            }
+        circle.show();
+        delay(wait);
+        }
+    }
+
+    // Circle led - Theatre-style crawling lights.
+    void theaterChase(uint32_t c, uint8_t wait) {
+        for (int j=0; j<10; j++) {  //do 10 cycles of chasing
+            for (int q=0; q < 3; q++) {
+                for (int i=0; i < circle.numPixels(); i=i+3) {
+                    circle.setPixelColor(i+q, c);    //turn every third pixel on
+                }
+                circle.show();
+                delay(wait);
+                for (int i=0; i < circle.numPixels(); i=i+3) {
+                    circle.setPixelColor(i+q, 0);        //turn every third pixel off
+                }
+            }
+        }
+    }
+
     void writeWord(int &offset, word data)
     {
 #ifdef USE_SPIFFS
