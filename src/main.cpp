@@ -28,7 +28,15 @@
  https://openledrace.net/open-software/
 */
 
+#ifdef ESP32
 #include <ESP32Tone.h>
+#endif
+
+#ifdef USE_SPIFFS
+#include <SPIFFS.h>
+#else
+#include <EEPROM.h>
+#endif
 
 #include "Controller.h"
 #include "Car.h"
@@ -38,7 +46,7 @@
 
 #include "WebService.h"
 
-#include <EEPROM.h>
+
 
 using namespace RaceConfig;
 
@@ -139,8 +147,12 @@ void setup()
 {
   raceRunning = false;
 
+#ifdef USE_SPIFFS
+  SPIFFS.begin();
+#elif defined(ESP32)
   EEPROM.begin(EEPROM_SIZE) ;
-  
+#endif
+
   INIT_PLAYERS
   INIT_OBSTACLES
   Obstacles.Sort();

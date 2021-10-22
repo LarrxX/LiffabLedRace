@@ -2,7 +2,11 @@
 
 //#define LED_CIRCLE
 
-#define EEPROM_SIZE 200
+#ifdef ESP32
+    //If this is not defined, will use EEPROM instead
+    //#define USE_SPIFFS
+    #define EEPROM_SIZE 200
+#endif
 
 #define DEFAULT_LED 120 // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
