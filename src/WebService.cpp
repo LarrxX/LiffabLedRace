@@ -65,20 +65,20 @@ void WebService::Init()
                {
                    RaceStarted = true;
                    WebService::Instance().buildIndexHTML();
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
 
     _server.on("/Stop", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceStarted = false;
                    WebService::Instance().buildIndexHTML();
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
 
     _server.on("/player", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    WebService::Instance().modifyPlayer(request);
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
 
     _server.on("/obstacle", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -86,13 +86,13 @@ void WebService::Init()
                    WebService::Instance().modifyObstacle(request);
                    Obstacles.Sort();
                    WebService::Instance().buildIndexHTML();
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
 
     _server.on("/general", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    WebService::Instance().modifyGeneral(request);
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
     
     _server.on("/addoil", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -100,7 +100,7 @@ void WebService::Init()
                    Obstacles.Add(new OilObstacle(0,10, DEFAULT_OIL_COLOR));
                    Obstacles.Sort();
                    WebService::Instance().buildIndexHTML();
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
     
     _server.on("/addramp", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -108,20 +108,20 @@ void WebService::Init()
                    Obstacles.Add(new RampObstacle(0,10, 5, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_HILL));
                    Obstacles.Sort();
                    WebService::Instance().buildIndexHTML();
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
 
     _server.on("/save", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceConfig::Save();
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
 
     _server.on("/load", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceConfig::Load();
                    WebService::Instance().buildIndexHTML();
-                   request->send_P(200, "text/html", _index_html.c_str());
+                   request->redirect("/");
                });
     _server.begin();
 }
