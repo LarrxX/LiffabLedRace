@@ -1,6 +1,7 @@
 #include "WebService.h"
 
 #include "Car.h"
+#include "Controller.h"
 #include "OilObstacle.h"
 #include "RampObstacle.h"
 #include "ColorUtils.h"
@@ -14,6 +15,18 @@ WebService *WebService::_instance = NULL;
 
 const char *WebService::_ssid = "openLedRace";
 const char *WebService::_password = "1234led56";
+
+const String WebService::_pin_info_html = R"rawliteral(
+<div class='w3-bar'>
+<br><hr style="height:3px;color:black;background-color:black"><br>
+<h2>Pins</h2>
+<b>LEDs: </b>)rawliteral" + String(PIN_LED) + "<br>"
++"<b>Gate: </b>" + PIN_CIRCLE + "<br>"
++"<b>Audio: </b>" + PIN_AUDIO + "<br>"
++"<b>Player 1: </b>" + PIN_P1 + "<br>"
++"<b>Player 2: </b>" + PIN_P2 + "<br>"
++"<b>Player 3: </b>" + PIN_P3 + "<br>"
++"<b>Player 4: </b>" + PIN_P4 + "<br></div>";
 
 String WebService::_index_html = "";
 String WebService::_players_html = "";
@@ -180,8 +193,8 @@ void WebService::buildPlayersHTML()
 
         _players_html += "<form action='/player'><input type='color' name='Color' value='"
         + String(color)
-        + "'> "
-        + String(i + 1)
+        + "'> Pin "
+        + Players[i].controller().getPin()
         + " <input type='text' name='Name' value='"
         + Players[i].getName()
         + "' size="
@@ -346,5 +359,6 @@ void WebService::buildIndexHTML()
     _index_html += "</form><br></div>"
     + _players_html
     + _obstacles_html
+    + _pin_info_html
     +"</body></html>";
 }

@@ -31,6 +31,7 @@ private:
   static const char *_ssid;
   static const char *_password;
 
+  static const String _pin_info_html;
   static String _index_html;
   static String _players_html;
   static String _obstacles_html;
