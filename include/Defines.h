@@ -2,6 +2,8 @@
 
 //#define LED_CIRCLE
 
+#define EEPROM_SIZE 200
+
 #define DEFAULT_LED 120 // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
 

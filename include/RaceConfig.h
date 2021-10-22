@@ -24,6 +24,9 @@ namespace RaceConfig
 #endif
 
     void ResetTrack();
+
+    void Save();
+    void Load();
 };
 
 #endif //RACE_CONFIG

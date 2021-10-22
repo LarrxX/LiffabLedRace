@@ -38,6 +38,8 @@
 
 #include "WebService.h"
 
+#include <EEPROM.h>
+
 using namespace RaceConfig;
 
 static const word win_music[] = {
@@ -136,6 +138,8 @@ void start_race()
 void setup()
 {
   raceRunning = false;
+
+  EEPROM.begin(EEPROM_SIZE) ;
   
   INIT_PLAYERS
   INIT_OBSTACLES

@@ -22,10 +22,11 @@ protected:
 public:
     Player(uint32_t carColor, byte controllerPin, char *name);
     ~Player();
+    void Destroy();
 
     void Update(DynamicPointerArray<IObstacle *> &obstacles);
     void Reset();
-
+    
     const Controller &controller() const { return *_controller; }
     const Car &car() const { return *_car; }
     Car &mutableCar() { return *_car; }

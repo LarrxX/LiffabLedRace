@@ -111,6 +111,18 @@ void WebService::Init()
                    request->send_P(200, "text/html", _index_html.c_str());
                });
 
+    _server.on("/save", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   RaceConfig::Save();
+                   request->send_P(200, "text/html", _index_html.c_str());
+               });
+
+    _server.on("/load", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   RaceConfig::Load();
+                   WebService::Instance().buildIndexHTML();
+                   request->send_P(200, "text/html", _index_html.c_str());
+               });
     _server.begin();
 }
 
@@ -358,7 +370,20 @@ void WebService::buildIndexHTML()
     
     _index_html += "</form><br></div>"
     + _players_html
-    + _obstacles_html
-    + _pin_info_html
+    + _obstacles_html;
+    
+    //Buttons to add obstacles
+    if( !RaceStarted)
+    {
+        _index_html += R"rawliteral(
+        "<div class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br>
+        <h2>EEPROM</h2>
+        <form style='display:inline-block;' action='/save'><input type='submit' value='Save to EEPROM'></form>
+        &nbsp;&nbsp;&nbsp;
+        <form style='display:inline-block;' action='/load'><input type='submit' value='Load from EEPROM'></form>
+        </div>)rawliteral";
+    }
+
+    _index_html += _pin_info_html
     +"</body></html>";
 }

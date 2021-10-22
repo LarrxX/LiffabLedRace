@@ -16,12 +16,19 @@ Player::Player(uint32_t carColor, byte controllerPin, char *name) : _car(new Car
 
 Player::~Player()
 {
-    //Do not delete the pointers to allow lazy copy operator
-    //This can lead to memory leaks, but in our use case this works
-    // delete (_car);
-    // _car = NULL;
-    // delete (_controller);
-    // _controller = NULL;
+    //Pointers to car and controller are not destroyed automatically
+    //to allow the lazy copy operator to work. This makes things much faster
+    //in our current use case. 
+}
+
+void Player::Destroy()
+{
+    //Player should be destroyed explicitly
+    //In our case, this is only needed when loading data from EEPROM
+    delete (_car);
+    _car = NULL;
+    delete (_controller);
+    _controller = NULL;
 }
 
 void Player::Reset()
