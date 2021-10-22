@@ -186,7 +186,7 @@ void winner_fx(byte w)
   word msize = sizeof(win_music) / sizeof(word);
   for (word note = 0; note < msize; ++note)
   {
-    tone(PIN_AUDIO, win_music[note] / (5 - w), 200);
+    tone(PIN_AUDIO, win_music[note], 200);
   };
   delay(230);
   noTone(PIN_AUDIO);
@@ -221,15 +221,11 @@ void show_winner(byte winner)
   Serial.printf("Winner: %s in %02d:%.3f", Players[winner].getName(), minutes, seconds);
   if( checkAndSaveRecord(Players[winner].getName(), raceTime))
   {
-    Serial.println("New Record!");
+    Serial.println(" New Record!");
   }
   
 #ifdef LED_CIRCLE
-  for (word i = 0; i < MAXLEDCIRCLE; i++)
-  {
-    theaterChase(Players[i].car().getColor(),50);
-  };
-  circle.show();
+  theaterChase(Players[winner].car().getColor(),50);
 #endif
 
   winner_fx(winner);
