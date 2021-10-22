@@ -376,11 +376,11 @@ void WebService::buildIndexHTML()
     if( !RaceStarted)
     {
         _index_html += R"rawliteral(
-        "<div class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br>
-        <h2>EEPROM</h2>
-        <form style='display:inline-block;' action='/save'><input type='submit' value='Save to EEPROM'></form>
-        &nbsp;&nbsp;&nbsp;
-        <form style='display:inline-block;' action='/load'><input type='submit' value='Load from EEPROM'></form>
+        "<div class='w3-center'><br><hr style='height:3px;color:black;background-color:black'><br>
+        <h2>Save/Load</h2>
+        <form style='display:inline-block;' action='/save'><input type='submit' value='Save Configuration'></form>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <form style='display:inline-block;' action='/load'><input type='submit' value='Load Configuration'></form>
         </div>)rawliteral";
     }
 

@@ -27,6 +27,7 @@
  https://gitlab.com/open-led-race
  https://openledrace.net/open-software/
 */
+#include "Defines.h"
 
 #ifdef ESP32
 #include <ESP32Tone.h>
@@ -45,8 +46,6 @@
 #include "OilObstacle.h"
 
 #include "WebService.h"
-
-
 
 using namespace RaceConfig;
 
@@ -147,17 +146,25 @@ void setup()
 {
   raceRunning = false;
 
-#ifdef USE_SPIFFS
-  SPIFFS.begin();
-#elif defined(ESP32)
-  EEPROM.begin(EEPROM_SIZE) ;
-#endif
-
   INIT_PLAYERS
   INIT_OBSTACLES
   Obstacles.Sort();
 
   WebService::Instance().Init();
+
+#ifdef USE_SPIFFS
+  if (SPIFFS.begin(true))
+  {
+    Serial.println("SPIFFS successfully mounted \\o/");
+  }
+  else
+  {
+    Serial.println("Error mounting SPIFFS.");
+  }
+
+#elif defined(ESP32)
+  EEPROM.begin(EEPROM_SIZE);
+#endif
 
   for (byte i = 0; i < MAX_PLAYERS; ++i)
   {
@@ -244,11 +251,11 @@ void loop()
 
   if (RaceStarted)
   {
-    if( !raceRunning)
+    if (!raceRunning)
     {
       start_race();
     }
-    
+
     for (byte i = 0; i < Players.Count(); ++i)
     {
       Players[i].Update(Obstacles);
@@ -293,7 +300,7 @@ void loop()
   }
   else //RaceStarted==false
   {
-    if( raceRunning )
+    if (raceRunning)
     {
       ResetPlayers();
       Players.Sort();
@@ -301,5 +308,5 @@ void loop()
     raceRunning = false;
   }
 
-   track.show();
+  track.show();
 }

@@ -2,6 +2,7 @@
 
 #ifdef USE_SPIFFS
 #include <SPIFFS.h>
+File file;
 #else
 #include <EEPROM.h>
 #endif
@@ -29,13 +30,21 @@ namespace RaceConfig
 
     void writeWord(int &offset, word data)
     {
+#ifdef USE_SPIFFS
+        file.write(data);
+#else
         EEPROM.writeUInt(offset, data);
+#endif
         offset += sizeof(int);
     }
 
     void readWord(int &offset, word &data)
     {
+#ifdef USE_SPIFFS
+        data = file.read();
+#else
         EEPROM.get(offset, data);
+#endif
         offset += sizeof(word);
     }
 
@@ -44,7 +53,7 @@ namespace RaceConfig
         writeWord(offset, (word)data);
     }
 
-    void readUInt(int &offset, uint32_t& data)
+    void readUInt(int &offset, uint32_t &data)
     {
         word wordData;
         readWord(offset, wordData);
@@ -53,40 +62,68 @@ namespace RaceConfig
 
     void writeByte(int &offset, byte data)
     {
+#ifdef USE_SPIFFS
+        file.write(data);
+#else
         EEPROM.writeByte(offset, data);
+#endif
+
         offset += sizeof(byte);
     }
 
-    void readByte(int &offset, byte& data)
+    void readByte(int &offset, byte &data)
     {
+#ifdef USE_SPIFFS
+        data = file.readBytes((char *)&data, 1);
+#else
         EEPROM.get(offset, data);
+#endif
         offset += sizeof(byte);
     }
 
     void writeString(int &offset, const char *data)
     {
         size_t len = strlen(data) + 1;
-        
-        Serial.printf("Writing string %s of length %d\n", data, len);
 
+#ifdef USE_SPIFFS
+        writeWord(offset, len);
+        file.write((uint8_t *)data, len);
+#else
         EEPROM.writeBytes(offset, data, len);
+#endif
         offset += len * sizeof(char);
     }
 
-    void readString(int &offset, byte* data)
+    void readString(int &offset, byte *data)
     {
-        for( int i = 0; i < MAX_NAME_LENGTH; ++i)
+#ifdef USE_SPIFFS
+        word len;
+        readWord(offset,len);
+        file.readBytes((char*)data, len);
+#else
+
+        for (int i = 0; i < MAX_NAME_LENGTH; ++i)
         {
             readByte(offset, data[i]);
-            if( data[i] =='\0')
+            if (data[i] == '\0')
             {
                 return;
             }
         }
+#endif
     }
 
     void Save()
     {
+#ifdef USE_SPIFFS
+        file = SPIFFS.open("/olr.cfg", "w");
+        if (!file)
+        {
+            Serial.println("Unable to open SPIFFS file for saving!");
+            return;
+        }
+        file.seek(0);
+#endif
         int eeAddress = 0;
 
         writeWord(eeAddress, MaxLoops);
@@ -145,10 +182,24 @@ namespace RaceConfig
 #if defined(ESP32) && !defined(USE_SPIFFS)
         EEPROM.commit();
 #endif
+
+#ifdef USE_SPIFFS
+        file.close();
+#endif
     }
 
     void Load()
     {
+#ifdef USE_SPIFFS
+        file = SPIFFS.open("/olr.cfg", "r");
+
+        if (!file)
+        {
+            Serial.println("Unable to open SPIFFS file for loading!");
+            return;
+        }
+        file.seek(0);
+#endif
         Serial.println("Loading...");
         int eeAddress = 0;
 
@@ -186,7 +237,7 @@ namespace RaceConfig
             Serial.printf(" Pin=%d", pin);
 
             char name[MAX_NAME_LENGTH];
-            readString(eeAddress, (byte*)name);
+            readString(eeAddress, (byte *)name);
             Serial.printf(" Name=%s\n", name);
 
             Players.Add(Player(color, pin, name));
@@ -255,5 +306,8 @@ namespace RaceConfig
             }
         }
         Serial.println("Loading done!");
+#ifdef USE_SPIFFS
+        file.close();
+#endif
     }
 };
