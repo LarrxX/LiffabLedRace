@@ -3,6 +3,7 @@
 #ifdef USE_SPIFFS
 #include <SPIFFS.h>
 File file;
+static const char configFileName[] = "/olr.cfg";
 #else
 #include <EEPROM.h>
 #endif
@@ -21,6 +22,9 @@ namespace RaceConfig
 
     DynamicArray<Player> Players(MAX_PLAYERS);
     DynamicPointerArray<IObstacle *> Obstacles(2);
+
+    char RecordName[MAX_NAME_LENGTH]="";
+    unsigned long RecordTime = ULONG_MAX;
 
     Adafruit_NeoPixel track = Adafruit_NeoPixel(MaxLED, PIN_LED, NEO_GRB + NEO_KHZ800);
 
@@ -58,6 +62,26 @@ namespace RaceConfig
         word wordData;
         readWord(offset, wordData);
         data = wordData;
+    }
+
+    void writeULong(int& offset, unsigned long data)
+    {
+#ifdef USE_SPIFFS
+        file.write(data);
+#else
+        EEPROM.writeULong(offset, data);
+#endif
+        offset += sizeof(int);
+    }
+
+    void readULong(int &offset, unsigned long &data)
+    {
+#ifdef USE_SPIFFS
+        data = file.read();
+#else
+        EEPROM.get(offset, data);
+#endif
+        offset += sizeof(word);
     }
 
     void writeByte(int &offset, byte data)
@@ -113,10 +137,40 @@ namespace RaceConfig
 #endif
     }
 
+    void SaveRecord(int &offset)
+    {
+#ifdef USE_SPIFSS
+        file = SPIFFS.open(configFileName, "a");
+        if (!file)
+        {
+            Serial.println("Error opening file for saving new record.");
+            return;
+        }
+        file.seek(offset);
+#endif
+        //Always reserve the maximum allowed size for a name so we don't accidentally wipe the data after it when we update only this section
+        int begin = offset;
+        writeString(offset, (char *)RecordName);
+        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
+        writeULong(offset, RecordTime);
+
+#ifdef USE_SPIFSS
+        file.close();
+#endif
+    }
+
+    void deleteRecord()
+    {
+        RecordName[0] = '\0';
+        RecordTime = ULONG_MAX;
+        int offset = 0;
+        SaveRecord(offset);
+    }
+
     void Save()
     {
 #ifdef USE_SPIFFS
-        file = SPIFFS.open("/olr.cfg", "w");
+        file = SPIFFS.open(configFileName, "w");
         if (!file)
         {
             Serial.println("Unable to open SPIFFS file for saving!");
@@ -125,6 +179,8 @@ namespace RaceConfig
         file.seek(0);
 #endif
         int eeAddress = 0;
+
+        SaveRecord(eeAddress);
 
         writeWord(eeAddress, MaxLoops);
 
@@ -191,7 +247,7 @@ namespace RaceConfig
     void Load()
     {
 #ifdef USE_SPIFFS
-        file = SPIFFS.open("/olr.cfg", "r");
+        file = SPIFFS.open(configFileName, "r");
 
         if (!file)
         {
@@ -309,5 +365,20 @@ namespace RaceConfig
 #ifdef USE_SPIFFS
         file.close();
 #endif
+    }
+
+    bool checkAndSaveRecord(const char* name, unsigned long time)
+    {
+        if( time > RecordTime )
+        {
+            return false;
+        }
+        strcpy(RecordName, name);
+        RecordTime = time;
+        int offset = 0;
+
+        SaveRecord(offset);
+
+        return true;
     }
 };

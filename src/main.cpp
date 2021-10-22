@@ -56,6 +56,7 @@ static const word win_music[] = {
 
 byte drawOrder[MAX_PLAYERS];
 unsigned long previousRedraw = 0;
+unsigned long raceStartTime = 0;
 bool raceRunning = false;
 
 word TBEEP = 0;
@@ -140,6 +141,7 @@ void start_race()
   tone(PIN_AUDIO, 1200);
   delay(2000);
   noTone(PIN_AUDIO);
+  raceStartTime = millis();
 }
 
 void setup()
@@ -225,7 +227,16 @@ void draw_cars()
 
 void show_winner(byte winner)
 {
-  Serial.printf("Winner: %d", winner);
+  unsigned long raceTime = millis() - raceStartTime;
+  int minutes = raceTime / 60000;
+  float seconds = (raceTime - (minutes*60000)) / 1000.f;
+
+  Serial.printf("Winner: %s in %02d:%.3f", Players[winner].getName(), minutes, seconds);
+  if( checkAndSaveRecord(Players[winner].getName(), raceTime))
+  {
+    Serial.println("New Record!");
+  }
+  
 #ifdef LED_CIRCLE
   for (word i = 0; i < MAXLEDCIRCLE; i++)
   {

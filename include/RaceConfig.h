@@ -18,15 +18,19 @@ namespace RaceConfig
     extern DynamicArray<Player> Players;
     extern DynamicPointerArray<IObstacle *> Obstacles;
 
+    extern char RecordName[MAX_NAME_LENGTH];
+    extern unsigned long RecordTime;
+
     extern Adafruit_NeoPixel track;
 #ifdef LED_CIRCLE
     extern Adafruit_NeoPixel circle;
 #endif
 
-    void ResetTrack();
-
     void Save();
     void Load();
+
+    bool checkAndSaveRecord(const char* name, unsigned long time);
+    void deleteRecord();
 };
 
 #endif //RACE_CONFIG

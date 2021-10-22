@@ -59,19 +59,20 @@ void WebService::Init()
     Serial.println(IP);
 
     _server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-               { request->send_P(200, "text/html", _index_html.c_str()); });
+               {
+                   WebService::Instance().buildIndexHTML();
+                   request->send_P(200, "text/html", _index_html.c_str());
+               });
 
     _server.on("/Start", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceStarted = true;
-                   WebService::Instance().buildIndexHTML();
                    request->redirect("/");
                });
 
     _server.on("/Stop", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceStarted = false;
-                   WebService::Instance().buildIndexHTML();
                    request->redirect("/");
                });
 
@@ -85,7 +86,6 @@ void WebService::Init()
                {
                    WebService::Instance().modifyObstacle(request);
                    Obstacles.Sort();
-                   WebService::Instance().buildIndexHTML();
                    request->redirect("/");
                });
 
@@ -99,7 +99,6 @@ void WebService::Init()
                {
                    Obstacles.Add(new OilObstacle(0,10, DEFAULT_OIL_COLOR));
                    Obstacles.Sort();
-                   WebService::Instance().buildIndexHTML();
                    request->redirect("/");
                });
     
@@ -107,7 +106,6 @@ void WebService::Init()
                {
                    Obstacles.Add(new RampObstacle(0,10, 5, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_HILL));
                    Obstacles.Sort();
-                   WebService::Instance().buildIndexHTML();
                    request->redirect("/");
                });
 
@@ -120,9 +118,15 @@ void WebService::Init()
     _server.on("/load", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceConfig::Load();
-                   WebService::Instance().buildIndexHTML();
                    request->redirect("/");
                });
+
+    _server.on("/deleterecord", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   deleteRecord();
+                   request->redirect("/");
+               });
+
     _server.begin();
 }
 
@@ -350,7 +354,29 @@ void WebService::buildIndexHTML()
       <div class='w3-center'>
         <a href='/Start' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:40%; height:50%;'>Start</a>
         <a href='/Stop' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:40%; height:50%;'>Stop</a>
-      </div>
+      </div>)rawliteral";
+    if( strlen(RecordName) > 0)
+    {
+        _index_html += R"rawliteral(
+            <div class='w3-bar'>
+            <br><hr style="height:3px;color:black;background-color:black"><br>
+            <h2>Track Record</h2>
+            <b>)rawliteral"
+        + String(RecordName)
+        + "</b>: "
+        + (RecordTime/60000)
+        + ":"
+        + ((RecordTime % 60000) / 1000.f)
+        + R"rawliteral(
+        <div class='w3-center'>
+        <form action='/deleterecord'>
+        <input type='submit' value='Delete Record'>
+        </form>
+        </div>
+        )rawliteral";
+      }
+
+      _index_html += R"rawliteral(</div>
       <div class='w3-bar'>
       <br><hr style="height:3px;color:black;background-color:black"><br>
       <h2>General</h2>
