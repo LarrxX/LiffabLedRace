@@ -66,6 +66,7 @@ void WebService::Init()
 
     _server.on("/Start", HTTP_GET, [](AsyncWebServerRequest *request)
                {
+                   Save();
                    RaceStarted = true;
                    request->redirect("/");
                });
@@ -118,6 +119,12 @@ void WebService::Init()
     _server.on("/load", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    RaceConfig::Load();
+                   request->redirect("/");
+               });
+
+    _server.on("/deleteconf", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   RaceConfig::Delete();
                    request->redirect("/");
                });
 
@@ -407,6 +414,8 @@ void WebService::buildIndexHTML()
         <form style='display:inline-block;' action='/save'><input type='submit' value='Save Configuration'></form>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <form style='display:inline-block;' action='/load'><input type='submit' value='Load Configuration'></form>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <form style='display:inline-block;' action='/deleteconf'><input type='submit' value='Delete Configuration'></form>
         </div>)rawliteral";
     }
 

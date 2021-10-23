@@ -151,6 +151,7 @@ void setup()
 
   if (!RaceConfig::Load())
   {
+    Serial.println("No configuration file found, initializing defaults.");
     INIT_PLAYERS
     INIT_OBSTACLES
     Obstacles.Sort();

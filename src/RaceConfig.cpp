@@ -223,7 +223,7 @@ namespace RaceConfig
     {
         RecordName[0] = '\0';
         RecordTime = ULONG_MAX;
-        int offset = 0;
+        int offset = strlen(SAVE_FILE_VERSION)+1;
         SaveRecord(offset);
     }
 
@@ -239,6 +239,8 @@ namespace RaceConfig
         file.seek(0);
 #endif
         int eeAddress = 0;
+        
+        writeString(eeAddress, SAVE_FILE_VERSION);
 
         SaveRecord(eeAddress);
 
@@ -318,6 +320,17 @@ namespace RaceConfig
 #endif
         Serial.println("Loading...");
         int eeAddress = 0;
+
+        char version[10];
+        readString(eeAddress, (byte*)version);
+        if (strcmp(version, SAVE_FILE_VERSION) != 0)
+        {
+            Serial.println("Wrong save file version.");
+#ifdef USE_SPIFFS
+            file.close();
+#endif
+            return false;
+        }
 
         LoadRecord(eeAddress);
         
@@ -438,10 +451,17 @@ namespace RaceConfig
         }
         strcpy(RecordName, name);
         RecordTime = time;
-        int offset = 0;
+        int offset = strlen(SAVE_FILE_VERSION) + 1;
 
         SaveRecord(offset);
 
         return true;
+    }
+
+    void Delete()
+    {
+#ifdef USE_SPIFFS
+        SPIFFS.remove(configFileName);
+#endif
     }
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#define SAVE_FILE_VERSION "1.0.0"
+
 //#define LED_CIRCLE
 
 #ifdef ESP32
