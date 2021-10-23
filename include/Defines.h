@@ -8,10 +8,10 @@
     #define USE_SPIFFS
 #endif
 
-#define DEFAULT_LED 600 // MAX LEDs actives on strip
+#define DEFAULT_LED 120 // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
 
-#define DEFAULT_LOOPS 5 //Number of loops in the race
+#define DEFAULT_LOOPS 4 //Number of loops in the race
 
 #define PIN_LED 21    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_CIRCLE 17 // R 500 ohms to IN pin for WS2812 and WS2813, for WS2813 IN pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A

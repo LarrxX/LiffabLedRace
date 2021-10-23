@@ -87,7 +87,7 @@ namespace RaceConfig
     void writeWord(int &offset, word data)
     {
 #ifdef USE_SPIFFS
-        file.write(data);
+        file.write((uint8_t*)&data, sizeof(word));
 #else
         EEPROM.writeUInt(offset, data);
 #endif
@@ -97,7 +97,7 @@ namespace RaceConfig
     void readWord(int &offset, word &data)
     {
 #ifdef USE_SPIFFS
-        data = file.read();
+        file.read((uint8_t*)&data, sizeof(word));
 #else
         EEPROM.get(offset, data);
 #endif
@@ -119,7 +119,7 @@ namespace RaceConfig
     void writeULong(int& offset, unsigned long data)
     {
 #ifdef USE_SPIFFS
-        file.write(data);
+        file.write((uint8_t*)&data, sizeof(unsigned long));
 #else
         EEPROM.writeULong(offset, data);
 #endif
@@ -129,7 +129,7 @@ namespace RaceConfig
     void readULong(int &offset, unsigned long &data)
     {
 #ifdef USE_SPIFFS
-        data = file.read();
+        file.read((uint8_t*)&data, sizeof(unsigned long));
 #else
         EEPROM.get(offset, data);
 #endif
@@ -150,7 +150,7 @@ namespace RaceConfig
     void readByte(int &offset, byte &data)
     {
 #ifdef USE_SPIFFS
-        data = file.readBytes((char *)&data, 1);
+        file.readBytes((char *)&data, 1);
 #else
         EEPROM.get(offset, data);
 #endif
