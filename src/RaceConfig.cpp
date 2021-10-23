@@ -304,7 +304,7 @@ namespace RaceConfig
 #endif
     }
 
-    void Load()
+    bool Load()
     {
 #ifdef USE_SPIFFS
         file = SPIFFS.open(configFileName, "r");
@@ -312,7 +312,7 @@ namespace RaceConfig
         if (!file)
         {
             Serial.println("Unable to open SPIFFS file for loading!");
-            return;
+            return false;
         }
         file.seek(0);
 #endif
@@ -427,6 +427,7 @@ namespace RaceConfig
 #ifdef USE_SPIFFS
         file.close();
 #endif
+        return true;
     }
 
     bool checkAndSaveRecord(const char* name, unsigned long time)

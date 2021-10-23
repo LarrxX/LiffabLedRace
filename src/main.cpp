@@ -135,12 +135,6 @@ void setup()
 {
   raceRunning = false;
 
-  INIT_PLAYERS
-  INIT_OBSTACLES
-  Obstacles.Sort();
-
-  WebService::Instance().Init();
-
 #ifdef USE_SPIFFS
   if (SPIFFS.begin(true))
   {
@@ -155,7 +149,16 @@ void setup()
   EEPROM.begin(EEPROM_SIZE);
 #endif
 
-  for (byte i = 0; i < MAX_PLAYERS; ++i)
+  if (!RaceConfig::Load())
+  {
+    INIT_PLAYERS
+    INIT_OBSTACLES
+    Obstacles.Sort();
+  }
+
+  WebService::Instance().Init();
+
+  for (byte i = 0; i < Players.Count(); ++i)
   {
     drawOrder[i] = i;
   }
@@ -197,16 +200,16 @@ void draw_cars()
   if ((millis() - previousRedraw) > 1000)
   {
     previousRedraw = millis();
-    for (byte i = 0; i < MAX_PLAYERS; ++i)
+    for (byte i = 0; i < Players.Count(); ++i)
     {
-      byte j = random(i, MAX_PLAYERS);
+      byte j = random(i, Players.Count());
       byte tmp = drawOrder[j];
       drawOrder[j] = drawOrder[i];
       drawOrder[i] = tmp;
     }
   }
 
-  for (byte i = 0; i < MAX_PLAYERS; ++i)
+  for (byte i = 0; i < Players.Count(); ++i)
   {
     Players[drawOrder[i]].car().Draw(&track);
   }
@@ -229,6 +232,10 @@ void show_winner(byte winner)
 #endif
 
   winner_fx(winner);
+
+#ifdef LED_CIRCLE
+  delay(3000);
+#endif
 }
 
 void loop()

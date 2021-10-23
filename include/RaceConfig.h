@@ -32,7 +32,7 @@ namespace RaceConfig
 #endif
 
     void Save();
-    void Load();
+    bool Load();
 
 
     bool checkAndSaveRecord(const char* name, unsigned long time);
