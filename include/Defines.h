@@ -2,7 +2,7 @@
 
 #define SAVE_FILE_VERSION "1.0.0"
 
-//#define LED_CIRCLE
+#define LED_CIRCLE
 
 #ifdef ESP32
     #define EEPROM_SIZE 300
@@ -10,7 +10,7 @@
     #define USE_SPIFFS
 #endif
 
-#define DEFAULT_LED 120 // MAX LEDs actives on strip
+#define DEFAULT_LED 600 // MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
 
 #define DEFAULT_LOOPS 4 //Number of loops in the race
