@@ -30,7 +30,7 @@ namespace RaceConfig
 
 #ifdef LED_CIRCLE
     Adafruit_NeoPixel circle = Adafruit_NeoPixel(MAXLEDCIRCLE, PIN_CIRCLE, NEO_GRB + NEO_KHZ800);
-#endif
+
 
     uint32_t Wheel(byte WheelPos) {
         if(WheelPos < 85) {
@@ -82,6 +82,7 @@ namespace RaceConfig
             }
         }
     }
+#endif //LED_CIRCLE
 
     void writeWord(int &offset, word data)
     {

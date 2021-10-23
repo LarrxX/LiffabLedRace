@@ -1,6 +1,6 @@
 #pragma once
 
-#define LED_CIRCLE
+//#define LED_CIRCLE
 
 #ifdef ESP32
     #define EEPROM_SIZE 300
