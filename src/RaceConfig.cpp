@@ -210,6 +210,14 @@ namespace RaceConfig
 #endif
     }
 
+    void LoadRecord(int& offset)
+    {
+        int begin = offset;
+        readString(offset, (byte*)RecordName);
+        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
+        readULong(offset, RecordTime);
+    }
+
     void deleteRecord()
     {
         RecordName[0] = '\0';
@@ -310,6 +318,8 @@ namespace RaceConfig
         Serial.println("Loading...");
         int eeAddress = 0;
 
+        LoadRecord(eeAddress);
+        
         readWord(eeAddress, MaxLoops);
         Serial.printf("Loaded Maxloops=%d\n", MaxLoops);
 

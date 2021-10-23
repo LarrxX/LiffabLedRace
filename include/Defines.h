@@ -18,14 +18,18 @@
 
 #define PIN_AUDIO 5 // through CAP 2uf to speaker 8 ohms
 
-#define OIL_PRESS_DELAY_DEFAULT 500
+#define OIL_PRESS_DELAY_DEFAULT 200
 
 #define DEFAULT_OIL_COLOR Adafruit_NeoPixel::Color(255, 255, 0)
 #define DEFAULT_RAMP_COLOR Adafruit_NeoPixel::Color(127, 0, 127)
 
 #define INIT_OBSTACLES                                         \
     Obstacles.Add(new OilObstacle(40, 47, DEFAULT_OIL_COLOR)); \
-    Obstacles.Add(new RampObstacle(80, 100, 5, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_HILL));
+    Obstacles.Add(new RampObstacle(90, 167, 10, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_UP)); \
+    Obstacles.Add(new RampObstacle(168, 220, 8, Adafruit_NeoPixel::Color(0, 127, 0), RampObstacle::RAMP_DOWN)); \
+    Obstacles.Add(new RampObstacle(330, 361, 9, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_UP)); \
+    Obstacles.Add(new RampObstacle(385, 435, 12, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_UP)); \
+    Obstacles.Add(new RampObstacle(436, 550, 8, Adafruit_NeoPixel::Color(0, 127, 0), RampObstacle::RAMP_DOWN));
 
 #define MAX_PLAYERS 4
 #define MAX_NAME_LENGTH 15
