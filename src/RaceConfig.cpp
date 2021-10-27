@@ -16,6 +16,7 @@ static const char configFileName[] = "/olr.cfg";
 namespace RaceConfig
 {
     bool RaceStarted = true;
+    bool EasyMode = false;
 
     word MaxLoops = DEFAULT_LOOPS;
     word MaxLED = DEFAULT_LED;

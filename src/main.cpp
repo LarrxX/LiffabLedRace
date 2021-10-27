@@ -59,9 +59,8 @@ unsigned long previousRedraw = 0;
 unsigned long raceStartTime = 0;
 bool raceRunning = false;
 
-word TBEEP = 0;
-word FBEEP = 0;
-byte SMOTOR = 0;
+Controller StartRaceButton(PIN_START);
+Controller EasyModeSwitch(PIN_EASY);
 
 void ResetPlayers()
 {
@@ -171,17 +170,6 @@ void setup()
   circle.setBrightness(125);
 #endif
 
-  if (Players[0].controller().isPressed())
-  {
-    delay(1000);
-    tone(PIN_AUDIO, 1000);
-    delay(500);
-    noTone(PIN_AUDIO);
-    delay(500);
-    if (Players[1].controller().isPressed())
-      SMOTOR = 1;
-  } //push switch 1 until a tone beep on reset for activate magic FX  ;-)
-
   start_race();
 }
 
@@ -258,6 +246,22 @@ void loop()
       start_race();
     }
 
+    if( StartRaceButton.isPressedThisLoop())
+    {
+      start_race();
+    }
+    StartRaceButton.Update();
+
+    if( EasyModeSwitch.isPressedThisLoop() )
+    {
+      Serial.println("Easy mode ON!");
+    }
+    else if( EasyModeSwitch.isReleasedThisLoop())
+    {
+      Serial.println("Easy mode OFF!");
+    }
+    EasyModeSwitch.Update();
+
     for (byte i = 0; i < Players.Count(); ++i)
     {
       Players[i].Update(Obstacles);
@@ -268,17 +272,10 @@ void loop()
         start_race();
         return;
       }
-
-      if (Players[i].car().isStartingNewLoop())
-      {
-        FBEEP = 440 * (i + 1);
-        TBEEP = 10;
-      }
     }
 
     Player previousLeader = Players[0];
     Players.Sort();
-    //Beep when someone new takes the lead
     if (previousLeader != Players[0])
     {
       Serial.printf("%s overtook %s\n", Players[0].getName(), previousLeader.getName());
@@ -286,23 +283,9 @@ void loop()
       circle.fill(Players[0].car().getColor(),0,24);
       circle.show();
 #endif
-      FBEEP = 440;
-      TBEEP = 10;
     }
-
-    // if (SMOTOR == 1)
-    //   tone(PIN_AUDIO, FBEEP + word(speed1 * 440 * 2) + word(speed2 * 440 * 3));
 
     draw_cars();
-
-    if (TBEEP > 0)
-    {
-      TBEEP--;
-    }
-    else
-    {
-      FBEEP = 0;
-    };
   }
   else //RaceStarted==false
   {

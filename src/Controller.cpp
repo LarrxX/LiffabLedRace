@@ -14,13 +14,13 @@ void Controller::Reset()
 
 void Controller::Update()
 {
-    if (isPressed() && !_alreadyPressed)
+    if (isPressedThisLoop())
     {
         _pressedTime = millis();
         _alreadyPressed = true;
     };
     
-    if (_alreadyPressed && !isPressed())
+    if (isReleasedThisLoop())
     {
         _alreadyPressed = false;
     };
@@ -29,4 +29,14 @@ void Controller::Update()
 bool Controller::isPressed() const
 {
     return (digitalRead(_pin) == 0);
+}
+
+bool Controller::isPressedThisLoop() const
+{
+    return isPressed() && !_alreadyPressed;
+}
+    
+bool Controller::isReleasedThisLoop() const
+{
+    return _alreadyPressed && !isPressed();
 }

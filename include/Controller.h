@@ -12,6 +12,8 @@ protected:
 public:
     Controller(byte pin);
     bool isPressed() const;
+    bool isPressedThisLoop() const;
+    bool isReleasedThisLoop() const;
 
     void Reset();
     void Update();

@@ -18,6 +18,9 @@
 #define PIN_LED 21    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_CIRCLE 17 // R 500 ohms to IN pin for WS2812 and WS2813, for WS2813 IN pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 
+#define PIN_START 15 //Optional button to start race
+#define PIN_EASY 16 //Optional switch for easy mode
+
 #define PIN_AUDIO 5 // through CAP 2uf to speaker 8 ohms
 
 #define OIL_PRESS_DELAY_DEFAULT 200
