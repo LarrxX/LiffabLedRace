@@ -1,4 +1,4 @@
-#include "Coroutines/LedLighting.h"
+#include "Coroutines/LedLightingCoroutine.h"
 
 #include <Adafruit_NeoPixel.h>
 
@@ -15,20 +15,23 @@ void LedLightingCoroutine::setParameters(LightingType type, uint32_t color, uint
     _type = type;
     _color = color;
     _delay = delay;
+    _index = _numChases = 0;
 }
 
 int LedLightingCoroutine::runCoroutine()
 {
     COROUTINE_BEGIN();
+
     switch (_type)
     {
     // Fill the LEDs one after the other with a color
     case COLOR_WIPE:
     {
-        for (int i = 0; i < _ledStrip->numPixels(); ++i)
+        while( _index < _ledStrip->numPixels())
         {
-            _ledStrip->setPixelColor(i, _color);
+            _ledStrip->setPixelColor(_index, _color);
             _ledStrip->show();
+            ++_index;
             BLOCKING_COROUTINE_DELAY(_delay);
         }
     }
@@ -37,13 +40,14 @@ int LedLightingCoroutine::runCoroutine()
     //Cycle through all colors of the rainbow
     case RAINBOW:
     {
-        for (int j = 0; j < 256; ++j)
+        while(_index < 256)
         {
             for (int i = 0; i < _ledStrip->numPixels(); ++i)
             {
-                _ledStrip->setPixelColor(i, Wheel((i * 1 + j) & 255));
+                _ledStrip->setPixelColor(i, Wheel((_index + i) & 255));
             }
             _ledStrip->show();
+            ++_index;
             BLOCKING_COROUTINE_DELAY(_delay);
         }
     }
@@ -52,24 +56,33 @@ int LedLightingCoroutine::runCoroutine()
     //Theatre-style crawling lights.
     case THEATER_CHASE:
     {
-        for (int j = 0; j < 10; ++j)
-        { //do 10 cycles of chasing
-            for (static int q = 0; q < 3; ++q)
+        while( _numChases < 10)
+        { 
+            _index = 0;
+            //do 10 cycles of chasing
+            while( _index < 3)
             {
                 for (int i = 0; i < _ledStrip->numPixels(); i += 3)
                 {
                     //turn every third pixel on
-                    _ledStrip->setPixelColor(i + q, _color);
+                    _ledStrip->setPixelColor(_index + i, _color);
                 }
                 _ledStrip->show();
                 BLOCKING_COROUTINE_DELAY(_delay);
-                for (int i = 0; i < _ledStrip->numPixels(); i += 3)
-                {
-                    //turn every third pixel off
-                    _ledStrip->setPixelColor(i + q, 0);
-                }
+                _ledStrip->clear();
+
+                ++_index;
             }
+            ++_numChases;
         }
+    }
+    break;
+
+    case SOLID_COLOR:
+    {
+        _ledStrip->fill(_color);
+        _ledStrip->show();
+        BLOCKING_COROUTINE_DELAY(_delay);
     }
     break;
     }

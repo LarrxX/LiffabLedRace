@@ -5,10 +5,14 @@
 class PlaySoundCoroutine : public IBlockingCoroutine
 {
     protected:
-        unsigned int _frequency;
+        word _frequency;
+        word* _frequencyArray;
         uint32_t _delay;
+        byte _numSounds;
+        byte _index;
     
     public:
-        void setParameters( unsigned int frequency, uint32_t delay);
+        void setParameters( word frequency, uint32_t delay);
+        void setParameters( word* frequencyArray, byte numSounds, uint32_t delay);
         int runCoroutine() override;
 };

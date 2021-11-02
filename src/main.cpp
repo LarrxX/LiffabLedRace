@@ -1,4 +1,3 @@
-
 /*  
  * ____                     _      ______ _____    _____
   / __ \                   | |    |  ____|  __ \  |  __ \               
@@ -35,6 +34,7 @@
 #include <EEPROM.h>
 #endif
 
+#include "Coroutines/LedLightingCoroutine.h"
 #include "Coroutines/PlaySoundCoroutine.h"
 
 #include "Controller.h"
@@ -51,16 +51,22 @@ static const word win_music[] = {
     2637, 2637, 0, 2637,
     0, 2093, 2637, 0,
     3136};
+static const byte win_music_count = 9;
 
 byte drawOrder[MAX_PLAYERS];
 unsigned long previousRedraw = 0;
 unsigned long raceStartTime = 0;
 bool raceRunning = false;
+bool showingWinner = false;
 
 Controller StartRaceButton(PIN_START);
 Controller EasyModeSwitch(PIN_EASY);
 
+LedLightingCoroutine trackLighting(&track);
 PlaySoundCoroutine audio;
+#ifdef LED_CIRCLE
+LedLightingCoroutine circleLighting(&circle);
+#endif
 
 void ResetPlayers()
 {
@@ -73,23 +79,24 @@ void ResetPlayers()
 void ResetCoroutines()
 {
   audio.reset();
-  trackLighting.reset();
+  trackLighting.setParameters(LedLightingCoroutine::SOLID_COLOR, 0, 0);
 
 #ifdef LED_CIRCLE
-  circleLighting.reset();
+  circleLighting.setParameters(LedLightingCoroutine::SOLID_COLOR, 0, 0);
 #endif
 }
 
 void start_race()
 {
   raceRunning = true;
+  showingWinner = false;
   ResetCoroutines();
   ResetPlayers();
 
-  for (word i = 0; i < MaxLED; i++)
-  {
-    track.setPixelColor(i, track.Color(0, 0, 0));
-  };
+  track.clear();
+#ifdef LED_CIRCLE
+  circle.clear();
+#endif
 
   for (byte i = 0; i < Obstacles.Count(); ++i)
   {
@@ -97,29 +104,27 @@ void start_race()
   }
   track.show();
 
-  #ifdef LED_CIRCLE
-    circleLighting.setParameters(LedLightingCoroutine::RAINBOW, 0, 3);
-    circleLighting.runBlocking();
-    circle.fill(circle.Color(255,0,0),0,MAXLEDCIRCLE);
-    circle.show();
-  #endif
+#ifdef LED_CIRCLE
+  circleLighting.setParameters(LedLightingCoroutine::RAINBOW, 0, 5);
+  circleLighting.runBlocking();
+  circleLighting.setParameters(LedLightingCoroutine::SOLID_COLOR, Adafruit_NeoPixel::Color(255, 0, 0), 0);
+  circleLighting.runBlocking();
+#endif
 
   audio.setParameters(400, 2000);
   audio.runBlocking();
 
-  #ifdef LED_CIRCLE
-    circle.fill(circle.Color(255,165,0),0,MAXLEDCIRCLE);
-    circle.show();
-  #endif
+#ifdef LED_CIRCLE
+  circleLighting.setParameters(LedLightingCoroutine::SOLID_COLOR, Adafruit_NeoPixel::Color(255, 80, 0), 0);
+  circleLighting.runBlocking();
+#endif
 
   audio.setParameters(600, 2000);
   audio.runBlocking();
 
-
-  #ifdef LED_CIRCLE
-    circle.fill(circle.Color(0,255,0),0,MAXLEDCIRCLE);
-    circle.show();
-  #endif
+#ifdef LED_CIRCLE
+  circleLighting.setParameters(LedLightingCoroutine::SOLID_COLOR, Adafruit_NeoPixel::Color(0, 255, 0), 2000);
+#endif
 
   audio.setParameters(1200, 2000);
 
@@ -169,16 +174,6 @@ void setup()
   start_race();
 }
 
-void winner_fx(byte w)
-{
-  word msize = sizeof(win_music) / sizeof(word);
-  for (word note = 0; note < msize; ++note)
-  {
-    audio.setParameters(win_music[note], 200);
-    audio.runBlocking();
-  };
-};
-
 void draw_cars()
 {
   if ((millis() - previousRedraw) > 1000)
@@ -201,26 +196,27 @@ void draw_cars()
 
 void show_winner(byte winner)
 {
+  showingWinner = true;
+
   unsigned long raceTime = millis() - raceStartTime;
   int minutes = raceTime / 60000;
-  float seconds = (raceTime - (minutes*60000)) / 1000.f;
+  float seconds = (raceTime - (minutes * 60000)) / 1000.f;
 
   Serial.printf("Winner: %s in %02d:%.3f", Players[winner].getName(), minutes, seconds);
-  if( checkAndSaveRecord(Players[winner].getName(), raceTime))
+  if (checkAndSaveRecord(Players[winner].getName(), raceTime))
   {
     Serial.println(" New Record!");
   }
-  
-#ifdef LED_CIRCLE
-  circleLighting.setParameters(LedLightingCoroutine::THEATER_CHASE, Players[winner].car().getColor(),50);
-  //theaterChase(Players[winner].car().getColor(),50);
-#endif
 
-  winner_fx(winner);
+  track.clear();
+  trackLighting.setParameters(LedLightingCoroutine::THEATER_CHASE, Players[winner].car().getColor(), 150);
 
 #ifdef LED_CIRCLE
-  delay(3000);
+  circle.clear();
+  circleLighting.setParameters(LedLightingCoroutine::THEATER_CHASE, Players[winner].car().getColor(), 150);
 #endif
+
+  audio.setParameters((word*)win_music, 9, 200);
 }
 
 void loop()
@@ -232,63 +228,72 @@ void loop()
   circleLighting.runCoroutine();
 #endif
 
-  for (word i = 0; i < MaxLED; i++)
+  if (showingWinner)
   {
-    track.setPixelColor(i, track.Color(0, 0, 0));
-  };
-
-  for (byte i = 0; i < Obstacles.Count(); ++i)
-  {
-    Obstacles[i]->Draw(&track);
+    if( trackLighting.isDone())
+    {
+      start_race();
+    }
   }
-
-  if (RaceStarted)
+  else
   {
-    if (!raceRunning)
+    track.clear();
+
+    for (byte i = 0; i < Obstacles.Count(); ++i)
     {
-      start_race();
+      Obstacles[i]->Draw(&track);
     }
 
-    if( StartRaceButton.isPressedThisLoop())
+    if (RaceStarted)
     {
-      start_race();
-    }
-    StartRaceButton.Update();
-    EasyModeSwitch.Update();
-
-    for (byte i = 0; i < Players.Count(); ++i)
-    {
-      Players[i].Update(Obstacles);
-
-      if (Players[i].car().isFinishedRace())
+      if (!raceRunning)
       {
-        show_winner(i);
         start_race();
-        return;
       }
-    }
 
-    Player previousLeader = Players[0];
-    Players.Sort();
-    if (previousLeader != Players[0])
-    {
-      Serial.printf("%s overtook %s\n", Players[0].getName(), previousLeader.getName());
-#ifdef LED_CIRCLE
-      circle.fill(Players[0].car().getColor(),0,MAXLEDCIRCLE);
-      circle.show();
-#endif
-    }
+      if (StartRaceButton.isPressedThisLoop())
+      {
+        start_race();
+      }
+      StartRaceButton.Update();
+      EasyModeSwitch.Update();
 
-    draw_cars();
-  }
-  else //RaceStarted==false
-  {
-    if (raceRunning)
-    {
-      ResetPlayers();
+      for (byte i = 0; i < Players.Count(); ++i)
+      {
+        Players[i].Update(Obstacles);
+
+        if (Players[i].car().isFinishedRace())
+        {
+          show_winner(i);
+          return;
+        }
+      }
+
+      Player previousLeader = Players[0];
       Players.Sort();
+      if (previousLeader != Players[0])
+      {
+        Serial.printf("%s overtook %s\n", Players[0].getName(), previousLeader.getName());
+      }
+
+#ifdef LED_CIRCLE
+        if( circleLighting.isDone() )
+        {
+          circleLighting.setParameters(LedLightingCoroutine::SOLID_COLOR, Players[0].car().getColor(), 100);
+        }
+#endif
+
+      draw_cars();
     }
-    raceRunning = false;
+    else //RaceStarted==false
+    {
+      if (raceRunning)
+      {
+        ResetPlayers();
+        Players.Sort();
+      }
+      raceRunning = false;
+    }
   }
 
   track.show();

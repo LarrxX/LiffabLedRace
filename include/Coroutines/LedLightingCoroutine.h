@@ -11,7 +11,8 @@ public:
     {
         COLOR_WIPE,
         RAINBOW,
-        THEATER_CHASE
+        THEATER_CHASE,
+        SOLID_COLOR
     };
 
 protected:
@@ -19,6 +20,8 @@ protected:
     uint32_t _color;
     uint32_t _delay;
     LightingType _type;
+    word _index;
+    word _numChases;
 
 public:
     LedLightingCoroutine(Adafruit_NeoPixel *ledStrip);

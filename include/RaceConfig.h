@@ -7,7 +7,6 @@
 #include "DynamicPointerArray.h"
 #include "Player.h"
 #include "IObstacle.h"
-#include "Coroutines/LedLighting.h"
 
 namespace RaceConfig
 {
@@ -24,10 +23,8 @@ namespace RaceConfig
     extern unsigned long RecordTime;
 
     extern Adafruit_NeoPixel track;
-    extern LedLightingCoroutine trackLighting;
 #ifdef LED_CIRCLE
     extern Adafruit_NeoPixel circle;
-    extern LedLightingCoroutine circleLighting;
 #endif
 
     void Save();

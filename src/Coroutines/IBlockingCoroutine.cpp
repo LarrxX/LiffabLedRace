@@ -2,7 +2,6 @@
 
 IBlockingCoroutine::IBlockingCoroutine() : _isBlocking(false)
 {
-
 }
 
 void IBlockingCoroutine::runBlocking()

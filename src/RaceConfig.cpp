@@ -28,11 +28,9 @@ namespace RaceConfig
     unsigned long RecordTime = ULONG_MAX;
 
     Adafruit_NeoPixel track(MaxLED, PIN_LED, NEO_GRB + NEO_KHZ800);
-    LedLightingCoroutine trackLighting(&track);
     
 #ifdef LED_CIRCLE
     Adafruit_NeoPixel circle(MAXLEDCIRCLE, PIN_CIRCLE, NEO_GRB + NEO_KHZ800);
-    LedLightingCoroutine circleLighting(&circle);
 #endif //LED_CIRCLE
 
     void writeWord(int &offset, word data)
