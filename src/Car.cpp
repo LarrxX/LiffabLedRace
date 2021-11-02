@@ -32,7 +32,7 @@ void Car::Update()
   {
     _newLoopStarted = true;
     ++_currentLoop;
-    if (_currentLoop >= MaxLoops)
+    if (_currentLoop > MaxLoops)
     {
       _finishedRace = true;
     }
