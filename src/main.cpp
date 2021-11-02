@@ -29,15 +29,13 @@
 */
 #include "Defines.h"
 
-#ifdef ESP32
-#include <ESP32Tone.h>
-#endif
-
 #ifdef USE_SPIFFS
 #include <SPIFFS.h>
 #else
 #include <EEPROM.h>
 #endif
+
+#include "Coroutines/PlaySoundCoroutine.h"
 
 #include "Controller.h"
 #include "Car.h"
@@ -62,6 +60,8 @@ bool raceRunning = false;
 Controller StartRaceButton(PIN_START);
 Controller EasyModeSwitch(PIN_EASY);
 
+PlaySoundCoroutine audio;
+
 void ResetPlayers()
 {
   for (byte i = 0; i < Players.Count(); ++i)
@@ -70,20 +70,27 @@ void ResetPlayers()
   }
 }
 
+void ResetCoroutines()
+{
+  audio.reset();
+  trackLighting.reset();
+
+#ifdef LED_CIRCLE
+  circleLighting.reset();
+#endif
+}
+
 void start_race()
 {
-  Serial.println("start_race");
   raceRunning = true;
-  Serial.println("start_resetplayer");
+  ResetCoroutines();
   ResetPlayers();
 
-  Serial.println("start_resettrack");
   for (word i = 0; i < MaxLED; i++)
   {
     track.setPixelColor(i, track.Color(0, 0, 0));
   };
 
-  Serial.println("start_obstacles");
   for (byte i = 0; i < Obstacles.Count(); ++i)
   {
     Obstacles[i]->Draw(&track);
@@ -91,43 +98,32 @@ void start_race()
   track.show();
 
   #ifdef LED_CIRCLE
-    Serial.println("Arc en ciel");
-    rainbow(3);
-    circle.show();
-    circle.fill(circle.Color(255,0,0),0,24);
+    circleLighting.setParameters(LedLightingCoroutine::RAINBOW, 0, 3);
+    circleLighting.runBlocking();
+    circle.fill(circle.Color(255,0,0),0,MAXLEDCIRCLE);
     circle.show();
   #endif
 
-
-  tone(PIN_AUDIO, 400);
-  delay(2000);
-  noTone(PIN_AUDIO);
+  audio.setParameters(400, 2000);
+  audio.runBlocking();
 
   #ifdef LED_CIRCLE
-    circle.fill(circle.Color(255,0,0),0,24);
+    circle.fill(circle.Color(255,165,0),0,MAXLEDCIRCLE);
     circle.show();
   #endif
 
-  tone(PIN_AUDIO, 600);
-  delay(2000);
-  noTone(PIN_AUDIO);
+  audio.setParameters(600, 2000);
+  audio.runBlocking();
+
 
   #ifdef LED_CIRCLE
-    circle.fill(circle.Color(255,132,0),0,24);
+    circle.fill(circle.Color(0,255,0),0,MAXLEDCIRCLE);
     circle.show();
   #endif
 
-  tone(PIN_AUDIO, 1200);
-  delay(2000);
-  noTone(PIN_AUDIO);
+  audio.setParameters(1200, 2000);
+
   raceStartTime = millis();
-
-#ifdef LED_CIRCLE
-    circle.fill(circle.Color(0,255,0),0,24);
-    circle.show();
-#endif
-
-  Serial.println("race_started");
 }
 
 void setup()
@@ -178,10 +174,9 @@ void winner_fx(byte w)
   word msize = sizeof(win_music) / sizeof(word);
   for (word note = 0; note < msize; ++note)
   {
-    tone(PIN_AUDIO, win_music[note], 200);
+    audio.setParameters(win_music[note], 200);
+    audio.runBlocking();
   };
-  delay(230);
-  noTone(PIN_AUDIO);
 };
 
 void draw_cars()
@@ -217,7 +212,8 @@ void show_winner(byte winner)
   }
   
 #ifdef LED_CIRCLE
-  theaterChase(Players[winner].car().getColor(),50);
+  circleLighting.setParameters(LedLightingCoroutine::THEATER_CHASE, Players[winner].car().getColor(),50);
+  //theaterChase(Players[winner].car().getColor(),50);
 #endif
 
   winner_fx(winner);
@@ -229,6 +225,13 @@ void show_winner(byte winner)
 
 void loop()
 {
+  audio.runCoroutine();
+  trackLighting.runCoroutine();
+
+#ifdef LED_CIRCLE
+  circleLighting.runCoroutine();
+#endif
+
   for (word i = 0; i < MaxLED; i++)
   {
     track.setPixelColor(i, track.Color(0, 0, 0));
@@ -251,15 +254,6 @@ void loop()
       start_race();
     }
     StartRaceButton.Update();
-
-    if( EasyModeSwitch.isPressedThisLoop() )
-    {
-      Serial.println("Easy mode ON!");
-    }
-    else if( EasyModeSwitch.isReleasedThisLoop())
-    {
-      Serial.println("Easy mode OFF!");
-    }
     EasyModeSwitch.Update();
 
     for (byte i = 0; i < Players.Count(); ++i)
@@ -280,7 +274,7 @@ void loop()
     {
       Serial.printf("%s overtook %s\n", Players[0].getName(), previousLeader.getName());
 #ifdef LED_CIRCLE
-      circle.fill(Players[0].car().getColor(),0,24);
+      circle.fill(Players[0].car().getColor(),0,MAXLEDCIRCLE);
       circle.show();
 #endif
     }
