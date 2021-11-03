@@ -10,7 +10,7 @@ protected:
     unsigned long _pressedTime;
 
 public:
-    Controller(byte pin);
+    Controller(byte pin, uint8_t mode = INPUT_PULLUP);
     bool isPressed() const;
     bool isPressedThisLoop() const;
     bool isReleasedThisLoop() const;

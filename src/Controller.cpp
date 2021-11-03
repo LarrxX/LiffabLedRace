@@ -1,8 +1,8 @@
 #include "Controller.h"
 
-Controller::Controller(byte pin) : _pin(pin)
+Controller::Controller(byte pin, uint8_t mode) : _pin(pin)
 {
-    pinMode(_pin, INPUT_PULLUP);
+    pinMode(_pin, mode);
     Reset();
 }
 
