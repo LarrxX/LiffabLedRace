@@ -256,6 +256,8 @@ void loop()
         start_race();
       }
       StartRaceButton.Update();
+      
+      EasyMode = EasyModeSwitch.isPressed();
       EasyModeSwitch.Update();
 
       for (byte i = 0; i < Players.Count(); ++i)
