@@ -49,8 +49,6 @@ void WebService::Init()
 {
     buildIndexHTML();
 
-    Serial.begin(115200);
-
     Serial.println("Starting web server...");
     WiFi.softAP(WebService::_ssid, WebService::_password);
 
@@ -141,6 +139,7 @@ void WebService::modifyGeneral( AsyncWebServerRequest *request)
 {
     MaxLED = request->getParam("MaxLED")->value().toInt();
     MaxLoops = request->getParam("MaxLoops")->value().toInt();
+    EasyMode = request->hasParam("EasyMode");
     track.updateLength(MaxLED);
 }
 
@@ -154,7 +153,7 @@ void WebService::modifyPlayer(AsyncWebServerRequest *request)
     {
         Players[index].setName(const_cast<char *>(newName.c_str()));
     }
-    Players[index].mutableCar().setColor(newColor);
+    Players[index].setColor(newColor);
     buildIndexHTML();
 }
 
@@ -394,7 +393,8 @@ void WebService::buildIndexHTML()
         <br>
         Number of loops: <input type='text' name='MaxLoops' value=')rawliteral"
     + String(MaxLoops)
-    +"' size=2><br>";
+    +"' size=2><br>"
+    + "<input type='checkbox' name='EasyMode' value='EasyMode'>Easy Mode<br>";
 
     if(!RaceStarted)
     {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Arduino.h>
 #include "Coroutines/IBlockingCoroutine.h"
 
 class Adafruit_NeoPixel;
@@ -26,7 +27,11 @@ protected:
 public:
     LedLightingCoroutine(Adafruit_NeoPixel *ledStrip);
     void setParameters(LightingType type, uint32_t color, uint32_t delay);
+    byte getPin() const;
+    
     int runCoroutine() override;
+
+    virtual ~LedLightingCoroutine(){};
 
 private:
     static uint32_t Wheel(byte WheelPos);

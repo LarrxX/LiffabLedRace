@@ -12,6 +12,7 @@ static const char configFileName[] = "/olr.cfg";
 #include "Controller.h"
 #include "OilObstacle.h"
 #include "RampObstacle.h"
+#include "Coroutines/LedLightingCoroutine.h"
 
 namespace RaceConfig
 {
@@ -119,12 +120,13 @@ namespace RaceConfig
         offset += len * sizeof(char);
     }
 
-    void readString(int &offset, byte *data)
+    void readString(int &offset, char *data)
     {
 #ifdef USE_SPIFFS
-        word len;
+        size_t len;
         readWord(offset,len);
-        file.readBytes((char*)data, len);
+        file.read((uint8_t *)data, len);
+        offset += len * sizeof(char);
 #else
 
         for (int i = 0; i < MAX_NAME_LENGTH; ++i)
@@ -151,7 +153,7 @@ namespace RaceConfig
 #endif
         //Always reserve the maximum allowed size for a name so we don't accidentally wipe the data after it when we update only this section
         int begin = offset;
-        writeString(offset, (char *)RecordName);
+        writeString(offset, RecordName);
         offset = begin + (MAX_NAME_LENGTH * sizeof(char));
         writeULong(offset, RecordTime);
 
@@ -163,7 +165,7 @@ namespace RaceConfig
     void LoadRecord(int& offset)
     {
         int begin = offset;
-        readString(offset, (byte*)RecordName);
+        readString(offset, RecordName);
         offset = begin + (MAX_NAME_LENGTH * sizeof(char));
         readULong(offset, RecordTime);
     }
@@ -188,42 +190,59 @@ namespace RaceConfig
         file.seek(0);
 #endif
         int eeAddress = 0;
-        
+        Serial.printf("Saving file version \"%s\".\n", SAVE_FILE_VERSION);
         writeString(eeAddress, SAVE_FILE_VERSION);
-
+        
+        Serial.println("Saving record.");
         SaveRecord(eeAddress);
 
+        Serial.printf("Saving Max Loops %d.\n", MaxLoops);
         writeWord(eeAddress, MaxLoops);
 
+        Serial.printf("Saving Max LED %d.\n", MaxLED);
         writeWord(eeAddress, MaxLED);
 
         size_t count = Players.Count();
+        Serial.printf("Saving Player Count %d.\n", count);
         writeWord(eeAddress, count);
 
         for (size_t i = 0; i < count; ++i)
         {
+            Serial.printf("Saving Player %d:\n", i);
             Player &player = Players[i];
-
-            writeUInt(eeAddress, player.car().getColor());
-
+            
+            Serial.printf("\tColor %d\n", player.getColor());
+            writeUInt(eeAddress, player.getColor());
+            
+            Serial.printf("\tPin %d\n", player.controller().getPin());
             writeByte(eeAddress, player.controller().getPin());
+            
+            Serial.printf("\tLighting Pin %d\n", player.getLightingPin());
+            writeWord(eeAddress, player.getLightingPin());
 
+            Serial.printf("\tName \"%s\"\n", player.getName());
             writeString(eeAddress, player.getName());
         }
-
+        
         count = Obstacles.Count();
+        Serial.printf("Saving Obstacle Count %d.\n", count);
         writeWord(eeAddress, count);
 
         for (size_t i = 0; i < count; ++i)
         {
+            Serial.printf("Saving Obstacle %d:\n", i);
             IObstacle *obstacle = Obstacles[i];
 
+            Serial.printf("\tColor %d\n", obstacle->getColor());
             writeUInt(eeAddress, obstacle->getColor());
 
+            Serial.printf("\tStart %d\n", obstacle->getStart());
             writeWord(eeAddress, obstacle->getStart());
 
+            Serial.printf("\tEnd %d\n", obstacle->getEnd());
             writeWord(eeAddress, obstacle->getEnd());
 
+            Serial.printf("\tType %d\n", obstacle->getType());
             writeWord(eeAddress, obstacle->getType());
 
             switch (obstacle->getType())
@@ -231,6 +250,8 @@ namespace RaceConfig
             case IObstacle::OBSTACLE_OIL:
             {
                 OilObstacle *oil = static_cast<OilObstacle *>(obstacle);
+                
+                Serial.printf("\tOil Press Delay %d\n", oil->getPressDelay());
                 writeWord(eeAddress, oil->getPressDelay());
             }
             break;
@@ -239,8 +260,10 @@ namespace RaceConfig
             {
                 RampObstacle *ramp = static_cast<RampObstacle *>(obstacle);
 
+                Serial.printf("\tRamp Height %d\n", ramp->getHeight());
                 writeByte(eeAddress, ramp->getHeight());
 
+                Serial.printf("\tRamp Style %d\n", ramp->getStyle());
                 writeWord(eeAddress, ramp->getStyle());
             }
             break;
@@ -253,6 +276,7 @@ namespace RaceConfig
 #ifdef USE_SPIFFS
         file.close();
 #endif
+        Serial.println("Saving done!");
     }
 
     bool Load()
@@ -270,8 +294,9 @@ namespace RaceConfig
         Serial.println("Loading...");
         int eeAddress = 0;
 
-        char version[10];
-        readString(eeAddress, (byte*)version);
+        char version[MAX_NAME_LENGTH];
+        readString(eeAddress, version);
+        Serial.printf("Saved file is version \"%s\"; current supported version is \"%s\".\n", version, SAVE_FILE_VERSION);
         if (strcmp(version, SAVE_FILE_VERSION) != 0)
         {
             Serial.println("Wrong save file version.");
@@ -287,13 +312,13 @@ namespace RaceConfig
         Serial.printf("Loaded Maxloops=%d\n", MaxLoops);
 
         readWord(eeAddress, MaxLED);
-        Serial.printf("Loaded Maxloops=%d\n", MaxLED);
+        Serial.printf("Loaded Maxled=%d\n", MaxLED);
         track.updateLength(MaxLED);
         Serial.println("Track length updated");
 
         word count;
         readWord(eeAddress, count);
-        Serial.printf("%d player count\n", count);
+        Serial.printf("Player Count %d\n", count);
 
         //Explicitly destroy current players contents to remove all internal pointers
         //This avoids memory leaks since the ponters are not automatically destroyed in ~Player() by design
@@ -306,48 +331,52 @@ namespace RaceConfig
 
         for (int i = 0; i < count; ++i)
         {
-            Serial.printf("Loading player %d:\n", i);
+            Serial.printf("Loading Player %d:\n", i);
 
             uint32_t color = 0;
             readUInt(eeAddress, color);
-            Serial.printf("Color=%d", color);
+            Serial.printf("\tColor %d\n", color);
 
             byte pin = 0;
             readByte(eeAddress, pin);
-            Serial.printf(" Pin=%d", pin);
+            Serial.printf("\tPin %d\n", pin);
+
+            word lightPin = 0;
+            readWord(eeAddress, lightPin);
+            Serial.printf("\tLight Pin %d\n", lightPin);
 
             char name[MAX_NAME_LENGTH];
-            readString(eeAddress, (byte *)name);
-            Serial.printf(" Name=%s\n", name);
+            readString(eeAddress, name);
+            Serial.printf("\tName \"%s\"\n", name);
 
-            Players.Add(Player(color, pin, name));
-            Serial.println("Player loaded!");
+            Players.Add(Player(color, pin, lightPin, name));
+            Serial.println("Player loaded");
         }
 
         readWord(eeAddress, count);
-        Serial.printf("%d obstacle count\n", count);
+        Serial.printf("Obstacle Count %d.\n", count);
 
         Obstacles.Clear();
 
         for (size_t i = 0; i < count; ++i)
         {
-            Serial.printf("Loading obstacle %d:\n", i);
+            Serial.printf("Loading Obstacle %d:\n", i);
 
             uint32_t color = 0;
             readUInt(eeAddress, color);
-            Serial.printf("Color=%d", color);
+            Serial.printf("\tColor %d\n", color);
 
             word start = 0;
             readWord(eeAddress, start);
-            Serial.printf(" Start=%d", start);
+            Serial.printf("\tStart %d\n", start);
 
             word end = 0;
             readWord(eeAddress, end);
-            Serial.printf(" End=%d", end);
+            Serial.printf("\tEnd %d\n", end);
 
             word type;
             readWord(eeAddress, type);
-            Serial.printf(" Type=%d", type);
+            Serial.printf("\tType %d\n", type);
 
             switch ((IObstacle::ObstacleType)type)
             {
@@ -355,14 +384,14 @@ namespace RaceConfig
             {
                 word pressDelay = 0;
                 readWord(eeAddress, pressDelay);
-                Serial.printf(" Delay=%d\n", pressDelay);
+                Serial.printf("\tOil Press Delay %d\n", pressDelay);
 
                 OilObstacle *oil = new OilObstacle(start, end, color);
                 Serial.println("Oil obstacle created");
                 oil->setPressDelay(pressDelay);
 
                 Obstacles.Add(oil);
-                Serial.println("Oil obstacle loaded!");
+                Serial.println("Oil obstacle loaded");
             }
             break;
 
@@ -370,17 +399,17 @@ namespace RaceConfig
             {
                 byte height = 0;
                 readByte(eeAddress, height);
-                Serial.printf(" height=%d", height);
+                Serial.printf("\tRamp Height %d\n", height);
 
                 word style;
                 readWord(eeAddress, style);
-                Serial.printf(" style=%d\n", style);
+                Serial.printf("\tRamp Style %d\n", style);
 
                 RampObstacle *ramp = new RampObstacle(start, end, height, color, (RampObstacle::RampStyle)style);
                 Serial.println("Ramp obstacle created");
 
                 Obstacles.Add(ramp);
-                Serial.println("Ramp obstacle loaded!");
+                Serial.println("Ramp obstacle loaded");
             }
             break;
             }

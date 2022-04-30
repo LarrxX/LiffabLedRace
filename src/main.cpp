@@ -133,6 +133,8 @@ void start_race()
 
 void setup()
 {
+  Serial.begin(115200);
+
   raceRunning = false;
 
 #ifdef USE_SPIFFS

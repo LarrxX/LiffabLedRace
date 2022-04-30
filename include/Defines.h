@@ -1,6 +1,6 @@
 #pragma once
 
-#define SAVE_FILE_VERSION "1.0.0"
+#define SAVE_FILE_VERSION "1.0.2"
 
 #define LED_CIRCLE
 
@@ -10,10 +10,11 @@
     #define USE_SPIFFS
 #endif
 
-#define DEFAULT_LED 600 // MAX LEDs actives on strip
+#define DEFAULT_LED 1200// MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
+#define MAXLEDPLAYER 14 // MAX LEDs actives on player button
 
-#define DEFAULT_LOOPS 4 //Number of loops in the race
+#define DEFAULT_LOOPS 3 //Number of loops in the race
 
 #define PIN_LED 21    // R 500 ohms to DI pin for WS2812 and WS2813, for WS2813 BI pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
 #define PIN_CIRCLE 17 // R 500 ohms to IN pin for WS2812 and WS2813, for WS2813 IN pin of first LED to GND  ,  CAP 1000 uF to VCC 5v/GND,power supplie 5V 2A
@@ -43,16 +44,21 @@
 #define PIN_P3 14 // switch player 3 to PIN and GND
 #define PIN_P4 12 // switch player 4 to PIN and GND
 
-#define COLOR_P1 Adafruit_NeoPixel::Color(255, 0, 0)
+#define COLOR_P1 Adafruit_NeoPixel::Color(0, 255, 0)
 #define COLOR_P2 Adafruit_NeoPixel::Color(0, 255, 0)
 #define COLOR_P3 Adafruit_NeoPixel::Color(0, 0, 255)
 #define COLOR_P4 Adafruit_NeoPixel::Color(255, 255, 255)
 
+#define LIGHT_PIN_P1 33 //PIN of the player 1 button lights
+#define LIGHT_PIN_P2 -1 //PIN of the player 1 button lights
+#define LIGHT_PIN_P3 -1 //PIN of the player 1 button lights
+#define LIGHT_PIN_P4 -1 //PIN of the player 1 button lights
+
 #define INIT_PLAYERS                                           \
-    Players.Add(Player(COLOR_P1, PIN_P1, (char *)"Player 1")); \
-    Players.Add(Player(COLOR_P2, PIN_P2, (char *)"Player 2")); \
-    Players.Add(Player(COLOR_P3, PIN_P3, (char *)"Player 3")); \
-    Players.Add(Player(COLOR_P4, PIN_P4, (char *)"Player 4"));
+    Players.Add(Player(COLOR_P1, PIN_P1, LIGHT_PIN_P1, (char *)"Player 1")); \
+    Players.Add(Player(COLOR_P2, PIN_P2, LIGHT_PIN_P2, (char *)"Player 2")); \
+    Players.Add(Player(COLOR_P3, PIN_P3, LIGHT_PIN_P3, (char *)"Player 3")); \
+    Players.Add(Player(COLOR_P4, PIN_P4, LIGHT_PIN_P4, (char *)"Player 4"));
 
 #define ACEL 0.2f //Acceleration
 #define KF 0.015f //friction constant

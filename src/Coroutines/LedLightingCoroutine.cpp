@@ -18,6 +18,11 @@ void LedLightingCoroutine::setParameters(LightingType type, uint32_t color, uint
     _index = _numChases = 0;
 }
 
+byte LedLightingCoroutine::getPin() const
+{
+    return (byte)_ledStrip->getPin();
+}
+
 int LedLightingCoroutine::runCoroutine()
 {
     COROUTINE_BEGIN();
