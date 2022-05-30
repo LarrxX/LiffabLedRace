@@ -40,5 +40,6 @@ private:
 
   void buildPlayersHTML();
   void buildObstaclesHTML();
-  void buildIndexHTML();  
+  void buildIndexHTML();
+  void buildBoardData();
 };

@@ -47,7 +47,7 @@ WebService &WebService::Instance()
 
 void WebService::Init()
 {
-    buildIndexHTML();
+    //buildIndexHTML();
 
     Serial.println("Starting web server...");
     WiFi.softAP(WebService::_ssid, WebService::_password);
@@ -130,6 +130,12 @@ void WebService::Init()
                {
                    deleteRecord();
                    request->redirect("/");
+               });
+
+    _server.on("/boardData", HTTP_GET, [](AsyncWebServerRequest *request)
+               {
+                   WebService::Instance().buildBoardData();
+                   request->send(200, "text/plain", _index_html.c_str() );
                });
 
     _server.begin();
@@ -421,4 +427,26 @@ void WebService::buildIndexHTML()
 
     _index_html += _pin_info_html
     +"</body></html>";
+}
+
+void WebService::buildBoardData()
+{
+// RecordName (String)
+// RecordTime (String)
+// RecordColor (R,G,B)
+// RecordDuration (String)
+//
+// EasyRecordName (String)
+// EasyRecordTime (String)
+// EasyRecordColor (R,G,B)
+// EasyRecordDuration (String)
+//
+// CurrentRecordName (String)
+// CurrentRecordTime (String)
+// CurrentRecordColor (String)
+//
+// Started:0/1
+    _index_html = "RecordName:" + String(RecordName) + "\n" 
+    + "RecordTime:" + (RecordTime/60000) + ":"+ ((RecordTime % 60000) / 1000.f) + "\n"
+    + "RacesStarted:" + (RaceStarted ? "1":"0") + "\n";
 }
