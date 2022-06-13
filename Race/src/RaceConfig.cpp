@@ -165,25 +165,11 @@ namespace RaceConfig
         // writeULong(offset, AllTimeRecord._date);
 
         begin = offset;
-        writeString(offset, CurrentRecord._name);
-        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
-        writeULong(offset, CurrentRecord._time);
-        writeUInt(offset, CurrentRecord._color);
-        // writeULong(offset, CurrentRecord._date);
-
-        begin = offset;
         writeString(offset, EZAllTimeRecord._name);
         offset = begin + (MAX_NAME_LENGTH * sizeof(char));
         writeULong(offset, EZAllTimeRecord._time);
         writeUInt(offset, EZAllTimeRecord._color);
         // writeULong(offset, EZAllTimeRecord._date);
-
-        begin = offset;
-        writeString(offset, EZCurrentRecord._name);
-        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
-        writeULong(offset, EZCurrentRecord._time);
-        writeUInt(offset, EZCurrentRecord._color);
-        // writeULong(offset, EZCurrentRecord._date);
 
 #ifdef USE_SPIFSS
         file.close();
@@ -201,14 +187,6 @@ namespace RaceConfig
         AllTimeRecord._date = 0;
 
         begin = offset;
-        readString(offset, CurrentRecord._name);
-        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
-        readULong(offset, CurrentRecord._time);
-        readUInt(offset, CurrentRecord._color);
-        // readULong(offset, CurrentRecord._date);
-        CurrentRecord._date = 0;
-
-        begin = offset;
         readString(offset, EZAllTimeRecord._name);
         offset = begin + (MAX_NAME_LENGTH * sizeof(char));
         readULong(offset, EZAllTimeRecord._time);
@@ -216,13 +194,8 @@ namespace RaceConfig
         // readULong(offset, EZAllTimeRecord._date);
         EZAllTimeRecord._date = 0;
 
-        begin = offset;
-        readString(offset, EZCurrentRecord._name);
-        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
-        readULong(offset, EZCurrentRecord._time);
-        readUInt(offset, EZCurrentRecord._color);
-        // readULong(offset, EZCurrentRecord._date);
-        EZCurrentRecord._date = 0;
+        resetRecord(&CurrentRecord);
+        resetRecord(&EZCurrentRecord);
     }
 
     void deleteRecord()

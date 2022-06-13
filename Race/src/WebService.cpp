@@ -368,31 +368,58 @@ void WebService::buildIndexHTML()
       <div class='w3-center'>
         <a href='/Start' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:40%; height:50%;'>Start</a>
         <a href='/Stop' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:40%; height:50%;'>Stop</a>
-      </div>)rawliteral";
+      </div>
+      <div class='w3-bar'>
+      <br><hr style="height:3px;color:black;background-color:black"><br>
+      <h2>Records</h2>)rawliteral";
+
     if( strlen(AllTimeRecord._name) > 0)
     {
-        _index_html += R"rawliteral(
-            <div class='w3-bar'>
-            <br><hr style="height:3px;color:black;background-color:black"><br>
-            <h2>Track Record</h2>
-            <b>)rawliteral"
+        _index_html += + "<h3>All time record</h3><b>"
         + String(AllTimeRecord._name)
         + "</b>: "
         + getTimeString(AllTimeRecord._time)
-        + R"rawliteral(
+        + " for "
+        + getTimeString( millis() - AllTimeRecord._date);
+    }
+
+    if( strlen(CurrentRecord._name) > 0)
+    {
+        _index_html += "<h3>Last race record</h3><b>"
+        + String(CurrentRecord._name)
+        + "</b>: "
+        + getTimeString(CurrentRecord._time);
+    }
+
+    if( strlen(EZAllTimeRecord._name) > 0 )
+    {
+        _index_html += "<h3>Easy Mode: All time track record</h3><b>"
+        + String(EZAllTimeRecord._name)
+        + "</b>: "
+        + getTimeString(EZAllTimeRecord._time)
+        + " for "
+        + getTimeString( millis() - EZAllTimeRecord._date);
+    }
+
+    if( strlen(EZCurrentRecord._name) > 0 )
+    {
+        _index_html += "<h3>Easy Mode: Last race record</h3><b>"
+        + String(EZCurrentRecord._name)
+        + "</b>: "
+        + getTimeString(EZCurrentRecord._time);
+    }
+
+      _index_html +=   + R"rawliteral(
         <div class='w3-center'>
         <form action='/deleterecord'>
         <input type='submit' value='Delete Record'>
         </form>
         </div>
-        )rawliteral";
-      }
-
-      _index_html += R"rawliteral(</div>
-      <div class='w3-bar'>
-      <br><hr style="height:3px;color:black;background-color:black"><br>
-      <h2>General</h2>
-      <form action='/general'>
+        </div>
+        <div class='w3-bar'>
+        <br><hr style="height:3px;color:black;background-color:black"><br>
+        <h2>General</h2>
+        <form action='/general'>
         Circuit LED count: <input type='text' name='MaxLED' value=')rawliteral"
     + String(MaxLED)
     + R"rawliteral(' size=5>
@@ -431,22 +458,23 @@ void WebService::buildIndexHTML()
 
 void WebService::buildBoardData()
 {
-// ---------------RecordName (String)
-// ---------------RecordTime (String)
-// RecordColor (R,G,B)
-// RecordDuration (String)
-//
-// EasyRecordName (String)
-// EasyRecordTime (String)
-// EasyRecordColor (R,G,B)
-// EasyRecordDuration (String)
-//
-// CurrentRecordName (String)
-// CurrentRecordTime (String)
-// CurrentRecordColor (String)
-//
-// ---------------Started:0/1
     _index_html = "RecordName:" + String(AllTimeRecord._name) + "\n" 
     + "RecordTime:" + getTimeString(AllTimeRecord._time) + "\n"
+    + "RecordColor:" + toString(AllTimeRecord._color) + "\n"
+    + "RecordDuration:" + getTimeString(millis() - AllTimeRecord._date) + "\n"
+
+    + "CurrentRecordName:" + String(CurrentRecord._name) + "\n" 
+    + "CurrentRecordTime:" + getTimeString(CurrentRecord._time) + "\n"
+    + "CurrentRecordColor:" + toString(CurrentRecord._color) + "\n"
+
+    + "EasyRecordName:" + String(EZAllTimeRecord._name) + "\n" 
+    + "EasyRecordTime:" + getTimeString(EZAllTimeRecord._time) + "\n"
+    + "EasyRecordColor:" + toString(EZAllTimeRecord._color) + "\n"
+    + "EasyRecordDuration:" + getTimeString(millis() - EZAllTimeRecord._date) + "\n"
+
+    + "EasyCurrentRecordName:" + String(EZCurrentRecord._name) + "\n" 
+    + "EasyCurrentRecordTime:" + getTimeString(EZCurrentRecord._time) + "\n"
+    + "EasyCurrentRecordColor:" + toString(EZCurrentRecord._color) + "\n"
+
     + "RaceStarted:" + (RaceStarted ? "1":"0") + "\n";
 }

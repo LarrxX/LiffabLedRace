@@ -12,7 +12,7 @@
 
 #define DEFAULT_LED 1200// MAX LEDs actives on strip
 #define MAXLEDCIRCLE 24 // MAX LEDs actives on circle
-#define MAXLEDPLAYER 14 // MAX LEDs actives on player button
+#define MAXLEDPLAYER 12 // MAX LEDs actives on player button
 
 #define DEFAULT_LOOPS 3 //Number of loops in the race
 
