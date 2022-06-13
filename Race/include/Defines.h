@@ -1,6 +1,6 @@
 #pragma once
 
-#define SAVE_FILE_VERSION "1.0.2"
+#define SAVE_FILE_VERSION "1.1.0"
 
 #define LED_CIRCLE
 

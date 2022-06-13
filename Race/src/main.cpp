@@ -205,7 +205,7 @@ void show_winner(byte winner)
   float seconds = (raceTime - (minutes * 60000)) / 1000.f;
 
   Serial.printf("Winner: %s in %02d:%.3f", Players[winner].getName(), minutes, seconds);
-  if (checkAndSaveRecord(Players[winner].getName(), raceTime))
+  if (checkAndSaveRecord(&Players[winner], raceTime))
   {
     Serial.println(" New Record!");
   }

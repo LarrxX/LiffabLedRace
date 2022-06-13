@@ -12,7 +12,10 @@ static const char configFileName[] = "/olr.cfg";
 #include "Controller.h"
 #include "OilObstacle.h"
 #include "RampObstacle.h"
+#include "TimeUtils.h"
 #include "Coroutines/LedLightingCoroutine.h"
+
+using namespace TimeUtils;
 
 namespace RaceConfig
 {
@@ -26,7 +29,9 @@ namespace RaceConfig
     DynamicPointerArray<IObstacle *> Obstacles(2);
 
     Record AllTimeRecord;
-    Record CurrentTimeRecord;
+    Record CurrentRecord;
+    Record EZAllTimeRecord;
+    Record EZCurrentRecord;
 
     Adafruit_NeoPixel track(MaxLED, PIN_LED, NEO_GRB + NEO_KHZ800);
     
@@ -156,6 +161,29 @@ namespace RaceConfig
         writeString(offset, AllTimeRecord._name);
         offset = begin + (MAX_NAME_LENGTH * sizeof(char));
         writeULong(offset, AllTimeRecord._time);
+        writeUInt(offset, AllTimeRecord._color);
+        // writeULong(offset, AllTimeRecord._date);
+
+        begin = offset;
+        writeString(offset, CurrentRecord._name);
+        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
+        writeULong(offset, CurrentRecord._time);
+        writeUInt(offset, CurrentRecord._color);
+        // writeULong(offset, CurrentRecord._date);
+
+        begin = offset;
+        writeString(offset, EZAllTimeRecord._name);
+        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
+        writeULong(offset, EZAllTimeRecord._time);
+        writeUInt(offset, EZAllTimeRecord._color);
+        // writeULong(offset, EZAllTimeRecord._date);
+
+        begin = offset;
+        writeString(offset, EZCurrentRecord._name);
+        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
+        writeULong(offset, EZCurrentRecord._time);
+        writeUInt(offset, EZCurrentRecord._color);
+        // writeULong(offset, EZCurrentRecord._date);
 
 #ifdef USE_SPIFSS
         file.close();
@@ -168,12 +196,42 @@ namespace RaceConfig
         readString(offset, AllTimeRecord._name);
         offset = begin + (MAX_NAME_LENGTH * sizeof(char));
         readULong(offset, AllTimeRecord._time);
+        readUInt(offset, AllTimeRecord._color);
+        // readULong(offset, AllTimeRecord._date);
+        AllTimeRecord._date = 0;
+
+        begin = offset;
+        readString(offset, CurrentRecord._name);
+        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
+        readULong(offset, CurrentRecord._time);
+        readUInt(offset, CurrentRecord._color);
+        // readULong(offset, CurrentRecord._date);
+        CurrentRecord._date = 0;
+
+        begin = offset;
+        readString(offset, EZAllTimeRecord._name);
+        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
+        readULong(offset, EZAllTimeRecord._time);
+        readUInt(offset, EZAllTimeRecord._color);
+        // readULong(offset, EZAllTimeRecord._date);
+        EZAllTimeRecord._date = 0;
+
+        begin = offset;
+        readString(offset, EZCurrentRecord._name);
+        offset = begin + (MAX_NAME_LENGTH * sizeof(char));
+        readULong(offset, EZCurrentRecord._time);
+        readUInt(offset, EZCurrentRecord._color);
+        // readULong(offset, EZCurrentRecord._date);
+        EZCurrentRecord._date = 0;
     }
 
     void deleteRecord()
     {
-        AllTimeRecord._name[0] = '\0';
-        AllTimeRecord._time = ULONG_MAX;
+        resetRecord( &AllTimeRecord );
+        resetRecord( &CurrentRecord );
+        resetRecord( &EZAllTimeRecord );
+        resetRecord( &EZCurrentRecord );
+        
         int offset = strlen(SAVE_FILE_VERSION)+1;
         SaveRecord(offset);
     }
@@ -421,14 +479,40 @@ namespace RaceConfig
         return true;
     }
 
-    bool checkAndSaveRecord(const char* name, unsigned long time)
+    bool checkAndSaveRecord(const Player* player, unsigned long time)
     {
-        if( time > AllTimeRecord._time )
+        Record* allTimeRecord = NULL;
+        Record* currentRecord = NULL;
+        
+        if( EasyMode )
+        {
+            allTimeRecord = &EZAllTimeRecord;
+            currentRecord = &EZCurrentRecord;
+        }
+        else
+        {
+            allTimeRecord = &EZAllTimeRecord;
+            currentRecord = &EZCurrentRecord;
+        }
+
+        if( time > currentRecord->_time )
         {
             return false;
         }
-        strcpy(AllTimeRecord._name, name);
-        AllTimeRecord._time = time;
+        
+        strcpy(currentRecord->_name, player->getName());
+        currentRecord->_color = player->getColor();
+        currentRecord->_time = time;
+        currentRecord->_date = millis();
+
+        if( currentRecord->_time < allTimeRecord->_time )
+        {
+            strcpy(allTimeRecord->_name, currentRecord->_name);
+            allTimeRecord->_color = currentRecord->_color;
+            allTimeRecord->_time = currentRecord->_time;
+            allTimeRecord-> _date = currentRecord->_date;
+        }
+
         int offset = strlen(SAVE_FILE_VERSION) + 1;
 
         SaveRecord(offset);

@@ -28,7 +28,9 @@ namespace RaceConfig
     extern DynamicPointerArray<IObstacle *> Obstacles;
 
     extern Record AllTimeRecord;
-    extern Record CurrentTimeRecord;
+    extern Record CurrentRecord;
+    extern Record EZAllTimeRecord;
+    extern Record EZCurrentRecord;
 
     extern Adafruit_NeoPixel track;
 #ifdef LED_CIRCLE
@@ -39,8 +41,7 @@ namespace RaceConfig
     bool Load();
     void Delete();
 
-
-    bool checkAndSaveRecord(const char* name, unsigned long time);
+    bool checkAndSaveRecord(const Player* player, unsigned long time);
     void deleteRecord();
 };
 
