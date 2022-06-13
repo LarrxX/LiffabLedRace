@@ -10,6 +10,14 @@
 
 namespace RaceConfig
 {
+    struct Record
+    {
+        char _name[MAX_NAME_LENGTH];
+        unsigned long _time;
+        uint32_t _color;
+        unsigned long _date;
+    };
+
     extern bool RaceStarted;
     extern bool EasyMode;
  
@@ -19,8 +27,8 @@ namespace RaceConfig
     extern DynamicArray<Player> Players;
     extern DynamicPointerArray<IObstacle *> Obstacles;
 
-    extern char RecordName[MAX_NAME_LENGTH];
-    extern unsigned long RecordTime;
+    extern Record AllTimeRecord;
+    extern Record CurrentTimeRecord;
 
     extern Adafruit_NeoPixel track;
 #ifdef LED_CIRCLE

@@ -25,8 +25,8 @@ namespace RaceConfig
     DynamicArray<Player> Players(MAX_PLAYERS);
     DynamicPointerArray<IObstacle *> Obstacles(2);
 
-    char RecordName[MAX_NAME_LENGTH]="";
-    unsigned long RecordTime = ULONG_MAX;
+    Record AllTimeRecord;
+    Record CurrentTimeRecord;
 
     Adafruit_NeoPixel track(MaxLED, PIN_LED, NEO_GRB + NEO_KHZ800);
     
@@ -153,9 +153,9 @@ namespace RaceConfig
 #endif
         //Always reserve the maximum allowed size for a name so we don't accidentally wipe the data after it when we update only this section
         int begin = offset;
-        writeString(offset, RecordName);
+        writeString(offset, AllTimeRecord._name);
         offset = begin + (MAX_NAME_LENGTH * sizeof(char));
-        writeULong(offset, RecordTime);
+        writeULong(offset, AllTimeRecord._time);
 
 #ifdef USE_SPIFSS
         file.close();
@@ -165,15 +165,15 @@ namespace RaceConfig
     void LoadRecord(int& offset)
     {
         int begin = offset;
-        readString(offset, RecordName);
+        readString(offset, AllTimeRecord._name);
         offset = begin + (MAX_NAME_LENGTH * sizeof(char));
-        readULong(offset, RecordTime);
+        readULong(offset, AllTimeRecord._time);
     }
 
     void deleteRecord()
     {
-        RecordName[0] = '\0';
-        RecordTime = ULONG_MAX;
+        AllTimeRecord._name[0] = '\0';
+        AllTimeRecord._time = ULONG_MAX;
         int offset = strlen(SAVE_FILE_VERSION)+1;
         SaveRecord(offset);
     }
@@ -423,12 +423,12 @@ namespace RaceConfig
 
     bool checkAndSaveRecord(const char* name, unsigned long time)
     {
-        if( time > RecordTime )
+        if( time > AllTimeRecord._time )
         {
             return false;
         }
-        strcpy(RecordName, name);
-        RecordTime = time;
+        strcpy(AllTimeRecord._name, name);
+        AllTimeRecord._time = time;
         int offset = strlen(SAVE_FILE_VERSION) + 1;
 
         SaveRecord(offset);

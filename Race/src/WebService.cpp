@@ -5,11 +5,13 @@
 #include "OilObstacle.h"
 #include "RampObstacle.h"
 #include "ColorUtils.h"
+#include "TimeUtils.h"
 
 #include "CSS.h"
 
 using namespace RaceConfig;
 using namespace ColorUtils;
+using namespace TimeUtils;
 
 WebService *WebService::_instance = NULL;
 
@@ -367,18 +369,16 @@ void WebService::buildIndexHTML()
         <a href='/Start' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:40%; height:50%;'>Start</a>
         <a href='/Stop' class='w3-bar-item w3-button w3-border w3-jumbo' style='width:40%; height:50%;'>Stop</a>
       </div>)rawliteral";
-    if( strlen(RecordName) > 0)
+    if( strlen(AllTimeRecord._name) > 0)
     {
         _index_html += R"rawliteral(
             <div class='w3-bar'>
             <br><hr style="height:3px;color:black;background-color:black"><br>
             <h2>Track Record</h2>
             <b>)rawliteral"
-        + String(RecordName)
+        + String(AllTimeRecord._name)
         + "</b>: "
-        + (RecordTime/60000)
-        + ":"
-        + ((RecordTime % 60000) / 1000.f)
+        + getTimeString(AllTimeRecord._time)
         + R"rawliteral(
         <div class='w3-center'>
         <form action='/deleterecord'>
@@ -431,8 +431,8 @@ void WebService::buildIndexHTML()
 
 void WebService::buildBoardData()
 {
-// RecordName (String)
-// RecordTime (String)
+// ---------------RecordName (String)
+// ---------------RecordTime (String)
 // RecordColor (R,G,B)
 // RecordDuration (String)
 //
@@ -445,8 +445,8 @@ void WebService::buildBoardData()
 // CurrentRecordTime (String)
 // CurrentRecordColor (String)
 //
-// Started:0/1
-    _index_html = "RecordName:" + String(RecordName) + "\n" 
-    + "RecordTime:" + (RecordTime/60000) + ":"+ ((RecordTime % 60000) / 1000.f) + "\n"
-    + "RacesStarted:" + (RaceStarted ? "1":"0") + "\n";
+// ---------------Started:0/1
+    _index_html = "RecordName:" + String(AllTimeRecord._name) + "\n" 
+    + "RecordTime:" + getTimeString(AllTimeRecord._time) + "\n"
+    + "RaceStarted:" + (RaceStarted ? "1":"0") + "\n";
 }
