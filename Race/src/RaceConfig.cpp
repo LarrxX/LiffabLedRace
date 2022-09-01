@@ -230,12 +230,7 @@ namespace RaceConfig
         Serial.printf("Saving Max Loops %d.\n", MaxLoops);
         writeWord(eeAddress, MaxLoops);
 
-        Serial.printf("Saving Max LED %d.\n", MaxLED);
-        writeWord(eeAddress, MaxLED);
-
-        size_t count = Players.Count();
-        Serial.printf("Saving Player Count %d.\n", count);
-        writeWord(eeAddress, count);
+        size_t count = MAX_PLAYERS;
 
         for (size_t i = 0; i < count; ++i)
         {
@@ -245,12 +240,6 @@ namespace RaceConfig
             Serial.printf("\tColor %d\n", player.getColor());
             writeUInt(eeAddress, player.getColor());
             
-            Serial.printf("\tPin %d\n", player.controller().getPin());
-            writeByte(eeAddress, player.controller().getPin());
-            
-            Serial.printf("\tLighting Pin %d\n", player.getLightingPin());
-            writeWord(eeAddress, player.getLightingPin());
-
             Serial.printf("\tName \"%s\"\n", player.getName());
             writeString(eeAddress, player.getName());
         }
@@ -342,14 +331,11 @@ namespace RaceConfig
         readWord(eeAddress, MaxLoops);
         Serial.printf("Loaded Maxloops=%d\n", MaxLoops);
 
-        readWord(eeAddress, MaxLED);
-        Serial.printf("Loaded Maxled=%d\n", MaxLED);
+        MaxLED = DEFAULT_LED;
         track.updateLength(MaxLED);
         Serial.println("Track length updated");
 
-        word count;
-        readWord(eeAddress, count);
-        Serial.printf("Player Count %d\n", count);
+        word count = MAX_PLAYERS;
 
         //Explicitly destroy current players contents to remove all internal pointers
         //This avoids memory leaks since the ponters are not automatically destroyed in ~Player() by design
@@ -368,17 +354,38 @@ namespace RaceConfig
             readUInt(eeAddress, color);
             Serial.printf("\tColor %d\n", color);
 
-            byte pin = 0;
-            readByte(eeAddress, pin);
-            Serial.printf("\tPin %d\n", pin);
-
-            word lightPin = 0;
-            readWord(eeAddress, lightPin);
-            Serial.printf("\tLight Pin %d\n", lightPin);
-
             char name[MAX_NAME_LENGTH];
             readString(eeAddress, name);
             Serial.printf("\tName \"%s\"\n", name);
+
+            byte pin = 0;
+            word lightPin = 0;
+            switch (i)
+            {
+            case 0:
+                pin = PIN_P1;
+                lightPin = COLOR_P1;
+                break;
+            
+            case 1:
+                pin = PIN_P2;
+                lightPin = COLOR_P2;
+                break;
+
+            case 2:
+                pin = PIN_P3;
+                lightPin = COLOR_P3;
+                break;
+
+            case 3:
+                pin = PIN_P4;
+                lightPin = COLOR_P4;
+                break;
+
+            default:
+                Serial.printf("Error loading player %d", i);
+            }
+            Serial.printf("\tControl Pin %d\n\tLight Pin %d\n", pin, lightPin);
 
             Players.Add(Player(color, pin, lightPin, name));
             Serial.println("Player loaded");

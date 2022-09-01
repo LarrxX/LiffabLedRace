@@ -8,7 +8,7 @@ Controller::Controller(byte pin, uint8_t mode) : _pin(pin)
 
 void Controller::Reset()
 {
-    _alreadyPressed = false;
+    _alreadyPressed = true;
     _pressedTime = 0;
 }
 
