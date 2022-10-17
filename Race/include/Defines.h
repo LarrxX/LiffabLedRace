@@ -39,20 +39,20 @@
 
 #define MAX_PLAYERS 4
 #define MAX_NAME_LENGTH 15
-#define PIN_P1 12 // switch player 1 to PIN and GND
+#define PIN_P1 13 // switch player 1 to PIN and GND
 #define PIN_P2 27 // switch player 2 to PIN and GND
 #define PIN_P3 25 // switch player 3 to PIN and GND
 #define PIN_P4 32 // switch player 4 to PIN and GND
 
-#define COLOR_P1 Adafruit_NeoPixel::Color(0, 255, 0)
-#define COLOR_P2 Adafruit_NeoPixel::Color(0, 255, 0)
-#define COLOR_P3 Adafruit_NeoPixel::Color(0, 0, 255)
-#define COLOR_P4 Adafruit_NeoPixel::Color(255, 255, 255)
+#define COLOR_P1 Adafruit_NeoPixel::Color(0, 127, 0)
+#define COLOR_P2 Adafruit_NeoPixel::Color(0, 127, 0)
+#define COLOR_P3 Adafruit_NeoPixel::Color(0, 0, 127)
+#define COLOR_P4 Adafruit_NeoPixel::Color(127, 127, 127)
 
 #define LIGHT_PIN_P1 14 //PIN of the player 1 button lights
 #define LIGHT_PIN_P2 26 //PIN of the player 2 button lights
 #define LIGHT_PIN_P3 33 //PIN of the player 3 button lights
-#define LIGHT_PIN_P4 35 //PIN of the player 4 button lights
+#define LIGHT_PIN_P4 19 //PIN of the player 4 button lights
 
 #define INIT_PLAYERS                                           \
     Players.Add(Player(COLOR_P1, PIN_P1, LIGHT_PIN_P1, (char *)"Player 1")); \
