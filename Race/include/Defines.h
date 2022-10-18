@@ -44,7 +44,7 @@
 #define PIN_P3 25 // switch player 3 to PIN and GND
 #define PIN_P4 32 // switch player 4 to PIN and GND
 
-#define COLOR_P1 Adafruit_NeoPixel::Color(0, 127, 0)
+#define COLOR_P1 Adafruit_NeoPixel::Color(127, 0, 0)
 #define COLOR_P2 Adafruit_NeoPixel::Color(0, 127, 0)
 #define COLOR_P3 Adafruit_NeoPixel::Color(0, 0, 127)
 #define COLOR_P4 Adafruit_NeoPixel::Color(127, 127, 127)

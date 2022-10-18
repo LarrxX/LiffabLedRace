@@ -365,25 +365,21 @@ namespace RaceConfig
             case 0:
                 pin = PIN_P1;
                 lightPin = LIGHT_PIN_P1;
-                color = COLOR_P1;
                 break;
             
             case 1:
                 pin = PIN_P2;
                 lightPin = LIGHT_PIN_P2;
-                color = COLOR_P2;
                 break;
 
             case 2:
                 pin = PIN_P3;
                 lightPin = LIGHT_PIN_P3;
-                color = COLOR_P3;
                 break;
 
             case 3:
                 pin = PIN_P4;
                 lightPin = LIGHT_PIN_P4;
-                color = COLOR_P4;
                 break;
 
             default:
