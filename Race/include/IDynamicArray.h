@@ -43,7 +43,7 @@ public:
         //This does not preserve array order!
         if (index < _used)
         {
-            if (index > 0)
+            if (index >= 0)
             {
                 _array[index] = _array[_used - 1];
             }
