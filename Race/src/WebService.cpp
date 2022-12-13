@@ -80,14 +80,14 @@ void WebService::Init()
     _server.on("/player", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    WebService::Instance().modifyPlayer(request);
-                   request->redirect("/");
+                   request->redirect("/#editplayers");
                });
 
     _server.on("/obstacle", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    WebService::Instance().modifyObstacle(request);
                    Obstacles.Sort();
-                   request->redirect("/");
+                   request->redirect("/#editobstacles");
                });
 
     _server.on("/general", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -100,14 +100,14 @@ void WebService::Init()
                {
                    Obstacles.Add(new OilObstacle(0,10, DEFAULT_OIL_COLOR));
                    Obstacles.Sort();
-                   request->redirect("/");
+                   request->redirect("/#editobstacles");
                });
     
     _server.on("/addramp", HTTP_GET, [](AsyncWebServerRequest *request)
                {
                    Obstacles.Add(new RampObstacle(0,10, 5, DEFAULT_RAMP_COLOR, RampObstacle::RAMP_HILL));
                    Obstacles.Sort();
-                   request->redirect("/");
+                   request->redirect("/#editobstacles");
                });
 
     _server.on("/save", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -172,11 +172,12 @@ void WebService::modifyObstacle(AsyncWebServerRequest *request)
     if( request->hasParam("Delete"))
     {
         Obstacles.Remove(index);
+        Obstacles.Sort();
         return;
     }
     IObstacle::ObstacleType type = (IObstacle::ObstacleType)(request->getParam("Type")->value().toInt());
-    int start = request->getParam("Start")->value().toInt();
-    int end = request->getParam("End")->value().toInt();
+    word start = strtoul(request->getParam("Start")->value().c_str(), NULL, 10);
+    word end = strtoul(request->getParam("End")->value().c_str(), NULL, 10);
     uint32_t color = FromHTMLColor(request->getParam("Color")->value().c_str());
 
     IObstacle* obstacle = Obstacles[index];
@@ -189,7 +190,7 @@ void WebService::modifyObstacle(AsyncWebServerRequest *request)
     case IObstacle::OBSTACLE_OIL:
     {
         OilObstacle *oil = static_cast<OilObstacle *>(obstacle);
-        oil->setPressDelay(request->getParam("Delay")->value().toInt());
+        oil->setPressDelay(strtoul(request->getParam("Delay")->value().c_str(), NULL, 10));
     }
     break;
 
@@ -210,7 +211,7 @@ void WebService::notFound(AsyncWebServerRequest *request)
 
 void WebService::buildPlayersHTML()
 {
-    _players_html = "<div class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br><h2>Players</h2>";
+    _players_html = "<div id='editplayers' class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br><h2>Players</h2>";
 
     //<form action='/player'>
     //<input type='color' name='Color' value=#COLOR>1 - Name1 <input type='text' name='Name' size = MAX_NAME_LENGTH>
@@ -245,7 +246,7 @@ void WebService::buildPlayersHTML()
 
 void WebService::buildObstaclesHTML()
 {
-    _obstacles_html = "<div class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br><h2>Obstacles</h2>";
+    _obstacles_html = "<div id='editobstacles' class='w3-bar'><br><hr style='height:3px;color:black;background-color:black'><br><h2>Obstacles</h2>";
 
     String typeName;
     String specifics;

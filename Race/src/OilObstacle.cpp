@@ -32,7 +32,7 @@ void OilObstacle::Update(Player *player)
 
 void OilObstacle::Draw(Adafruit_NeoPixel *led)
 {
-    for (byte i = _start; i <= _end; ++i)
+    for (word i = _start; i <= _end; ++i)
     {
         led->setPixelColor(i, _color);
     };
