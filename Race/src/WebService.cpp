@@ -139,6 +139,7 @@ void WebService::Init()
                    WebService::Instance().buildBoardData();
                    request->send(200, "text/plain", _index_html.c_str() );
                });
+               
 
     _server.begin();
 }
@@ -378,7 +379,7 @@ void WebService::buildIndexHTML()
         _index_html += + "<h3>All time record</h3><b>"
         + String(AllTimeRecord._name)
         + "</b>: "
-        + getTimeString(AllTimeRecord._time)
+        + getTimeString(AllTimeRecord._time);
         + " for "
         + getTimeString( millis() - AllTimeRecord._date);
     }
